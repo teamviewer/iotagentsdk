@@ -137,7 +137,7 @@ cmake -DENABLE_QT_PLUGIN=OFF <path-to-source>/
 Enable building the Python bindings:
 
 ```bash
-cmake -DBUILD_PYTHON_MODULE=ON <path-to-source>/
+cmake -DENABLE_PYTHON_MODULE=ON <path-to-source>/
 ```
 
 ### Installation for development

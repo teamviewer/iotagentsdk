@@ -286,6 +286,19 @@ void InputSimulator::simulateMouseMove(QWindow* window, const QPoint& point)
 void InputSimulator::simulateMouseWheelRequested(QWindow* window, const QPoint& point, int angle)
 {
 	Q_ASSERT(window);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+	auto ev = new QWheelEvent
+		{
+			point,
+			window->position() + point, // global position
+			{}, // no pixel delta
+			QPoint(0, angle), // vertical scroll
+			Qt::MouseButton::NoButton,
+			m_convertedModifiers,
+			Qt::NoScrollPhase,
+			false // not inverted
+		};
+#else
 	auto ev = new QWheelEvent
 		{
 			point,
@@ -293,6 +306,7 @@ void InputSimulator::simulateMouseWheelRequested(QWindow* window, const QPoint& 
 			Qt::MouseButton::NoButton,
 			m_convertedModifiers
 		};
+#endif
 	QCoreApplication::postEvent(window, ev);
 }
 

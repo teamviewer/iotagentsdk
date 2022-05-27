@@ -93,6 +93,19 @@ PyObject* WeakConnectionCall(PyObject* pySelf, PyObject* args)
 	return Method(self, args);
 }
 
+template <typename WrapperType, PyObject* (*Method)(WrapperType*, PyObject*, PyObject*)>
+PyObject* WeakConnectionCall(PyObject* pySelf, PyObject* args, PyObject* kwargs)
+{
+	auto self = reinterpret_cast<WrapperType*>(pySelf);
+	if (!self->m_pyWeakAgentConnection)
+	{
+		PyErr_Format(PyExc_ReferenceError, "Agent connection is lost for %R", pySelf);
+		return nullptr;
+	}
+
+	return Method(self, args, kwargs);
+}
+
 template <typename WrapperType>
 void DeallocWrapperObject(WrapperType* self)
 {

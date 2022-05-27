@@ -41,16 +41,29 @@ namespace
 
 PyObject* PyTVSessionManagementModule_setCallbacks(
 	PyTVSessionManagementModule* self,
-	PyObject* arg)
+	PyObject* args,
+	PyObject* kwargs)
 {
-	if (!PyDict_Check(arg))
+	char sessionStartedArgName[] = "sessionStartedCallback";
+	char sessionStoppedArgName[] = "sessionStoppedCallback";
+
+	PyObject* pySessionStartedCallback = Py_None;
+	PyObject* pySessionStoppedCallback = Py_None;
+
+	char* kwargList[] = {sessionStartedArgName, sessionStoppedArgName, {}};
+	if (!PyArg_ParseTupleAndKeywords(
+		args,
+		kwargs,
+		"|OO:setCallbacks",
+		kwargList,
+		&pySessionStartedCallback,
+		&pySessionStoppedCallback))
 	{
-		PyErr_Format(PyExc_TypeError, "expected dict instance, got %R", arg);
 		return nullptr;
 	}
 
-	PyObject* pySessionStartedCallback = PyDict_GetItemString(arg, "sessionStartedCallback");
-	PyObject* pySessionStoppedCallback = PyDict_GetItemString(arg, "sessionStoppedCallback");
+	pySessionStartedCallback = pySessionStartedCallback == Py_None ? nullptr : pySessionStartedCallback;
+	pySessionStoppedCallback = pySessionStoppedCallback == Py_None ? nullptr : pySessionStoppedCallback;
 
 	if (pySessionStartedCallback && !PyCallable_Check(pySessionStartedCallback))
 	{
@@ -157,34 +170,78 @@ PyObject* PyTVSessionManagementModule_isSupported(
 	Py_RETURN_FALSE;
 }
 
+namespace DocStrings
+{
+
+PyDoc_STRVAR(isSupported,
+R"__(isSupported($self)
+--
+
+Returns whether the current module is supported by the SDK and the IoT Agent counterpart.
+
+:return True if the current module is supported, False otherwise.
+)__");
+
+PyDoc_STRVAR(setCallbacks,
+R"__(setCallbacks($self, sessionStartedCallback=None, sessionStoppedCallback=None)
+--
+
+Sets callbacks to signal when an incoming TeamViewer session has started or stopped.
+
+:param sessionStartedCallback: called when an incoming TeamViewer session has started
+:type sessionStartedCallback: callback(tvagentapi.TVSessionManagementModule.TVSessionID tvSessionID, int tvSessionCount):
+    ID of the newly connected session, and the number of currently connected sessions (including the new session)
+:param sessionStoppedCallback: called when an incoming TeamViewer session has stopped
+:type sessionStoppedCallback: callback(tvagentapi.TVSessionManagementModule.TVSessionID tvSessionID, int tvSessionCount):
+    ID of the disconnected session, and the number of currently connected sessions (0 when final session ends)
+)__");
+
+PyDoc_STRVAR(getRunningSessions,
+R"__(getRunningSessions($self)
+--
+
+Get a list of currently connected TeamViewer sessions.
+
+:return list sessionIDs
+)__");
+
+PyDoc_STRVAR(terminateTeamViewerSessions,
+R"__(terminateTeamViewerSessions($self)
+--
+
+Terminate all currently connected TeamViewer sessions.
+)__");
+
+} // namespace DocStrings
+
 PyMethodDef PyTVSessionManagementModule_methods[] =
 {
 	{
+		"isSupported",
+		WeakConnectionCall<PyTVSessionManagementModule, PyTVSessionManagementModule_isSupported>,
+		METH_NOARGS,
+		DocStrings::isSupported
+	},
+
+	{
 		"setCallbacks",
-		WeakConnectionCall<PyTVSessionManagementModule, PyTVSessionManagementModule_setCallbacks>,
-		METH_O,
-		"set TV session management callbacks"
+		PyCFunctionCast(WeakConnectionCall<PyTVSessionManagementModule, PyTVSessionManagementModule_setCallbacks>),
+		METH_VARARGS | METH_KEYWORDS,
+		DocStrings::setCallbacks
 	},
 
 	{
 		"getRunningSessions",
 		WeakConnectionCall<PyTVSessionManagementModule, PyTVSessionManagementModule_getRunningSessions>,
 		METH_NOARGS,
-		"get running TV session IDs"
+		DocStrings::getRunningSessions
 	},
 
 	{
 		"terminateTeamViewerSessions",
 		WeakConnectionCall<PyTVSessionManagementModule, PyTVSessionManagementModule_terminateTeamViewerSessions>,
 		METH_NOARGS,
-		"terminate all TV sessions"
-	},
-
-	{
-		"isSupported",
-		WeakConnectionCall<PyTVSessionManagementModule, PyTVSessionManagementModule_isSupported>,
-		METH_NOARGS,
-		"check if the module is supported"
+		DocStrings::terminateTeamViewerSessions
 	},
 
 	{} // Sentinel

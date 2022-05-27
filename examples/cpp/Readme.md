@@ -2,7 +2,7 @@
 
 ## **Building and running the examples**
 
-Follow the `Building and Setup` steps from [the main README file](../README.md):
+Follow the `Building and Setup` steps from [the main README file](../../README.md):
 
 ```bash
 # create and navigate to a build directory
@@ -95,6 +95,7 @@ You are now connected to the IoT Agent. You can initiate actions and react to ev
 ## Step 6: Run the event loop
 
 ```C++
+printf("Monitoring connection status changes... Press Ctrl+C to exit\n");
 while (!s_isInterrupted)
 {
     agentConnection->processEvents();
@@ -141,7 +142,7 @@ Create the Session Management module:
 
 ```C++
 tvagentapi::ITVSessionManagementModule* tvSessionManagementModule =
-    static_cast<tvagentapi::ITVSessionManagementModule*>(agentConnection->getModule(tvagentapi::IModule::Type::TVSessionManagement));
+    tvagentapi::getModule<tvagentapi::ITVSessionManagementModule>(agentConnection);
 ```
 
 It is a good idea to check whether the module was successfully created and is supported:
@@ -237,7 +238,7 @@ Create the Access Control module:
 
 ```C++
 tvagentapi::IAccessControlModule* accessControlModule =
-    static_cast<tvagentapi::IAccessControlModule*>(agentConnection->getModule(tvagentapi::IModule::Type::AccessControl));
+    tvagentapi::getModule<tvagentapi::IAccessControlModule>(agentConnection);
 ```
 
 As usual, it's good to do some sanity checks:
@@ -314,8 +315,7 @@ Create the Instant Support module and set the callbacks:
 
 ```C++
 tvagentapi::IInstantSupportModule* instantSupportModule =
-    static_cast<tvagentapi::IInstantSupportModule*>(agentConnection->getModule(tvagentapi::IModule::Type::InstantSupport));
-
+    tvagentapi::getModule<tvagentapi::IInstantSupportModule>(agentConnection);
 ...
 
 instantSupportModule->setCallbacks({
@@ -347,7 +347,7 @@ void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* 
 }
 ```
 
-- `accessToken` : an alphanumeric string (such as `"12345678-LgxKf0bybuAESdNIelrY"`) uniquely identifying the remote supporter (**not** a TeamViewer ID). You will typically already have this at hand for your application to use. Supporters can refer to **Creating Access Tokens for Instant Support** in [the main README file](../README.md).
+- `accessToken` : an alphanumeric string (such as `"12345678-LgxKf0bybuAESdNIelrY"`) uniquely identifying the remote supporter (**not** a TeamViewer ID). You will typically already have this on hand for your application to use. Supporters can refer to **Creating Access Tokens for Instant Support** in [the main README file](../../README.md).
 - `sessionCode` : a session identifier (such as `"s01-234-567"`) used to join or rejoin an existing instant support session. This is a long-running ID your supporter uses to keep track of your case, until they manually close it. You can think of it as a "service case number". Can be `""` on your first request.
 
 👉 To request a new instant support session, you only need a valid `accessToken`. You will be called back in `instantSupportSessionDataChanged()` with the new `sessionCode`.
@@ -357,3 +357,79 @@ void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* 
 Once you are in an instant support session, the remote supporter may try to connect to you. This will prompt a call to your `instantSupportConnectionRequested()`, where you can allow or deny the incoming connection.
 
 Note: a current limitation of the API is that an application can only make one Instant Support request.
+
+## **Module example #4: Chat**
+
+See source: [Chat/main.cpp](Chat/main.cpp)
+
+TeamViewer users also have the ability to exchange chat messages. To initiate a conversation, users right click an entry in their Computers & Contacts list, and select "Send chat message".
+
+👉 As a security precaution, the IoT Agent cannot initiate conversations, or look up conversations from past runs. You have to wait for an initial message from the outside.
+
+**First things first: wait for an incoming message**
+
+For the sake of demonstration, go ahead and send a friendly message from your TeamViewer desktop client to the machine running your IoT Agent...
+
+![Send message from Windows client](../../doc/windows_client_send_message.png)
+
+If the Chat example app is running, you should see this (assuming the sender's name is indeed Chatty McChatterson):
+
+```
+[IChatModule] Chat created: { chatID: '25666256-4fcf-41c0-9971-7343680d96dc', title: 'Chatty McChatterson', chatEndpointID: 2032226623, chatEndpointType: 'Machine', chatState: 'Open' }
+
+[IChatModule] New message in (currently active) chat ID 25666256-4fcf-41c0-9971-7343680d96dc:
+Chatty McChatterson: Hello there!
+
+Your message: 
+```
+
+Now stop the Chat example app (`Ctrl-C`) and run it again. Send a second message from your desktop client...
+
+```
+[IChatModule] New message in (currently active) chat ID 25666256-4fcf-41c0-9971-7343680d96dc:
+Chatty McChatterson: Hey, where did you go?
+
+Your message: 
+```
+
+Notice how the chat is not created this time: the ID is the same. The conversation is still active on the IoT Agent, and you can start sending replies right away.
+
+👉 Each conversation with a remote party falls under a separate chat room (or simply "chat"). Chats are identified by string UUIDs, e.g. `"25666256-4fcf-41c0-9971-7343680d96dc"`.
+
+The example program aims to be a complete chat application and is therefore quite extensive, but as you are already generally familiar with our SDK API, we'll just look at a few highlights. We create the Chat module and set the callbacks:
+
+```C++
+tvagentapi::IChatModule* chatModule =
+    tvagentapi::getModule<tvagentapi::IChatModule>(agentConnection);
+...
+
+chatModule->setCallbacks({
+    {handleChatCreated, nullptr},
+    {handleChatsRemoved, nullptr},
+    {handleChatClosed, nullptr},
+    {handleNewMessages, nullptr},          // ReceivedMessagesCallback
+    {handleMessageSendFinished, nullptr},  // SendMessageFinishedCallback
+    {handleMessagesLoaded, nullptr},
+    {handleHistoryDeleted, nullptr}
+});
+```
+
+The most relevant is `ReceivedMessagesCallback`: incoming messages are delivered here. As soon as you get the first one, you can chat back:
+
+```C++
+tvagentapi::IChatModule::RequestID requestID =
+    chatModule->sendMessage(chatID.c_str(), message.c_str());
+```
+
+`sendMessage()` returns an immediate numerical ID for your message; if the message is sent successfully, you will be called back asynchronously in `SendMessageFinishedCallback` with the same numerical ID, as well as a permanent string UUID for the message.
+
+👉 Each individual message (both sent and received) is identified by a string UUID.
+
+For completeness, the other Chat API calls are listed below. They interact only with the chat cache on your local IoT Agent: chats saved in the TeamViewer cloud are not affected. Refer to the example app for their usage.
+
+```C++
+obtainChats()    // get a list of available chats
+loadMessages()   // load message history
+deleteHistory()  // delete message history in a given chat
+deleteChat()     // delete a chat altogether
+```

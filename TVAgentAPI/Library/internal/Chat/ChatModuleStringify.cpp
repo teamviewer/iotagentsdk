@@ -21,29 +21,42 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  //
 // SOFTWARE.                                                                      //
 //********************************************************************************//
-#pragma once
+#include <TVAgentAPI/ChatModuleStringify.h>
 
-#include "IAccessControlModule.h"
-#include "IAgentAPI.h"
-#include "IAgentConnection.h"
-#include "IInstantSupportModule.h"
-#include "ITVSessionManagementModule.h"
-#include "IChatModule.h"
+namespace tvagentapi
+{
 
-#include "AccessControlModuleStringify.h"
-#include "AgentConnectionStringify.h"
-#include "ChatModuleStringify.h"
-#include "InstantSupportModuleStringify.h"
-#include "ModuleStringify.h"
+const char* toCString(IChatModule::ChatEndpointType type)
+{
+	using ChatEndpointType = IChatModule::ChatEndpointType;
+	switch (type)
+	{
+		case ChatEndpointType::Machine:                 return "Machine";
+		case ChatEndpointType::InstantSupportSession:   return "InstantSupportSession";
+	}
+	return "";
+}
 
-/**
- * @breif TVGetAgentAPI returns a pointer to a shared IAgentAPI object.
- * Subsequent calls to TVGetAgentAPI will return pointer to the same object
- * @returns IAgentAPI or nullptr if IAgentAPI creation failed
- */
-extern "C" tvagentapi::IAgentAPI* TVGetAgentAPI();
+const char* toCString(IChatModule::ChatState state)
+{
+	using ChatState = IChatModule::ChatState;
+	switch (state)
+	{
+		case ChatState::Open:   return "Open";
+		case ChatState::Closed: return "Closed";
+	}
+	return "";
+}
 
-/**
- * @breif TVDestroyAgentAPI destroys the shared IAgentAPI object.
- */
-extern "C" void TVDestroyAgentAPI();
+const char* toCString(IChatModule::SendMessageResult result)
+{
+	using SendMessageResult = IChatModule::SendMessageResult;
+	switch (result)
+	{
+		case SendMessageResult::Succeeded:  return "Succeeded";
+		case SendMessageResult::Failed:     return "Failed";
+	}
+	return "";
+}
+
+} // namespace tvagentapi

@@ -24,9 +24,11 @@
 #include "Typesystem.h"
 
 #include <TVAgentAPI/IAccessControlModule.h>
+#include <TVAgentAPI/IChatModule.h>
 
 #include "PyAccessControlModule.h"
 #include "PyAgentConnection.h"
+#include "PyChatModule.h"
 #include "PyInstantSupportModule.h"
 #include "PyLogging.h"
 #include "PyModuleType.h"
@@ -47,6 +49,13 @@ template<>
 PyTypeMeta GetPyTypeMeta<PyAccessControlModule>()
 {
 	PyTypeMeta meta{GetPyTypeAccessControlModule(), "AccessControlModule"};
+	return meta;
+}
+
+template<>
+PyTypeMeta GetPyTypeMeta<PyChatModule>()
+{
+	PyTypeMeta meta{GetPyTypeChatModule(), "ChatModule"};
 	return meta;
 }
 
@@ -96,6 +105,27 @@ template<>
 PyTypeMeta GetPyTypeMeta<tvagentapi::IModule::Type>()
 {
 	PyTypeMeta meta{GetPyTypeModule_Type(), "ModuleType"};
+	return meta;
+}
+
+template<>
+PyTypeMeta GetPyTypeMeta<tvagentapi::IChatModule::ChatEndpointType>()
+{
+	PyTypeMeta meta{GetPyTypeChatModule_ChatEndpointType(), "ChatEndpointType"};
+	return meta;
+}
+
+template<>
+PyTypeMeta GetPyTypeMeta<tvagentapi::IChatModule::ChatState>()
+{
+	PyTypeMeta meta{GetPyTypeChatModule_ChatState(), "ChatState"};
+	return meta;
+}
+
+template<>
+PyTypeMeta GetPyTypeMeta<tvagentapi::IChatModule::SendMessageResult>()
+{
+	PyTypeMeta meta{GetPyTypeChatModule_SendMessageResult(), "SendMessageResult"};
 	return meta;
 }
 

@@ -23,14 +23,13 @@
 #********************************************************************************#
 project(TVAgentApi)
 
-cmake_minimum_required(VERSION 3.9)
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(TVAgentApi_INTERFACE
 	export/TVAgentAPI/AccessControlModuleStringify.h
 	export/TVAgentAPI/AgentConnectionStringify.h
 	export/TVAgentAPI/Callback.h
+	export/TVAgentAPI/ChatModuleStringify.h
 	export/TVAgentAPI/IAccessControlModule.h
 	export/TVAgentAPI/IAgentAPI.h
 	export/TVAgentAPI/IAgentConnection.h
@@ -56,6 +55,9 @@ set(TVAgentApi_SOURCES
 	internal/AsyncOperation/IDispatcher.h
 	internal/AsyncOperation/LazyDispatcher.cpp
 	internal/AsyncOperation/LazyDispatcher.h
+	internal/Chat/ChatModule.cpp
+	internal/Chat/ChatModule.h
+	internal/Chat/ChatModuleStringify.cpp
 	internal/Logging/FileLogging.cpp
 	internal/Logging/FileLogging.h
 	internal/Logging/LoggingPrivateAdapter.cpp

@@ -82,16 +82,15 @@ Confirm Access Control request? (y/N): """)
 
 api = tvagentapi.TVAgentAPI()
 connection = api.createAgentConnectionLocal()
+
 access_control_module = connection.getModule(tvagentapi.ModuleType.AccessControl)
+assert access_control_module.isSupported(), "Access Control Module not supported"
 
-assert access_control_module.isSupported(), "AccessControlModule not supported"
+connection.setCallbacks(statusChanged=lambda status: connection_status_changed(status, access_control_module))
 
-connection.setStatusChangedCallback(lambda status: connection_status_changed(status, access_control_module))
-
-access_control_module.setCallbacks({
-    'accessChangedCallback': access_changed,
-    'accessRequestCallback': lambda feature: access_requested(feature, access_control_module)
-})
+access_control_module.setCallbacks(
+    accessChangedCallback=access_changed,
+    accessRequestCallback=lambda feature: access_requested(feature, access_control_module))
 
 print("Connecting to IoT Agent...")
 connection.start()

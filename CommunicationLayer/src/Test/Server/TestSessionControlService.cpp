@@ -124,7 +124,8 @@ std::shared_ptr<TVRemoteScreenSDKCommunication::SessionControlService::ISessionC
 
 		if (comId == TestData::ComId)
 		{
-			response(TVRemoteScreenSDKCommunication::CallState::Ok, std::vector<int32_t>{TestData::RunningTVSessions});
+			std::vector<int32_t> testSessions{TestData::RunningTVSessions};
+			response(TVRemoteScreenSDKCommunication::CallState::Ok, testSessions);
 		}
 		else
 		{

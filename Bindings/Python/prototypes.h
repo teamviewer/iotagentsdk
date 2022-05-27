@@ -28,6 +28,7 @@ namespace tvagentapipy
 
 struct PyAccessControlModule;
 struct PyAgentConnection;
+struct PyChatModule;
 struct PyInstantSupportModule;
 struct PyTVAgentAPI;
 struct PyLogging;

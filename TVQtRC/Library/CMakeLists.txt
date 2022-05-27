@@ -52,6 +52,7 @@ set(TVQTRC_SOURCES
 	internal/Communication/CommunicationAdapter.cpp
 	internal/Communication/CommunicationAdapter.h
 	internal/Communication/ScreenGrabStrategy.h
+	internal/Communication/VirtualDesktop.h
 
 	internal/Grabbing/Screen/AbstractScreenGrabMethod.cpp
 	internal/Grabbing/Screen/AbstractScreenGrabMethod.h

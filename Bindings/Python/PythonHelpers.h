@@ -41,6 +41,18 @@ PyTypeObject* CreateEnumType(
 	const std::string& enumName,
 	const std::map<std::string, long>& enumValues);
 
+template <typename SelfType>
+PyCFunction PyCFunctionCast(PyObject* (*func)(SelfType*, PyObject*))
+{
+	return reinterpret_cast<PyCFunction>(func);
+}
+
+template <typename SelfType>
+PyCFunction PyCFunctionCast(PyObject* (*func)(SelfType*, PyObject*, PyObject*))
+{
+	return reinterpret_cast<PyCFunction>(reinterpret_cast<void*>(func));
+}
+
 // Returns new reference
 PyObject* PyEnumValue(PyTypeObject* pyEnumType, const std::string& enumValueName);
 

@@ -23,27 +23,18 @@
 //********************************************************************************//
 #pragma once
 
-#include "IAccessControlModule.h"
-#include "IAgentAPI.h"
-#include "IAgentConnection.h"
-#include "IInstantSupportModule.h"
-#include "ITVSessionManagementModule.h"
-#include "IChatModule.h"
+#include <TVAgentAPI/IChatModule.h>
 
-#include "AccessControlModuleStringify.h"
-#include "AgentConnectionStringify.h"
-#include "ChatModuleStringify.h"
-#include "InstantSupportModuleStringify.h"
-#include "ModuleStringify.h"
+namespace tvagentapi
+{
 
-/**
- * @breif TVGetAgentAPI returns a pointer to a shared IAgentAPI object.
- * Subsequent calls to TVGetAgentAPI will return pointer to the same object
- * @returns IAgentAPI or nullptr if IAgentAPI creation failed
- */
-extern "C" tvagentapi::IAgentAPI* TVGetAgentAPI();
+/// Get Null-terminated static C-String from enum
+const char* toCString(IChatModule::ChatEndpointType type);
 
-/**
- * @breif TVDestroyAgentAPI destroys the shared IAgentAPI object.
- */
-extern "C" void TVDestroyAgentAPI();
+/// Get Null-terminated static C-String from enum
+const char* toCString(IChatModule::ChatState state);
+
+/// Get Null-terminated static C-String from enum
+const char* toCString(IChatModule::SendMessageResult result);
+
+} // namespace tvagentapi

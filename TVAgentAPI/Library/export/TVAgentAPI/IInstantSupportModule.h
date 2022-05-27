@@ -34,6 +34,9 @@ namespace tvagentapi
 class IInstantSupportModule : public IModule
 {
 public:
+	/// Type value for convenience
+	static constexpr Type TypeValue = Type::InstantSupport;
+
 	/// Instant Support session state
 	enum class SessionState : int32_t
 	{

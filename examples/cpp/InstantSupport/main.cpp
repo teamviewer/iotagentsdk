@@ -243,7 +243,7 @@ int main(int argc, char* argv[])
 	}
 
 	tvagentapi::IInstantSupportModule* instantSupportModule =
-		static_cast<tvagentapi::IInstantSupportModule*>(agentConnection->getModule(tvagentapi::IModule::Type::InstantSupport));
+		tvagentapi::getModule<tvagentapi::IInstantSupportModule>(agentConnection);
 	if (!instantSupportModule)
 	{
 		fputs("Failed to get InstantSupportModule\n", stderr);

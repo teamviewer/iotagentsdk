@@ -13,7 +13,7 @@ Functionality at a glance:
 * request Instant Support
 * set and retrieve access permissions to various IoT Agent features
 
-You can find more details and an API documentation in Interface.h [TVQtRC/Library/export/TVQtRC/Interface.h](./TVQtRC/Library/export/TVQtRC/Interface.h) contained in the package.
+You can find more details and an API documentation in Interface.h [TVQtRC/Library/export/TVQtRC/Interface.h](../../TVQtRC/Library/export/TVQtRC/Interface.h) contained in the package.
 
 #### Make the public API available for the existing Qt application
 
@@ -109,7 +109,7 @@ Note: The SDK also creates its own sockets; after this call, those sockets will 
 
 The provided Qt application is an example implementation for how to use the Agent SDK. You will need to have a running TeamViewer IoT Agent for making use of the sample application. The application provides the Remote Screen App Interface, which is used by the provided plugin (Agent SDK). The customer application uses the Agent SDK to manage the control mode and also the sessions. The TeamViewer IoT Agent forwards this data using the secure TeamViewer network to the TeamViewer client. The TeamViewer client on the supporter's device visualizes the received data in a TeamViewer window and sends the captured input data back to the TeamViewer IoT Agent and consequently to the example application.
 
-![example app screenshot](../doc/remote_screen_sdk_example_app_screenshot.png)
+![example app screenshot](../../doc/remote_screen_sdk_example_app_screenshot.png)
 
 The example application requires as a minimum Qt 5.3 with the Qt Quick 2.3 and Qt Quick Window 2.0 modules to run.
 

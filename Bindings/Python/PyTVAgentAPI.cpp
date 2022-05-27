@@ -97,20 +97,49 @@ PyObject* PyTVAgentAPI_createFileLogging(PyTVAgentAPI* self, PyObject* arg)
 	return reinterpret_cast<PyObject*>(pyLogging);
 }
 
+namespace DocStrings
+{
+
+PyDoc_STRVAR(createFileLogging,
+R"__(createFileLogging($self, logFilePath)
+--
+
+Creates a simple file logging object that creates a file and appends logs to it.
+FileLogging is thread safe and its methods can be safely called from user code.
+
+:param str logFilePath: path to log file location.
+:return file logging object.
+)__");
+
+PyDoc_STRVAR(createAgentConnectionLocal,
+R"__(createAgentConnectionLocal($self, logger)
+--
+
+Creates an instance of a connection to the running TeamViewer IoT Agent instance.
+The returned connection is to be used in subsequent calls to create functionality modules
+(e.g. Instant Support, TV Session Management, Access Control, etc.).
+
+:param logger: would be used internaly for logging; logging ownership remains on caller side and is not transferred to the connection.
+If no logger is passed no logging happens.
+:return agent connection object.
+)__");
+
+} // namespace DocStrings
+
 PyMethodDef PyTVAgentAPI_methods[] =
 {
 	{
 		"createFileLogging",
-		reinterpret_cast<PyCFunction>(PyTVAgentAPI_createFileLogging),
+		PyCFunctionCast(PyTVAgentAPI_createFileLogging),
 		METH_O,
-		"create logging into a file"
+		DocStrings::createFileLogging
 	},
 
 	{
 		"createAgentConnectionLocal",
-		reinterpret_cast<PyCFunction>(PyTVAgentAPI_createAgentConnectionLocal),
+		PyCFunctionCast(PyTVAgentAPI_createAgentConnectionLocal),
 		METH_VARARGS,
-		"create local connection"
+		DocStrings::createAgentConnectionLocal
 	},
 
 	{} // Sentinel

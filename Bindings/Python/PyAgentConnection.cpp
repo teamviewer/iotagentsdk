@@ -30,6 +30,7 @@
 #include "PyAccessControlModule.h"
 #include "PyInstantSupportModule.h"
 #include "PyTVSessionManagementModule.h"
+#include "PyChatModule.h"
 #include "PyLogging.h"
 #include "PyTVAgentAPI.h"
 #include "PythonHelpers.h"
@@ -123,6 +124,9 @@ PyObject* PyAgentConnection_getModule(PyAgentConnection* self, PyObject* arg)
 				case tvagentapi::IModule::Type::TVSessionManagement:
 					return reinterpret_cast<PyObject*>(
 						MakeWrapperObject<PyTVSessionManagementModule>(self));
+				case tvagentapi::IModule::Type::Chat:
+					return reinterpret_cast<PyObject*>(
+						MakeWrapperObject<PyChatModule>(self));
 			}
 			PyErr_BadInternalCall();
 			return nullptr;
@@ -133,26 +137,36 @@ PyObject* PyAgentConnection_getModule(PyAgentConnection* self, PyObject* arg)
 	return pyModule;
 }
 
-PyObject* PyAgentConnection_setStatusChangedCallback(PyAgentConnection* self, PyObject* args)
+PyObject* PyAgentConnection_setCallbacks(
+	PyAgentConnection* self,
+	PyObject* args,
+	PyObject* kwargs)
 {
-	PyObject* arg = Py_None;
-	// parse optional argument (if not present, 'arg' won't be initialized)
-	if (!PyArg_ParseTuple(args, "|O", &arg))
+	PyObject* statusChangedArg = Py_None;
+
+	char statusChangedArgName[] = "statusChanged";
+	char* kwargList[] = {statusChangedArgName, {}};
+	if (!PyArg_ParseTupleAndKeywords(
+		args,
+		kwargs,
+		"|O:setCallbacks",
+		kwargList,
+		&statusChangedArg))
 	{
 		return nullptr;
 	}
 
-	PyObject* callable = arg == Py_None ? nullptr : arg;
+	statusChangedArg = statusChangedArg == Py_None ? nullptr : statusChangedArg;
 
-	if (callable && !PyCallable_Check(callable))
+	if (statusChangedArg && !PyCallable_Check(statusChangedArg))
 	{
-		PyErr_Format(PyExc_TypeError, "%R is not callable", callable);
+		PyErr_Format(PyExc_TypeError, "%R is not callable", statusChangedArg);
 		return nullptr;
 	}
 
-	Py_XINCREF(callable);
+	Py_XINCREF(statusChangedArg);
 	Py_XDECREF(self->m_pyStatusChangedCallback);
-	self->m_pyStatusChangedCallback = callable;
+	self->m_pyStatusChangedCallback = statusChangedArg;
 
 	auto statusChangedCallback = [](
 		tvagentapi::IAgentConnection::Status status,
@@ -172,9 +186,9 @@ PyObject* PyAgentConnection_setStatusChangedCallback(PyAgentConnection* self, Py
 		Py_DECREF(enumVal);
 	};
 
-	if (callable)
+	if (statusChangedArg)
 	{
-		self->m_connection->setStatusChangedCallback({statusChangedCallback, callable});
+		self->m_connection->setStatusChangedCallback({statusChangedCallback, statusChangedArg});
 	}
 	else
 	{
@@ -184,37 +198,93 @@ PyObject* PyAgentConnection_setStatusChangedCallback(PyAgentConnection* self, Py
 	Py_RETURN_NONE;
 }
 
+namespace DocStrings
+{
+
+PyDoc_STRVAR(start,
+R"__(start($self)
+--
+
+Tries to establish a connection to a running TeamViewer IoT Agent and maintains it until stop() is called.
+The connection is re-established automatically if it was lost.
+To be notified about the connectivity, set the statusChanged callback.
+)__");
+
+PyDoc_STRVAR(stop,
+R"__(stop($self)
+--
+
+Shuts down all communication with the TeamViewer IoT Agent and changes state afterwards to Disconnected.
+)__");
+
+PyDoc_STRVAR(processEvents,
+R"__(processEvents($self, waitForMoreEvents, timeoutMs)
+--
+
+Is responsible for executing all actions/events/etc. (or simply: "events") that are pending in the order they are issued:
+- triggers user's callbacks
+- updates internal states
+- notifies modules
+- handles modules' requests
+The method can optionally wait for more events if no events are queued.
+
+:param bool waitForMoreEvents: if true and no queued events, wait for events to be queued, otherwise process the queued events immediately.
+:param int timeoutMs: wait timeout in milliseconds. If zero, wait indefinitely.
+)__");
+
+PyDoc_STRVAR(getModule,
+R"__(getModule($self, type)
+--
+
+Returns an abstract module if possible for the given type.
+
+:param tvagentapi.Module.Type type: what type of module to create.
+:return module object.
+)__");
+
+PyDoc_STRVAR(setCallbacks,
+R"__(setCallbacks($self, statusChanged=None)
+--
+
+Sets callback to handle changes in connection status.
+
+:param statusChanged: called when the connection status changes
+:type statusChanged: callback(tvagentapi.AgentConnection.Status status)
+)__");
+
+} // namespace DocStrings
+
 PyMethodDef PyAgentConnection_methods[] =
 {
 	{
 		"start",
-		reinterpret_cast<PyCFunction>(PyAgentConnection_start),
+		PyCFunctionCast(PyAgentConnection_start),
 		METH_NOARGS,
-		"start connection"
+		DocStrings::start
 	},
 	{
 		"stop",
-		reinterpret_cast<PyCFunction>(PyAgentConnection_stop),
+		PyCFunctionCast(PyAgentConnection_stop),
 		METH_NOARGS,
-		"stop connection"
+		DocStrings::stop
 	},
 	{
 		"processEvents",
-		reinterpret_cast<PyCFunction>(PyAgentConnection_processEvents),
+		PyCFunctionCast(PyAgentConnection_processEvents),
 		METH_VARARGS | METH_KEYWORDS,
-		"process events"
+		DocStrings::processEvents
 	},
 	{
 		"getModule",
-		reinterpret_cast<PyCFunction>(PyAgentConnection_getModule),
+		PyCFunctionCast(PyAgentConnection_getModule),
 		METH_O,
-		"get module for type"
+		DocStrings::getModule
 	},
 	{
-		"setStatusChangedCallback",
-		reinterpret_cast<PyCFunction>(PyAgentConnection_setStatusChangedCallback),
-		METH_VARARGS,
-		"set status changed callback"
+		"setCallbacks",
+		PyCFunctionCast(PyAgentConnection_setCallbacks),
+		METH_VARARGS | METH_KEYWORDS,
+		DocStrings::setCallbacks
 	},
 
 	{} // Sentinel

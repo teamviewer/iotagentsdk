@@ -72,15 +72,11 @@ def test_file_transfer_access_request(action: str):
 
     access_control_module = connection.getModule(tvagentapi.ModuleType.AccessControl)
 
-    connection.setStatusChangedCallback(
-        lambda status: connection_status_changed(access_control_module, status))
+    connection.setCallbacks(statusChanged=lambda status: connection_status_changed(access_control_module, status))
 
-    access_control_module.setCallbacks({
-        'accessChangedCallback': lambda feature, access:
-        access_changed(access_control_module, feature, access),
-        'accessRequestCallback': lambda feature:
-        access_request(access_control_module, feature),
-    })
+    access_control_module.setCallbacks(
+        accessChangedCallback=lambda feature, access: access_changed(access_control_module, feature, access),
+        accessRequestCallback=lambda feature: access_request(access_control_module, feature))
 
     assert access_control_module.isSupported()
 

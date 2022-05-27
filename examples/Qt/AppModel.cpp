@@ -618,11 +618,14 @@ void AppModel::denyFileTransferRequest()
 
 void AppModel::accessConfirmationReplySlot(AccessControl feature, bool confirmed)
 {
-	tvqtsdk::AccessControl accessControl;
-
-	if (toPluginAccessControlValue(feature, accessControl))
+	if (m_plugin)
 	{
-		m_plugin->accessConfirmationReply(accessControl, confirmed);
+		tvqtsdk::AccessControl accessControl;
+
+		if (toPluginAccessControlValue(feature, accessControl))
+		{
+			m_plugin->accessConfirmationReply(accessControl, confirmed);
+		}
 	}
 }
 
@@ -677,7 +680,7 @@ void AppModel::receivedMessages(QVector<tvqtsdk::ReceivedMessage> messages)
 
 void AppModel::messageSent(uint32_t localId, QUuid messageId, QDateTime timeStamp)
 {
-	qInfo() << "[info] AppModel registerMessageSentHandler:"
+	qInfo() << "[info] AppModel messageSent:"
 		<< "localId" << localId
 		<< "messageId" << messageId.toString()
 		<< "timeStamp" << timeStamp.toString();
@@ -685,7 +688,7 @@ void AppModel::messageSent(uint32_t localId, QUuid messageId, QDateTime timeStam
 
 void AppModel::messageNotSent(uint32_t localId)
 {
-	qInfo() << "[info] AppModel registerMessageNotSentHandler: localId = " << localId;
+	qInfo() << "[info] AppModel messageNotSent: localId = " << localId;
 }
 
 void AppModel::loadedMessages(QVector<tvqtsdk::ReceivedMessage> messages, bool hasMore)

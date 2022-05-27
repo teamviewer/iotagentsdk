@@ -26,6 +26,6 @@ project(example_SessionManagement)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_executable(${PROJECT_NAME} main.cpp)
-set_property(TARGET ${PROJECT_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/examples)
+set_property(TARGET ${PROJECT_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${examples_cpp_BINARY_DIR})
 
 target_link_libraries(${PROJECT_NAME} TVAgentApi)

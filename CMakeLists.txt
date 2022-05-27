@@ -23,11 +23,29 @@
 #********************************************************************************#
 cmake_minimum_required(VERSION 3.3)
 
-project(TVAgentSDK)
+if("${TVAgentSDK_VERSION}" STREQUAL "")
+	set(TV_VERSION_FILE "${CMAKE_CURRENT_LIST_DIR}/VERSION.txt")
+	if(EXISTS ${TV_VERSION_FILE})
+		file(STRINGS ${TV_VERSION_FILE} TVAgentSDK_VERSION LIMIT_COUNT 1)
+		if("${TVAgentSDK_VERSION}" STREQUAL "")
+			message(FATAL_ERROR "Reading version file \"${TV_VERSION_FILE}\" resulted in an empty string.")
+		endif()
+	else()
+		set(TVAgentSDK_VERSION "99999.0.0")
+	endif()
+endif()
+
+project(TVAgentSDK VERSION ${TVAgentSDK_VERSION})
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_STANDARD 14)
+
 add_compile_options(-Wall -Wextra -Wpedantic)
+
+option(ENABLE_WARNINGS_AS_ERRORS "Treat all warnings during compilation as errors" OFF)
+if (ENABLE_WARNINGS_AS_ERRORS)
+	add_compile_options(-Werror)
+endif()
 
 add_subdirectory(CommunicationLayer/src)
 
@@ -39,15 +57,6 @@ set(TV_NAMESPACE ${TV_PACKAGE_NAME})
 
 set(TV_PACKAGE_NAME_LEGACY TVRemoteScreenSDK)
 set(TV_NAMESPACE_LEGACY ${TV_PACKAGE_NAME_LEGACY})
-
-if(NOT (DEFINED ${TV_PACKAGE_NAME}_VERSION))
-	set(TV_VERSION_FILE "${CMAKE_SOURCE_DIR}/../VERSION.txt")
-	if(EXISTS ${TV_VERSION_FILE})
-		file(STRINGS ${TV_VERSION_FILE} ${TV_PACKAGE_NAME}_VERSION LIMIT_COUNT 1 REGEX "[1-9][0-9]*\.[0-9]+\.[0-9]+")
-	else()
-		set(${TV_PACKAGE_NAME}_VERSION 1.0.0)
-	endif()
-endif()
 
 include(CMakePackageConfigHelpers)
 
@@ -93,16 +102,16 @@ add_subdirectory(TVAgentAPIPrivate)
 
 if(ENABLE_QT_PLUGIN)
 	add_subdirectory(TVQtRC)
-	add_subdirectory(app)
+	add_subdirectory(examples/Qt)
 endif()
 
-add_subdirectory(examples)
+add_subdirectory(examples/cpp)
 
 if(ENABLE_PYTHON_MODULE)
 	add_subdirectory(Bindings/Python)
 endif()
 
-tv_configure_package(${TV_PACKAGE_NAME} ${${TV_PACKAGE_NAME}_VERSION} ${TV_NAMESPACE} SameMajorVersion)
+tv_configure_package(${TV_PACKAGE_NAME} "${${TV_PACKAGE_NAME}_VERSION}" ${TV_NAMESPACE} SameMajorVersion)
 if(ENABLE_QT_PLUGIN)
 	tv_configure_package(${TV_PACKAGE_NAME_LEGACY} ${${TV_PACKAGE_NAME}_VERSION} ${TV_NAMESPACE_LEGACY} AnyNewerVersion)
 endif()

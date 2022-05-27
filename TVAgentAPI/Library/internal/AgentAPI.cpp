@@ -25,6 +25,7 @@
 #include "AccessControl/AccessControlModule.h"
 #include "AgentConnection/AgentConnection.h"
 #include "AgentConnection/AgentConnectionProxy.h"
+#include "Chat/ChatModule.h"
 #include "InstantSupport/InstantSupportModule.h"
 #include "TVSessionManagement/TVSessionManagementModule.h"
 

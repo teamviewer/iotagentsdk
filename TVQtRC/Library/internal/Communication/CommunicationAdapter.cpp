@@ -124,8 +124,8 @@ TVRemoteScreenSDKCommunication::SessionControlService::ControlMode getSdkCommuni
 {
 	switch (mode)
 	{
-		case ControlMode::Disabled:	return TVRemoteScreenSDKCommunication::SessionControlService::ControlMode::Disable;
-		case ControlMode::ViewOnly:	return TVRemoteScreenSDKCommunication::SessionControlService::ControlMode::ScreenSharing;
+		case ControlMode::Disabled: return TVRemoteScreenSDKCommunication::SessionControlService::ControlMode::Disable;
+		case ControlMode::ViewOnly: return TVRemoteScreenSDKCommunication::SessionControlService::ControlMode::ScreenSharing;
 		case ControlMode::FullControl: return TVRemoteScreenSDKCommunication::SessionControlService::ControlMode::FullControl;
 	}
 
@@ -138,17 +138,15 @@ bool getSdkCommunicationAccessControl(AccessControl feature, TVRemoteScreenSDKCo
 	{
 		case AccessControl::FileTransfer:
 			accessControl = TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::FileTransfer;
-			break;
+			return true;
 		case AccessControl::AllowPartnerViewDesktop:
 			accessControl = TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::AllowPartnerViewDesktop;
-			break;
+			return true;
 		case AccessControl::RemoteControl:
 			accessControl = TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::RemoteControl;
-			break;
-		default:
-			return false;
+			return true;
 	}
-	return true;
+	return false;
 }
 
 bool getSdkCommunicationAccess(Access access, TVRemoteScreenSDKCommunication::AccessControlService::Access& sdkCommunicationAccess)
@@ -157,17 +155,15 @@ bool getSdkCommunicationAccess(Access access, TVRemoteScreenSDKCommunication::Ac
 	{
 		case Access::Allowed:
 			sdkCommunicationAccess = TVRemoteScreenSDKCommunication::AccessControlService::Access::Allowed;
-			break;
+			return true;
 		case Access::AfterConfirmation:
 			sdkCommunicationAccess = TVRemoteScreenSDKCommunication::AccessControlService::Access::AfterConfirmation;
-			break;
+			return true;
 		case Access::Denied:
 			sdkCommunicationAccess = TVRemoteScreenSDKCommunication::AccessControlService::Access::Denied;
-			break;
-		default:
-			return false;
+			return true;
 	}
-	return true;
+	return false;
 }
 
 bool getSdkConnectionUserConfirmation(
@@ -178,17 +174,15 @@ bool getSdkConnectionUserConfirmation(
 	{
 		case ConnectionUserConfirmation::Accepted:
 			sdkConfirmation = TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionUserConfirmation::Accepted;
-			break;
+			return true;
 		case ConnectionUserConfirmation::Denied:
 			sdkConfirmation = TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionUserConfirmation::Denied;
-			break;
+			return true;
 		case ConnectionUserConfirmation::NoResponse:
 			sdkConfirmation = TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionUserConfirmation::NoResponse;
-			break;
-		default:
-			return false;
+			return true;
 	}
-	return true;
+	return false;
 }
 
 bool getSdkCommunicationConnectionType(
@@ -199,12 +193,12 @@ bool getSdkCommunicationConnectionType(
 	{
 		case ConnectionType::InstantSupport:
 			connectionTypeSdk = TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionType::InstantSupport;
-			break;
+			return true;
 		case ConnectionType::Undefined:
-		default:
-			return false;
+			connectionTypeSdk = TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionType::Undefined;
+			return true;
 	}
-	return true;
+	return false;
 }
 
 bool ConvertFromInternalViewGeometrySendResult(
@@ -215,20 +209,18 @@ bool ConvertFromInternalViewGeometrySendResult(
 	{
 		case tvagentapi::ViewGeometrySendResult::Ok:
 			result = ViewGeometrySendResult::Ok;
-			break;
+			return true;
 		case tvagentapi::ViewGeometrySendResult::NoService:
 			result = ViewGeometrySendResult::NoService;
-			break;
+			return true;
 		case tvagentapi::ViewGeometrySendResult::CallError:
 			result = ViewGeometrySendResult::CallError;
-			break;
+			return true;
 		case tvagentapi::ViewGeometrySendResult::Rejected:
 			result = ViewGeometrySendResult::Rejected;
-			break;
-		default:
-			return false;
+			return true;
 	}
-	return true;	
+	return false;
 }
 
 bool ConvertFromInternalBaseUrlParseResultCode(
@@ -239,17 +231,15 @@ bool ConvertFromInternalBaseUrlParseResultCode(
 	{
 		case tvagentapi::BaseUrlParseResultCode::Success:
 			result = BaseUrlParseResultCode::Success;
-			break;
+			return true;
 		case tvagentapi::BaseUrlParseResultCode::CharacterLimitForPathExceeded:
 			result = BaseUrlParseResultCode::CharacterLimitForPathExceeded;
-			break;
+			return true;
 		case tvagentapi::BaseUrlParseResultCode::SchemaNotValid:
 			result = BaseUrlParseResultCode::SchemaNotValid;
-			break;
-		default:
-			return false;
+			return true;
 	}
-	return true;	
+	return false;
 }
 
 bool ConvertFromSdkChatType(TVRemoteScreenSDKCommunication::ChatService::ChatType sdkChatType, ChatType& chatType)
@@ -258,14 +248,12 @@ bool ConvertFromSdkChatType(TVRemoteScreenSDKCommunication::ChatService::ChatTyp
 	{
 		case TVRemoteScreenSDKCommunication::ChatService::ChatType::Machine:
 			chatType = ChatType::Machine;
-			break;
+			return true;
 		case TVRemoteScreenSDKCommunication::ChatService::ChatType::Session:
 			chatType = ChatType::Session;
-			break;
-		default:
-			return false;
+			return true;
 	}
-	return true;
+	return false;
 }
 
 bool ConvertFromSdkChatState(TVRemoteScreenSDKCommunication::ChatService::ChatState sdkChatState, ChatState& chatState)
@@ -274,14 +262,12 @@ bool ConvertFromSdkChatState(TVRemoteScreenSDKCommunication::ChatService::ChatSt
 	{
 		case TVRemoteScreenSDKCommunication::ChatService::ChatState::Open:
 			chatState = ChatState::Open;
-			break;
+			return true;
 		case TVRemoteScreenSDKCommunication::ChatService::ChatState::Closed:
 			chatState = ChatState::Closed;
-			break;
-		default:
-			return false;
+			return true;
 	}
-	return true;
+	return false;
 }
 
 void getSdkObtainChatsResult(const std::vector<TVRemoteScreenSDKCommunication::ChatService::ChatInfo>& chats, QVector<ChatInfo>& sdkChats)
@@ -330,17 +316,15 @@ bool getQtSdkAccess(TVRemoteScreenSDKCommunication::AccessControlService::Access
 	{
 		case TVRemoteScreenSDKCommunication::AccessControlService::Access::Allowed:
 			sdkAccessMode = Access::Allowed;
-			break;
+			return true;
 		case TVRemoteScreenSDKCommunication::AccessControlService::Access::AfterConfirmation:
 			sdkAccessMode = Access::AfterConfirmation;
-			break;
+			return true;
 		case TVRemoteScreenSDKCommunication::AccessControlService::Access::Denied:
 			sdkAccessMode = Access::Denied;
-			break;
-		default:
-			return false;
+			return true;
 	}
-	return true;
+	return false;
 }
 
 bool getQtSdkAccessControl(TVRemoteScreenSDKCommunication::AccessControlService::AccessControl feature, AccessControl& sdkFeature)
@@ -349,40 +333,31 @@ bool getQtSdkAccessControl(TVRemoteScreenSDKCommunication::AccessControlService:
 	{
 		case TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::FileTransfer:
 			sdkFeature = AccessControl::FileTransfer;
-			break;
+			return true;
 		case TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::AllowPartnerViewDesktop:
 			sdkFeature = AccessControl::AllowPartnerViewDesktop;
-			break;
+			return true;
 		case TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::RemoteControl:
 			sdkFeature = AccessControl::RemoteControl;
-			break;
-		default:
-			return false;
+			return true;
 	}
-	return true;
+	return false;
 }
 
 MouseButton getQtSdkMouseButton(const TVRemoteScreenSDKCommunication::InputService::MouseButton button)
 {
-	MouseButton mouseButton = MouseButton::Unknown;
-
 	switch (button)
 	{
-	case TVRemoteScreenSDKCommunication::InputService::MouseButton::Left:
-		mouseButton = MouseButton::Left;
-		break;
-	case TVRemoteScreenSDKCommunication::InputService::MouseButton::Middle:
-		mouseButton = MouseButton::Middle;
-		break;
-	case TVRemoteScreenSDKCommunication::InputService::MouseButton::Right:
-		mouseButton = MouseButton::Right;
-		break;
-	case TVRemoteScreenSDKCommunication::InputService::MouseButton::Unknown:
-		mouseButton = MouseButton::Unknown;
-		break;
+		case TVRemoteScreenSDKCommunication::InputService::MouseButton::Left:
+			return MouseButton::Left;
+		case TVRemoteScreenSDKCommunication::InputService::MouseButton::Middle:
+			return MouseButton::Middle;
+		case TVRemoteScreenSDKCommunication::InputService::MouseButton::Right:
+			return MouseButton::Right;
+		case TVRemoteScreenSDKCommunication::InputService::MouseButton::Unknown:
+			return MouseButton::Unknown;
 	}
-
-	return mouseButton;
+	return MouseButton::Unknown;
 }
 
 InstantSupportError getQtSdkInstantSupportError(const TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError errorToConvert)
@@ -406,29 +381,28 @@ InstantSupportError getQtSdkInstantSupportError(const TVRemoteScreenSDKCommunica
 	return InstantSupportError::InternalError;
 }
 
-InstantSupportData getQtSdkInstantSupportData(const TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportData& data)
+InstantSupportState getQtSdkInstantSupportState(TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportState instantSupportState)
 {
-	InstantSupportData modifiedData;
-
-	modifiedData.sessionCode = data.sessionCode;
-	modifiedData.name = data.name;
-	modifiedData.description = data.description;
-
-	switch (data.state)
+	switch (instantSupportState)
 	{
 		case TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportState::Open:
-			modifiedData.state = InstantSupportState::Open;
-			break;
+			return InstantSupportState::Open;
 		case TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportState::Closed:
-			modifiedData.state = InstantSupportState::Closed;
-			break;
+			return InstantSupportState::Closed;
 		case TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportState::Undefined:
-		default:
-			modifiedData.state = InstantSupportState::Undefined;
-			break;
+			return InstantSupportState::Undefined;
 	}
+	return InstantSupportState::Undefined;
+}
 
-	return modifiedData;
+InstantSupportData getQtSdkInstantSupportData(const TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportData& data)
+{
+	return {
+		data.sessionCode,
+		data.name,
+		data.description,
+		getQtSdkInstantSupportState(data.state)
+	};
 }
 
 std::string QUuidToString(const QUuid& quuid)
@@ -800,8 +774,11 @@ BaseUrlParseResultCode CommunicationAdapter::setRemoteScreenSdkBaseUrlChecked(QU
 		remoteScreenSdkBaseUrl.toString().toStdString());
 
 	BaseUrlParseResultCode result;
-	ConvertFromInternalBaseUrlParseResultCode(resultInternal, result);
-
+	if (!ConvertFromInternalBaseUrlParseResultCode(resultInternal, result))
+	{
+		m_logging->logError("[CommunicationAdapter] BaseUrlParseResultCode conversion falied");
+		return BaseUrlParseResultCode::SchemaNotValid;
+	}
 	return result;
 }
 
@@ -985,9 +962,12 @@ ViewGeometrySendResult CommunicationAdapter::sendVirtualDesktopGeometry(
 	tvagentapi::ViewGeometrySendResult resultInternal = m_communicationChannel->sendVirtualDesktopGeometry(geometry);
 
 	ViewGeometrySendResult result;
-	ConvertFromInternalViewGeometrySendResult(resultInternal, result);
-
-	return result;	
+	if (!ConvertFromInternalViewGeometrySendResult(resultInternal, result))
+	{
+		m_logging->logError("[CommunicationAdapter] sendVirtualDesktopGeometry(): ViewGeometrySendResult conversion falied");
+		return ViewGeometrySendResult::CallError;
+	}
+	return result;
 }
 
 ViewGeometrySendResult CommunicationAdapter::sendAreaOfInterest(const QRect& areaOfInterest) const
@@ -998,9 +978,14 @@ ViewGeometrySendResult CommunicationAdapter::sendAreaOfInterest(const QRect& are
 	tvagentapi::ViewGeometrySendResult resultInternal = m_communicationChannel->sendAreaOfInterest(rect);
 
 	ViewGeometrySendResult result;
-	ConvertFromInternalViewGeometrySendResult(resultInternal, result);
+	if (!ConvertFromInternalViewGeometrySendResult(resultInternal, result))
+	{
+		m_logging->logError("[CommunicationAdapter] sendAreaOfInterest(): ViewGeometrySendResult conversion falied");
+		return ViewGeometrySendResult::CallError;
+	}
 
-	return result;	
+	return result;
+
 }
 
 bool CommunicationAdapter::sendObtainChatsRequest(QVector<ChatInfo>& chats)

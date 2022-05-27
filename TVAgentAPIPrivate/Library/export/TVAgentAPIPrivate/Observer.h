@@ -84,7 +84,7 @@ class Observer final
 public:
 	Observer() : m_observerControl(std::make_shared<ObserverControl>())
 	{
-	};
+	}
 
 	template <typename F>
 #if __cplusplus >= 201703L // >= C++17
@@ -92,16 +92,19 @@ public:
 #endif
 	ObserverConnection registerCallback(F&& cb)
 	{
-		std::lock_guard<std::mutex> lk(m_observerControl->accessMtx);
-		m_observerControl->callbacks.emplace_back(std::forward<F>(cb));
+		typename std::list<std::function<Func>>::iterator it;
+		{
+			std::lock_guard<std::recursive_mutex> lk(m_observerControl->accessMtx);
+			it = m_observerControl->callbacks.emplace(m_observerControl->callbacks.end(), std::forward<F>(cb));
+		}
 
 		return ObserverConnection
 		{
-			[oC = std::weak_ptr<ObserverControl>(m_observerControl), it = --m_observerControl->callbacks.end()]()
+			[oC = std::weak_ptr<ObserverControl>(m_observerControl), it]()
 			{
 				if (const auto obsCtrl = oC.lock())
 				{
-					std::lock_guard<std::mutex> lock(obsCtrl->accessMtx);
+					std::lock_guard<std::recursive_mutex> lock(obsCtrl->accessMtx);
 					obsCtrl->callbacks.erase(it);
 				}
 			}
@@ -111,7 +114,7 @@ public:
 	template<typename... Args>
 	void notifyAll(Args&&... arg)
 	{
-		std::lock_guard<std::mutex> lk(m_observerControl->accessMtx);
+		std::lock_guard<std::recursive_mutex> lk(m_observerControl->accessMtx);
 		for (const auto& cb : m_observerControl->callbacks)
 		{
 			cb(arg...);
@@ -122,7 +125,7 @@ private:
 	struct ObserverControl
 	{
 		std::list<std::function<Func>> callbacks;
-		std::mutex accessMtx;
+		std::recursive_mutex accessMtx;
 	};
 
 	std::shared_ptr<ObserverControl> m_observerControl;

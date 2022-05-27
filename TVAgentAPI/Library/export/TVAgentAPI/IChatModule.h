@@ -41,6 +41,12 @@ namespace tvagentapi
 class IChatModule : public IModule
 {
 public:
+	// NOTE:
+	// - All const char* can be considered not null and valid during the respective call (function call and callback)
+	// - Chat IDs and message IDs are stringified UUIDs (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx where 'x' is a hex digit).
+
+	/// Type value for convenience
+	static constexpr Type TypeValue = Type::Chat;
 
 	using RequestID = uint32_t; // internal request identifier to match requests and results
 	using TimeStamp = uint64_t; // number of milliseconds since epoch
@@ -68,7 +74,7 @@ public:
 	/// SendMessageResult describes the various results of a request to send a chat message.
 	enum class SendMessageResult : int32_t
 	{
-		Success = 0,
+		Succeeded = 0,
 		Failed = 1,
 	};
 
@@ -179,18 +185,18 @@ public:
 	 * The returned request ID is referred to in the sendMessageFinished callback.
 	 * @param chatID identifier of the chat the message should be sent to
 	 * @param content represents the message text to be sent
-	 * @return valid (not InvalidRequestID) request ID on success, InvalidRequestID otherwise
+	 * @return valid request ID on success, InvalidRequestID otherwise
 	 */
 	virtual RequestID sendMessage(const char* chatID, const char* content) = 0;
 
 	/**
-	 * @brief LoadMessages requests to load messages from history for the currently selected chat
+	 * @brief loadMessages requests to load messages from history for the currently selected chat
 	 * @param ChatID identifier of the chat messages should be loaded from
 	 * @param messageCount maximum number of messages to load
-	 * @param messagesBefore load messages older than (but not including) message with given message ID
+	 * @param messageBefore load messages older than (but not including) message with given message ID
 	 * @return true if this function call is successful, false otherwise
 	 */
-	virtual bool loadMessages(const char* chatID, size_t messageCount, const char* messagesBefore = nullptr) = 0;
+	virtual bool loadMessages(const char* chatID, size_t messageCount, const char* messageBefore = nullptr) = 0;
 
 	/**
 	 * @brief deleteHistory requests to delete the selected chat history

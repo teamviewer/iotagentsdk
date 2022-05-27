@@ -21,11 +21,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  #
 # SOFTWARE.                                                                      #
 #********************************************************************************#
-project(example_AgentConnection)
+project(example_Chat)
+
+find_package(Threads REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_executable(${PROJECT_NAME} main.cpp)
-set_property(TARGET ${PROJECT_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/examples)
+set_property(TARGET ${PROJECT_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${examples_cpp_BINARY_DIR})
 
-target_link_libraries(${PROJECT_NAME} TVAgentApi)
+target_link_libraries(${PROJECT_NAME} PUBLIC TVAgentApi Threads::Threads)

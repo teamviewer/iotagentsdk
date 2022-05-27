@@ -94,4 +94,15 @@ public:
 	virtual IModule* getModule(IModule::Type moduleType) = 0;
 };
 
+/**
+ * @brief getModule provides a convenient way to return a pointer to a specific kind of module type from the given connection.
+ * @param conn pointer to an IAgentConnection's implementation.
+ * @return pointer to the module if available, nullptr otherwise
+ */
+template<class ModuleT>
+ModuleT* getModule(IAgentConnection* conn)
+{
+	return conn ? static_cast<ModuleT*>(conn->getModule(ModuleT::TypeValue)) : nullptr;
+}
+
 } // namespace tvagentapi

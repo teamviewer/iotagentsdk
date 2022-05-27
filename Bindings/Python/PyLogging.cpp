@@ -58,20 +58,43 @@ PyObject* PyLogging_logError(PyLogging* self, PyObject* arg)
 	Py_RETURN_NONE;
 }
 
+namespace DocStrings
+{
+
+PyDoc_STRVAR(logInfo,
+R"__(logInfo($self, info)
+--
+
+Log an information message.
+
+:param str info: information message
+)__");
+
+PyDoc_STRVAR(logError,
+R"__(logError($self, error)
+--
+
+Log an error message.
+
+:param str info: error message
+)__");
+
+} // namespace DocStrings
+
 PyMethodDef PyLogging_methods[] =
 {
 	{
 		"logInfo",
-		reinterpret_cast<PyCFunction>(PyLogging_logInfo),
+		PyCFunctionCast(PyLogging_logInfo),
 		METH_O,
-		"log info message"
+		DocStrings::logInfo
 	},
 
 	{
 		"logError",
-		reinterpret_cast<PyCFunction>(PyLogging_logError),
+		PyCFunctionCast(PyLogging_logError),
 		METH_O,
-		"log error message"
+		DocStrings::logError
 	},
 
 	{} // Sentinel

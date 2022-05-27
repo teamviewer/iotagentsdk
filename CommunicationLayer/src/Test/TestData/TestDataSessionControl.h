@@ -35,7 +35,7 @@ constexpr const char* Socket = "unix:///tmp/sessionControl";
 constexpr const char* ComId = "token";
 constexpr const char* Reason = "reason";
 constexpr TVRemoteScreenSDKCommunication::SessionControlService::ControlMode Mode = TVRemoteScreenSDKCommunication::SessionControlService::ControlMode::Disable;
-constexpr auto RunningTVSessions = {3, 0, -80000, 42, 2093};
+constexpr std::initializer_list<int> RunningTVSessions = {3, 0, -80000, 42, 2093};
 
 } // namespace TestData
 } // namespace TestSessionControlService

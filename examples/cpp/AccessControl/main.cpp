@@ -275,7 +275,7 @@ int main(int argc, char* argv[])
 	}
 
 	tvagentapi::IAccessControlModule* accessControlModule =
-		static_cast<tvagentapi::IAccessControlModule*>(agentConnection->getModule(tvagentapi::IModule::Type::AccessControl));
+		tvagentapi::getModule<tvagentapi::IAccessControlModule>(agentConnection);
 	if (!accessControlModule)
 	{
 		fputs("Failed to get AccessControlModule\n", stderr);

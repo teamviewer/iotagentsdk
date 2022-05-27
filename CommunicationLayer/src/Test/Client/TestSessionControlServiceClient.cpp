@@ -79,7 +79,7 @@ int TestSessionControlServiceClient(int /*argc*/, char** /*argv*/)
 	ISessionControlServiceClient::TVSessionsResult tvsessionsResponse
 		= client->GetRunningTVSessions(TestData::ComId);
 
-	std::vector<int32_t> testSessions = TestData::RunningTVSessions;
+	std::vector<int32_t> testSessions{TestData::RunningTVSessions};
 	if (tvsessionsResponse.IsOk() && tvsessionsResponse.tvSessionIDs == testSessions)
 	{
 		std::cout << LogPrefix << "GetRunningTVSessions successful" << std::endl;

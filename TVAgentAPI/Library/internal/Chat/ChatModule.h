@@ -23,27 +23,43 @@
 //********************************************************************************//
 #pragma once
 
-#include "IAccessControlModule.h"
-#include "IAgentAPI.h"
-#include "IAgentConnection.h"
-#include "IInstantSupportModule.h"
-#include "ITVSessionManagementModule.h"
-#include "IChatModule.h"
+#include "TVAgentAPI/IChatModule.h"
+#include <TVAgentAPIPrivate/Observer.h>
 
-#include "AccessControlModuleStringify.h"
-#include "AgentConnectionStringify.h"
-#include "ChatModuleStringify.h"
-#include "InstantSupportModuleStringify.h"
-#include "ModuleStringify.h"
+#include <memory>
+#include <vector>
 
-/**
- * @breif TVGetAgentAPI returns a pointer to a shared IAgentAPI object.
- * Subsequent calls to TVGetAgentAPI will return pointer to the same object
- * @returns IAgentAPI or nullptr if IAgentAPI creation failed
- */
-extern "C" tvagentapi::IAgentAPI* TVGetAgentAPI();
+namespace tvagentapi
+{
+class AgentConnection;
 
-/**
- * @breif TVDestroyAgentAPI destroys the shared IAgentAPI object.
- */
-extern "C" void TVDestroyAgentAPI();
+class ChatModule : public IChatModule
+{
+public:
+	static std::shared_ptr<ChatModule> Create(std::weak_ptr<AgentConnection> connection);
+	~ChatModule() override = default;
+
+	void setCallbacks(const Callbacks& callbacks) override;
+	bool obtainChats(ObtainChatsEnumerator enumerator) override;
+	RequestID sendMessage(const char* chatID, const char* content) override;
+	bool loadMessages(const char* chatID, size_t messageCount, const char* messageBefore = nullptr) override;
+	bool deleteHistory(const char* chatID) override;
+	bool deleteChat(const char* chatID) override;
+
+	// IModule
+	bool isSupported() const override;
+
+private:
+	ChatModule(std::weak_ptr<AgentConnection> connection);
+	bool registerCallbacks();
+
+	std::weak_ptr<ChatModule> m_weakThis;
+	std::weak_ptr<AgentConnection> m_connection;
+
+	RequestID m_nextRequestID = InvalidRequestID;
+	std::vector<ObserverConnection> m_connections;
+
+	IChatModule::Callbacks m_callbacks;
+};
+
+} // namespace tvagentapi

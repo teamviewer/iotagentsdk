@@ -82,12 +82,11 @@ def test_instant_support(request_data=None, expected_session_data=None, expected
     api = tvagentapi.TVAgentAPI()
     connection = api.createAgentConnectionLocal(None)
     instant_support_module = connection.getModule(tvagentapi.ModuleType.InstantSupport)
-    connection.setStatusChangedCallback(lambda status: connection_status_changed(status, instant_support_module))
-    instant_support_module.setCallbacks({
-        'sessionDataChangedCallback': instant_support_session_data_changed,
-        'requestErrorCallback': instant_support_request_error,
-        'connectionRequestCallback': lambda: instant_support_connection_requested(instant_support_module)
-    })
+    connection.setCallbacks(statusChanged=lambda status: connection_status_changed(status, instant_support_module))
+    instant_support_module.setCallbacks(
+        sessionDataChangedCallback=instant_support_session_data_changed,
+        requestErrorCallback=instant_support_request_error,
+        connectionRequestCallback=lambda: instant_support_connection_requested(instant_support_module))
 
     connection.start()
 

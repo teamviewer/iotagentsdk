@@ -67,13 +67,10 @@ def test_tv_session_management(expected_session_counts, terminate_sessions_after
     api = tvagentapi.TVAgentAPI()
     connection = api.createAgentConnectionLocal(None)
     tv_session_management = connection.getModule(tvagentapi.ModuleType.TVSessionManagement)
-    connection.setStatusChangedCallback(lambda status: connection_status_changed(status, tv_session_management))
-    tv_session_management.setCallbacks({
-        'sessionStartedCallback': lambda sid, s_cnt:
-        session_state_changed(tv_session_management, True, sid, s_cnt),
-        'sessionStoppedCallback': lambda sid, s_cnt:
-        session_state_changed(tv_session_management, False, sid, s_cnt)
-    })
+    connection.setCallbacks(statusChanged=lambda status: connection_status_changed(status, tv_session_management))
+    tv_session_management.setCallbacks(
+        sessionStartedCallback=lambda sid, s_cnt: session_state_changed(tv_session_management, True, sid, s_cnt),
+        sessionStoppedCallback=lambda sid, s_cnt: session_state_changed(tv_session_management, False, sid, s_cnt))
 
     assert tv_session_management.isSupported()
 

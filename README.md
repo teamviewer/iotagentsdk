@@ -34,7 +34,7 @@ New and modular, this aims to provide a clean, structured interface. In active d
 
 * Source: [TVAgentAPI/](TVAgentAPI/)
 * Build artifact: `libTVAgentAPI.so`
-* Simple command-line example apps: [examples/](examples/).
+* Simple command-line example apps: [examples/cpp/](examples/cpp/)
 
 ### **Qt API**
 
@@ -42,7 +42,7 @@ Designed for direct integration into Qt apps running on the device. You can pass
 
 * Source: [TVQtRC/](TVQtRC/)
 * Build artifact: `libTVQtRC.so`
-* A fully featured Qt example application: [app/](app).
+* A fully featured Qt example application: [examples/Qt/](examples/Qt/)
 
 ### **Communication Layer API**
 
@@ -50,11 +50,11 @@ For experienced users. The underlying layer used by the C++ and Qt APIs to send 
 
 * Source: [CommunicationLayer/](CommunicationLayer/)
 * Build artifacts: one per component, e.g. `AccessControlService/Library/libAccessControlService.a`
-* Example usage can be found in the intermediate helper object: [TVAgentAPIPrivate/](TVAgentAPIPrivate/).
+* Example usage can be found in the intermediate helper object: [TVAgentAPIPrivate/](TVAgentAPIPrivate/)
 
-## Python Bindings
+### **Python Bindings**
 
-A Python wrapper around the C++ API is also available at [Bindings/Python](./Bindings/Python/), providing a 1:1 correspondence with the C++ counterpart. Users who prefer the convenience of Python can refer to the example scripts provided.
+A Python wrapper around the C++ API is also available at [Bindings/Python](./Bindings/Python/), providing a virtually 1:1 correspondence with the C++ counterpart. Users who prefer the convenience of Python can refer to the example scripts provided in [examples/py/](examples/py/)
 
 ## System Requirements
 
@@ -71,10 +71,14 @@ On Debian systems, you will need the following development packages:
 * `libprotobuf-dev`
 * `protobuf-compiler`
 
-If you plan to use the Qt API, you will also need:
+If you also plan to use the Qt API:
 
 * `qtbase5-dev`
 * `qtdeclarative5-dev`
+
+To build and use the Python bindings:
+
+* `libpython3-dev`
 
 ### **Deployment**
 
@@ -108,8 +112,8 @@ The functionality set of the Qt API is not affected.
 mkdir build
 cd build
 
-# run CMake
-cmake <path-to-source>/
+# run CMake configure step
+cmake ../source
 
 # run make
 make
@@ -119,14 +123,15 @@ Building the package will produce the following binaries (depending on the confi
 
 Libraries:
 * `libTVAgentApi.so` : The C++ API shared library
-* `libTVQtRC.so` : The Qt API shared library
-* `CommunicationLayer/src/<Xyz>/Library/lib<Xyz>.a` : Individual IPC-level components.
+* `libTVQtRC.so` : The Qt API shared library (optional, ON by default)
+* `CommunicationLayer/src/<Xyz>/Library/lib<Xyz>.a` : Individual IPC-level components
+* `Bindings/Python/tvagentapi.so` : The Python library (optional, OFF by default)
 
 Example Applications:
 * `examples/example_<Abc>` : The C++ API example apps (command line)
 * `qt_simulate` : The Qt API example app (GUI)
 
-### Configure options
+### Options for the CMake configure step
 
 Disable building the Qt API + example app:
 

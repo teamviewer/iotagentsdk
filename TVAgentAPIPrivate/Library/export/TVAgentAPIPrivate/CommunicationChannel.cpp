@@ -818,6 +818,12 @@ bool CommunicationChannel::sendMessage(uint32_t localId, std::string content)
 
 bool CommunicationChannel::loadMessages(uint32_t count, std::string lastId)
 {
+	if (lastId.empty())
+	{
+		// agent doesn't accept empty string
+		lastId = "00000000-0000-0000-0000-000000000000";
+	}
+
 	std::lock_guard<std::mutex> lock(m_chatInServiceClientMutex);
 	if (m_chatInServiceClient)
 	{

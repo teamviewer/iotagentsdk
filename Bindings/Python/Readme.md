@@ -1,53 +1,71 @@
 # Python Bindings
 
-## Synopsys
-The python bindings are currently at an experimental stage. The bindings cover the full functionality
-set the AgentAPI provides.
+The Python bindings are a wrapper around the C++ Agent API and provide the same set of features:
 
-## System Requirements
-For building the python bindings, the following libraries need to be available in addition to the ones
-mentioned in the main README:
+- Connection to the local IoT Agent process
+- `SessionManagement` : tracking incoming connections
+- `AccessControl` : granular permissions for Remote Control, Remote View, File Transfer
+- `InstantSupport` : requesting remote assistance
+- `Chat`
 
-* `libpython3-dev`
+## Building
 
-## Configuration
-The bindings are disabled by default, but can be enabled during the CMake configuration step:
+If you followed the **Development** steps listed in the main [README](../../README.md), you should already have a newly compiled Python library in `Bindings/Python/tvagentapi.so`.
 
-* Enable python bindings: Set `ENABLE_PYTHON_MODULE` to `ON` (e.g. by adding `-DENABLE_PYTHON_MODULE=ON` to the CMake command line)
+👉 Before building, remember to additionally install the `libpython3-dev` package, and specify the `-DENABLE_PYTHON_MODULE=ON` argument to CMake.
 
 ## Usage
-The tests and examples require the `tvagentapi.so` binary to be accessible via the paths listed in the `sys.path` variable.
-This can be achieved either by copying/installing the module to one of the respective directories, or by setting
-the environment variable `PYTHONPATH` to the directory containing the newly built `tvagentapi.so` binary (see below).
-The built python binary is in the directory `Bindings/Python`, which results in the following command:
-* `export PYTHONPATH=<pathToBuildFolder>/Bindings/Python`
 
-Other input parameters within the examples and tests are specified via environment variables too.
-Please consult the executable python scripts to retrieve the names of variables for the respective script.
+You can now use the TeamViewer Agent SDK in your Python scripts:
 
-## Troubleshooting
+```Python
+import tvagentapi
+...
+api = tvagentapi.TVAgentAPI()
+connection = api.createAgentConnectionLocal()
+connection.setCallbacks(statusChanged=connectionStatusChanged)
+...
+```
 
-### Missing system requirements
-If the `libpython3-dev` package is not installed you will receive an error like:
-* Could NOT find Python3 (missing: Python3_INCLUDE_DIRS Development) (found suitable version "3.8", minimum required is "3.8")
+Sample scripts are avalable at [../../examples/py/](../../examples/py/).
 
-#### Solution
-Install libpython3-dev on your build system.
+👉 Before running your script, make sure Python can find our library:
 
-### Missing tvagentapi.so
-If `sys.path` does not include the path to the directory where `tvagentapi.so` is located (e.g. the PYTHONPATH variable
-is not set or the path is wrong), you receive an error like:
-* ModuleNotFoundError: No module named 'tvagentapi'
+```bash
+export PYTHONPATH=<...>/iotagentsdk/build/Bindings/Python
+```
 
-#### Solution
-Set the `PYTHONPATH` variable to the location of the `tvagentapi.so` with `<buildFolder>/Bindings/Python`
-* `export PYTHONPATH=<pathToBuildFolder>/Bindings/Python`
+Or directly from your code:
 
-### Missing script parameter
-If the script expects input parameters (e.g. an access token), it ensures these parameters are available before continuing.
-If the parameter is not set, you will receive an error like:
-* AssertionError: Specify TV_ACCESS_TOKEN environment variable
+```Python
+import sys
+...
+sys.path.append('<...>/iotagentsdk/build/Bindings/Python')
+```
 
-#### Solution
-Set the expected environment variable before running the script
+You can also just place a copy of (or a symlink to) `tvagentapi.so` next to your scripts.
+
+## Running the example scripts
+
+You may need to provide various other environment variables before running individual example scripts. For instance, [`instant_support.py`](../../examples/py/instant_support.py) expects the `TV_ACCESS_TOKEN` environment variable to be set to a valid value (refer to **Module example #3: Instant Support** [here](../../examples/py/) on how to obtain a valid access token):
+
 * `export TV_ACCESS_TOKEN="12345678-LgxKf0bybuAESdNIelrY"`
+
+Consult the script you are trying to run to find out what variables may be required.
+
+## Documentation
+
+Make sure the `python-dev-is-python3` package is installed.
+
+View the documentation:
+
+```bash
+pydoc3 tvagentapi
+```
+
+View the documentation as HTML:
+
+```bash
+pydoc3 -w tvagentapi
+```
+

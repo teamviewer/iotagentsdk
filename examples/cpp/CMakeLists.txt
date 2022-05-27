@@ -21,11 +21,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  #
 # SOFTWARE.                                                                      #
 #********************************************************************************#
-project(example_AccessControl)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-add_executable(${PROJECT_NAME} main.cpp)
-set_property(TARGET ${PROJECT_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/examples)
-
-target_link_libraries(${PROJECT_NAME} TVAgentApi)
+project(examples_cpp)
+add_subdirectory(AccessControl)
+add_subdirectory(AgentConnection)
+add_subdirectory(Chat)
+add_subdirectory(InstantSupport)
+add_subdirectory(SessionManagement)

@@ -46,16 +46,14 @@ def session_state_changed(tvsm_module, started, session_id, sessions_count):
 
 api = tvagentapi.TVAgentAPI()
 connection = api.createAgentConnectionLocal()
+
 tv_session_management = connection.getModule(tvagentapi.ModuleType.TVSessionManagement)
-if not tv_session_management.isSupported():
-    raise RuntimeError("TVSessionManagementModule not supported")
-connection.setStatusChangedCallback(lambda status: connection_status_changed(status, tv_session_management))
-tv_session_management.setCallbacks({
-    'sessionStartedCallback': lambda sid, s_cnt:
-    session_state_changed(tv_session_management, True, sid, s_cnt),
-    'sessionStoppedCallback': lambda sid, s_cnt:
-    session_state_changed(tv_session_management, False, sid, s_cnt)
-})
+assert tv_session_management.isSupported(), "TV Session Management Module not supported"
+
+connection.setCallbacks(statusChanged=lambda status: connection_status_changed(status, tv_session_management))
+tv_session_management.setCallbacks(
+    sessionStartedCallback=lambda sid, s_cnt: session_state_changed(tv_session_management, True, sid, s_cnt),
+    sessionStoppedCallback=lambda sid, s_cnt: session_state_changed(tv_session_management, False, sid, s_cnt))
 
 print("Connecting to IoT Agent...")
 connection.start()

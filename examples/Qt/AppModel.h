@@ -253,7 +253,7 @@ private:
 	QPointer<tvqtsdk::AbstractChat> m_chat = nullptr;
 
 	InstantSupportState m_instantSupportSessionState = InstantSupportState::Undefined;
-	InstantSupportErrorCode m_instantSupportErrorCode;
+	InstantSupportErrorCode m_instantSupportErrorCode = InstantSupportErrorCode::NotInitialized;
 	QString m_instantSupportSessionCode;
 	QString m_instantSupportName;
 	QString m_instantSupportDescription;

@@ -55,6 +55,8 @@ macro(install_tvsdk)
 	)
 endmacro()
 
+add_compile_options(-Wall -Wextra -Wpedantic -Wshadow)
+
 add_subdirectory(CommunicationLayerBase)
 add_subdirectory(ServiceBase)
 

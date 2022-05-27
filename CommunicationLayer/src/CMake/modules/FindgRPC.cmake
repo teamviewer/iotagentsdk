@@ -33,7 +33,12 @@
 # NOTE: This find script requires the protobuf (protoc) and zlib libraries to be present.
 # Either the executable target protobuf::protoc is avialable or Protobuf_PROTOC_EXECUTABLE is set or this script tries to locate protoc.
 
+if(gRPC_FOUND)
+	return()
+endif()
+
 find_package(ZLIB)
+find_package(Threads)
 
 ##
 # Generates C++ sources from the .proto files
@@ -119,7 +124,7 @@ mark_as_advanced(GRPC_LIBRARY)
 add_library(gRPC::grpc UNKNOWN IMPORTED)
 set_target_properties(gRPC::grpc PROPERTIES
 	INTERFACE_INCLUDE_DIRECTORIES ${GRPC_INCLUDE_DIR}
-	INTERFACE_LINK_LIBRARIES "gRPC::gpr;${ZLIB_LIBRARIES};-pthread"
+	INTERFACE_LINK_LIBRARIES "gRPC::gpr;ZLIB::ZLIB;Threads::Threads"
 	IMPORTED_LOCATION ${GRPC_LIBRARY}
 )
 

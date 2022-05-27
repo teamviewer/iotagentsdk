@@ -33,6 +33,9 @@ namespace tvagentapi
 class ITVSessionManagementModule : public IModule
 {
 public:
+	/// Type value for convenience
+	static constexpr Type TypeValue = Type::TVSessionManagement;
+
 	using TVSessionID = int32_t;
 
 	using SessionCallback = Callback<void(TVSessionID tvSessionID, int32_t tvSessionsCount, void* userdata) noexcept>;

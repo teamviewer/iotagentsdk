@@ -737,12 +737,14 @@ void TVQtRCPlugin::shutdownGrabbing()
 	{
 		m_grabMethod->stopGrabbing();
 		delete m_grabMethod;
+		m_grabMethod = nullptr;
 	}
 
 	if (m_grabNotifier)
 	{
 		m_grabNotifier->stop();
 		delete m_grabNotifier;
+		m_grabNotifier = nullptr;
 	}
 }
 
@@ -752,6 +754,7 @@ void TVQtRCPlugin::shutdownInputSimulation()
 	{
 		m_inputSimulator->disable();
 		delete m_inputSimulator;
+		m_inputSimulator = nullptr;
 	}
 }
 

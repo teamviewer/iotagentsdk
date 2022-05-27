@@ -21,8 +21,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  #
 # SOFTWARE.                                                                      #
 #********************************************************************************#
-project(examples)
-add_subdirectory(AccessControl)
-add_subdirectory(AgentConnection)
-add_subdirectory(InstantSupport)
-add_subdirectory(SessionManagement)
+project(example_InstantSupport)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+add_executable(${PROJECT_NAME} main.cpp)
+set_property(TARGET ${PROJECT_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${examples_cpp_BINARY_DIR})
+
+target_link_libraries(${PROJECT_NAME} TVAgentApi)

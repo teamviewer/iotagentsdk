@@ -1,7 +1,7 @@
 #********************************************************************************#
 # MIT License                                                                    #
 #                                                                                #
-# Copyright (c) 2021 TeamViewer Germany GmbH                                     #
+# Copyright (c) 2022 TeamViewer Germany GmbH                                     #
 #                                                                                #
 # Permission is hereby granted, free of charge, to any person obtaining a copy   #
 # of this software and associated documentation files (the "Software"), to deal  #
@@ -21,22 +21,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  #
 # SOFTWARE.                                                                      #
 #********************************************************************************#
-project(app)
+project(example_AccessControl)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 COMPONENTS Core Widgets Quick REQUIRED)
+add_executable(${PROJECT_NAME} main.cpp)
+set_property(TARGET ${PROJECT_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${examples_cpp_BINARY_DIR})
 
-add_executable(qt_simulate "main.cpp" "AppModel.h" "AppModel.cpp" "qml.qrc" "WidgetsDemoWindow.ui")
-target_link_libraries(qt_simulate Qt5::Core Qt5::Widgets Qt5::Quick)
-set_property(TARGET qt_simulate PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-
-if(BUILD_SHARED_LIBS)
-	target_link_libraries(qt_simulate TVQtRC.interface)
-	add_dependencies(qt_simulate TVQtRC)
-else()
-	target_link_libraries(qt_simulate TVQtRC)
-endif()
+target_link_libraries(${PROJECT_NAME} TVAgentApi)

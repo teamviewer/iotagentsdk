@@ -79,17 +79,15 @@ Pick an option (a/r/T): """)
 
 api = tvagentapi.TVAgentAPI()
 connection = api.createAgentConnectionLocal()
+
 instant_support_module = connection.getModule(tvagentapi.ModuleType.InstantSupport)
+assert instant_support_module.isSupported(), "Instant Support Module not supported"
 
-if not instant_support_module.isSupported():
-    raise RuntimeError("InstantSupportModule not supported")
-
-connection.setStatusChangedCallback(lambda status: connectionStatusChanged(status, instant_support_module))
-instant_support_module.setCallbacks({
-    'sessionDataChangedCallback': instantSupportSessionDataChanged,
-    'requestErrorCallback': instantSupportRequestError,
-    'connectionRequestCallback': lambda: instantSupportConnectionRequested(instant_support_module)
-})
+connection.setCallbacks(statusChanged=lambda status: connectionStatusChanged(status, instant_support_module))
+instant_support_module.setCallbacks(
+    sessionDataChangedCallback=instantSupportSessionDataChanged,
+    requestErrorCallback=instantSupportRequestError,
+    connectionRequestCallback=lambda: instantSupportConnectionRequested(instant_support_module))
 
 print("Connecting to IoT Agent...")
 connection.start()

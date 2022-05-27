@@ -32,8 +32,6 @@ set(SOURCES_EXPORT
 
 add_library(${PROJECT_NAME} INTERFACE)
 
-target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Wextra -Wpedantic -Wshadow)
-
 foreach(_item IN LISTS SOURCES_EXPORT)
 	target_sources(${PROJECT_NAME} INTERFACE
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${_item}>

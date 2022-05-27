@@ -20,8 +20,8 @@ PyTypeObject* GetPyTypeModule_Type()
 				"tvagentapi.ModuleType",
 				{{toCString(Type::AccessControl), static_cast<long>(Type::AccessControl)},
 				 {toCString(Type::InstantSupport), static_cast<long>(Type::InstantSupport)},
-				 {toCString(Type::TVSessionManagement), static_cast<long>(Type::TVSessionManagement)}});
-
+				 {toCString(Type::TVSessionManagement), static_cast<long>(Type::TVSessionManagement)},
+				 {toCString(Type::Chat), static_cast<long>(Type::Chat)}});
 		return result;
 	}();
 	return pyTypeModule_Type;

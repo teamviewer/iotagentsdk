@@ -37,6 +37,7 @@ public:
 		AccessControl = 0,
 		InstantSupport,
 		TVSessionManagement,
+		Chat,
 	};
 
 	virtual ~IModule() = default;

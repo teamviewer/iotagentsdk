@@ -34,6 +34,9 @@ namespace tvagentapi
 class IAccessControlModule : public IModule
 {
 public:
+	/// Type value for convenience
+	static constexpr Type TypeValue = Type::AccessControl;
+
 	enum class Feature : int32_t
 	{
 		/// File Transfer access feature, partner can transfer files to the machine.

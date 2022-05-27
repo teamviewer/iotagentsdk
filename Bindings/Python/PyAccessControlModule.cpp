@@ -40,22 +40,34 @@ namespace
 
 // Methods
 
-PyObject* PyAccessControlModule_setCallbacks(PyAccessControlModule* self, PyObject* arg)
+PyObject* PyAccessControlModule_setCallbacks(
+	PyAccessControlModule* self,
+	PyObject* args,
+	PyObject* kwargs)
 {
 	using Feature = tvagentapi::IAccessControlModule::Feature;
 	using Access = tvagentapi::IAccessControlModule::Access;
 
-	if (!PyDict_Check(arg))
+	char accessChangedArgName[] = "accessChangedCallback";
+	char accessRequestArgName[] = "accessRequestCallback";
+
+	PyObject* accessChangedCallback = Py_None;
+	PyObject* accessRequestCallback = Py_None;
+
+	char* kwargList[] = {accessChangedArgName, accessRequestArgName, {}};
+	if (!PyArg_ParseTupleAndKeywords(
+		args,
+		kwargs,
+		"|OO:setCallbacks",
+		kwargList,
+		&accessChangedCallback,
+		&accessRequestCallback))
 	{
-		PyErr_Format(PyExc_TypeError, "expected dict instance, got %R", arg);
 		return nullptr;
 	}
 
-	const char* accessChangedCbkName = "accessChangedCallback";
-	const char* accessRequestCbName = "accessRequestCallback";
-
-	PyObject* accessChangedCallback = PyDict_GetItemString(arg, accessChangedCbkName);
-	PyObject* accessRequestCallback = PyDict_GetItemString(arg, accessRequestCbName);
+	accessChangedCallback = accessChangedCallback == Py_None ? nullptr : accessChangedCallback;
+	accessRequestCallback = accessRequestCallback == Py_None ? nullptr : accessRequestCallback;
 
 	if (accessChangedCallback && !PyCallable_Check(accessChangedCallback))
 	{
@@ -214,48 +226,114 @@ PyObject* PyAccessControlModule_rejectAccessRequest(PyAccessControlModule* self,
 	return NoneOrInternalError(self->m_module->rejectAccessRequest(feature));
 }
 
+namespace DocStrings
+{
+
+PyDoc_STRVAR(isSupported,
+R"__(isSupported($self)
+--
+
+Returns whether the current module is supported by the SDK and the IoT Agent counterpart.
+
+:return True if the current module is supported, False otherwise.
+)__");
+
+PyDoc_STRVAR(setCallbacks,
+R"__(setCallbacks($self,
+	accessChangedCallback=None,
+	accessRequestCallback=None)
+--
+
+Sets callbacks to handle Access changes and incoming access confirmation requests.
+
+:param accessChangedCallback: called when an Access permission for a specific Feature has been changed
+:type accessChangedCallback: callback(tvagentapi.IAccessControlModule.Feature feature, tvagentapi.IAccessControlModule.Access access)
+:param accessRequestCallback: called when a remote party attempts to use a feature whose current Access permission is set to "After Confirmation"
+:type accessRequestCallback: callback(tvagentapi.IAccessControlModule.Feature feature)
+)__");
+
+PyDoc_STRVAR(getAccess,
+R"__(getAccess($self, feature)
+--
+
+Requests the current Access permission for the given Feature.
+
+:param tvagentapi.IAccessControlModule.Feature feature: Feature for which the current access permission is being queried.
+:return Access permission enum value.
+)__");
+
+PyDoc_STRVAR(setAccess,
+R"__(setAccess($self, feature, access)
+--
+
+Sets the given Access permission for the given Feature.
+
+:param tvagentapi.IAccessControlModule.Feature feature: Feature for which the current access permission is being set.
+:param tvagentapi.IAccessControlModule.Access access: Access permission being set for the feature.
+)__");
+
+PyDoc_STRVAR(acceptAccessRequest,
+R"__(acceptAccessRequest($self, feature)
+--
+
+Accepts an incoming access request for the given feature.
+
+:param tvagentapi.IAccessControlModule.Feature feature: Feature for which request is accepted.
+)__");
+
+PyDoc_STRVAR(rejectAccessRequest,
+R"__(rejectAccessRequest($self, feature)
+--
+
+Rejects an incoming access request for the given feature.
+
+:param tvagentapi.IAccessControlModule.Feature feature: Feature for which request is rejected.
+)__");
+
+} // namespace DocStrings
+
 PyMethodDef PyAccessControlModule_methods[] =
 {
 	{
+		"isSupported",
+		WeakConnectionCall<PyAccessControlModule, PyAccessControlModule_isSupported>,
+		METH_NOARGS,
+		DocStrings::isSupported
+	},
+
+	{
 		"setCallbacks",
-		WeakConnectionCall<PyAccessControlModule, PyAccessControlModule_setCallbacks>,
-		METH_O,
-		"set access control callbacks"
+		PyCFunctionCast(WeakConnectionCall<PyAccessControlModule, PyAccessControlModule_setCallbacks>),
+		METH_VARARGS | METH_KEYWORDS,
+		DocStrings::setCallbacks
 	},
 
 	{
 		"getAccess",
 		WeakConnectionCall<PyAccessControlModule, PyAccessControlModule_getAccess>,
 		METH_O,
-		"for given Feature fetch Access mode"
+		DocStrings::getAccess
 	},
 
 	{
 		"setAccess",
 		WeakConnectionCall<PyAccessControlModule, PyAccessControlModule_setAccess>,
 		METH_VARARGS,
-		"for given Feature set Access mode"
-	},
-
-	{
-		"isSupported",
-		WeakConnectionCall<PyAccessControlModule, PyAccessControlModule_isSupported>,
-		METH_NOARGS,
-		"check if the module is supported"
+		DocStrings::setAccess
 	},
 
 	{
 		"acceptAccessRequest",
 		WeakConnectionCall<PyAccessControlModule, PyAccessControlModule_acceptAccessRequest>,
 		METH_O,
-		"for given Feature accept incoming access request"
+		DocStrings::acceptAccessRequest
 	},
 
 	{
 		"rejectAccessRequest",
 		WeakConnectionCall<PyAccessControlModule, PyAccessControlModule_rejectAccessRequest>,
 		METH_O,
-		"for given Feature reject incoming access request"
+		DocStrings::rejectAccessRequest
 	},
 
 	{} // Sentinel

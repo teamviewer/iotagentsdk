@@ -40,21 +40,35 @@ namespace
 
 // Methods
 
-PyObject* PyInstantSupportModule_setCallbacks(PyInstantSupportModule* self, PyObject* arg)
+PyObject* PyInstantSupportModule_setCallbacks(
+	PyInstantSupportModule* self,
+	PyObject* args,
+	PyObject* kwargs)
 {
-	if (!PyDict_Check(arg))
+	char dataChangedCbName[] = "sessionDataChangedCallback";
+	char requestErrorCbName[] = "requestErrorCallback";
+	char connectionRequestCbName[] = "connectionRequestCallback";
+
+	PyObject* sessionDataChangedCallback = Py_None;
+	PyObject* requestErrorCallback = Py_None;
+	PyObject* connectionRequestCallback = Py_None;
+
+	char* kwargList[] = {dataChangedCbName, requestErrorCbName, connectionRequestCbName, {}};
+	if (!PyArg_ParseTupleAndKeywords(
+		args,
+		kwargs,
+		"|OOO:setCallbacks",
+		kwargList,
+		&sessionDataChangedCallback,
+		&requestErrorCallback,
+		&connectionRequestCallback))
 	{
-		PyErr_Format(PyExc_TypeError, "expected dict instance, got %R", arg);
 		return nullptr;
 	}
 
-	const char* dataChangedCbName = "sessionDataChangedCallback";
-	const char* requestErrorCbName = "requestErrorCallback";
-	const char* connectionRequestCbName = "connectionRequestCallback";
-
-	PyObject* sessionDataChangedCallback = PyDict_GetItemString(arg, dataChangedCbName);
-	PyObject* requestErrorCallback = PyDict_GetItemString(arg, requestErrorCbName);
-	PyObject* connectionRequestCallback = PyDict_GetItemString(arg, connectionRequestCbName);
+	sessionDataChangedCallback = sessionDataChangedCallback == Py_None ? nullptr : sessionDataChangedCallback;
+	requestErrorCallback = requestErrorCallback == Py_None ? nullptr : requestErrorCallback;
+	connectionRequestCallback = connectionRequestCallback == Py_None ? nullptr : connectionRequestCallback;
 
 	if (sessionDataChangedCallback && !PyCallable_Check(sessionDataChangedCallback))
 	{
@@ -252,48 +266,113 @@ PyObject* PyInstantSupportModule_timeoutConnectionRequest(PyInstantSupportModule
 	return NoneOrInternalError(self->m_module->timeoutConnectionRequest());
 }
 
+namespace DocStrings
+{
+
+PyDoc_STRVAR(isSupported,
+R"__(isSupported($self)
+--
+
+Returns whether the current module is supported by the SDK and the IoT Agent counterpart.
+
+:return True if the current module is supported, False otherwise.
+)__");
+
+PyDoc_STRVAR(setCallbacks,
+R"__(setCallbacks($self, sessionDataChangedCallback=None, requestErrorCallback=None,connectionRequestCallback=None)
+--
+
+Set instant support callbacks.
+
+:param sessionDataChangedCallback: called when there is a change in the instant support session data
+:type sessionDataChangedCallback: callback(dict new_data {'sessionCode' => str, 'name' => str, 'description' => str, 'state' => tvagentapi.InstantSupportModule.SessionState})
+:param requestErrorCallback: called when the request for instant support has resulted in an error
+:type requestErrorCallback: callback(tvagentapi.InstantSupportModule.RequestErrorCode error_code)
+:param connectionRequestCallback: called when the remote party instant support was requested from attempts to make an inbound connection
+:type connectionRequestCallback: callback()
+)__");
+
+PyDoc_STRVAR(requestInstantSupport,
+R"__(requestInstantSupport($self, accessToken, name, group, description, email, sessionCode)
+--
+
+Requests an instant support service case. Parameters are passed as keyword arguments.
+Set SessionDataChangedCallback and RequestInstantSupportErrorCallback to handle the result of this request.
+
+:param str accessToken: User or company access token for authentication.
+:param str name: Name of the end customer. Maximum length is 100 characters.
+:param str group: Name of the group the session code will be inserted into.
+:param str description: Description for the service case.
+:param str email: Customer email (optional).
+:param str sessionCode: Session code (optional). Will be checked for validity; leave empty to create new session code.
+)__");
+
+PyDoc_STRVAR(acceptConnectionRequest,
+R"__(acceptConnectionRequest($self)
+--
+
+Accept the incoming instant support connection request.
+)__");
+
+PyDoc_STRVAR(rejectConnectionRequest,
+R"__(rejectConnectionRequest($self)
+--
+
+Reject the incoming instant support connection request.
+)__");
+
+PyDoc_STRVAR(timeoutConnectionRequest,
+R"__(timeoutConnectionRequest($self)
+--
+
+Timeout the incoming instant support connection request.
+)__");
+
+
+} // namespace DocStrings
+
 PyMethodDef PyInstantSupportModule_methods[] =
 {
 	{
+		"isSupported",
+		WeakConnectionCall<PyInstantSupportModule, PyInstantSupportModule_isSupported>,
+		METH_NOARGS,
+		DocStrings::isSupported
+	},
+
+	{
 		"setCallbacks",
-		WeakConnectionCall<PyInstantSupportModule, PyInstantSupportModule_setCallbacks>,
-		METH_O,
-		"set instant support callbacks"
+		PyCFunctionCast(WeakConnectionCall<PyInstantSupportModule, PyInstantSupportModule_setCallbacks>),
+		METH_VARARGS | METH_KEYWORDS,
+		DocStrings::setCallbacks
 	},
 
 	{
 		"requestInstantSupport",
 		WeakConnectionCall<PyInstantSupportModule, PyInstantSupportModule_requestInstantSupport>,
 		METH_O,
-		"request instant support"
-	},
-
-	{
-		"isSupported",
-		WeakConnectionCall<PyInstantSupportModule, PyInstantSupportModule_isSupported>,
-		METH_NOARGS,
-		"check if the module is supported"
+		DocStrings::requestInstantSupport
 	},
 
 	{
 		"acceptConnectionRequest",
 		WeakConnectionCall<PyInstantSupportModule, PyInstantSupportModule_acceptConnectionRequest>,
 		METH_NOARGS,
-		"accept incoming instant support connection request"
+		DocStrings::acceptConnectionRequest
 	},
 
 	{
 		"rejectConnectionRequest",
 		WeakConnectionCall<PyInstantSupportModule, PyInstantSupportModule_rejectConnectionRequest>,
 		METH_NOARGS,
-		"reject incoming instant support connection request"
+		DocStrings::rejectConnectionRequest
 	},
 
 	{
 		"timeoutConnectionRequest",
 		WeakConnectionCall<PyInstantSupportModule, PyInstantSupportModule_timeoutConnectionRequest>,
 		METH_NOARGS,
-		"timeout incoming instant support connection request"
+		DocStrings::timeoutConnectionRequest
 	},
 
 	{} // Sentinel

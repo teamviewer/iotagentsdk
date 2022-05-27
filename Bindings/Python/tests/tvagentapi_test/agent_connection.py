@@ -40,7 +40,7 @@ def test_agent_connection(wait_for_more_events=True, more_events_timeout_ms=100,
 
     api = tvagentapi.TVAgentAPI()
     connection = api.createAgentConnectionLocal(None)
-    connection.setStatusChangedCallback(connection_status_changed)
+    connection.setCallbacks(statusChanged=connection_status_changed)
     connection.start()
     while not connected_obtained:
         events_processed = False
@@ -54,8 +54,7 @@ def test_agent_connection(wait_for_more_events=True, more_events_timeout_ms=100,
             else:
                 raise err
         if connected_obtained and not events_processed:
-            raise RuntimeError(f"procesEvents claims to have nothing processed even though connection to the agent has been obtained")
-
+            raise RuntimeError("procesEvents claims to have nothing processed even though connection to the agent has been obtained")
 
     connection.stop()
 

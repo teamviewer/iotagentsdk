@@ -33,7 +33,7 @@ def connectionStatusChanged(status):
 
 api = tvagentapi.TVAgentAPI()
 connection = api.createAgentConnectionLocal()
-connection.setStatusChangedCallback(connectionStatusChanged)
+connection.setCallbacks(statusChanged=connectionStatusChanged)
 
 print("Connecting to IoT Agent...")
 connection.start()

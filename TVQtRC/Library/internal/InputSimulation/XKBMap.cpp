@@ -277,7 +277,7 @@ Qt::KeyboardModifiers xkbToQtModifers(uint32_t xkbModifiers)
 	AltGr      = Mod5,
 	*/
 
-	Qt::KeyboardModifiers ret = 0;
+	Qt::KeyboardModifiers ret{};
 	if (xkbModifiers & ShiftMask)
 		ret |= Qt::ShiftModifier;
 	if (xkbModifiers & ControlMask)

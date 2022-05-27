@@ -56,7 +56,8 @@ void printRunningSessions(void* userdata)
 		},
 		&tvSessionIDs});
 
-	printf("  Currently %lu running session(s)", tvSessionIDs.size());
+	printf("  Currently %zu running session(s)", tvSessionIDs.size());
+
 	if (tvSessionIDs.empty())
 	{
 		printf(".\n");
@@ -132,7 +133,7 @@ int main()
 	}
 
 	tvagentapi::ITVSessionManagementModule* tvSessionManagementModule =
-		static_cast<tvagentapi::ITVSessionManagementModule*>(agentConnection->getModule(tvagentapi::IModule::Type::TVSessionManagement));
+		tvagentapi::getModule<tvagentapi::ITVSessionManagementModule>(agentConnection);
 	if (!tvSessionManagementModule)
 	{
 		fputs("Failed to create TVSessionManagementModule\n", stderr);

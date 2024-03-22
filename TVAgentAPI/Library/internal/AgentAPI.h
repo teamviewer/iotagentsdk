@@ -35,6 +35,7 @@ public:
 	~AgentAPI() override = default;
 
 	IAgentConnection* createAgentConnectionLocal(ILogging* logging) override;
+	IAgentConnection* createAgentConnection(ILogging* logging) override;
 	void destroyAgentConnection(IAgentConnection* connection) override;
 
 	tvagentapi::ILogging* createFileLogging(const char* logFilePath) override;

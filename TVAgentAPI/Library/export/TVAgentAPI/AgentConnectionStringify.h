@@ -30,5 +30,6 @@ namespace tvagentapi
 
 /// Get Null-terminated static C-String from enum
 const char* toCString(IAgentConnection::Status status);
+const char* toCString(IAgentConnection::SetConnectionURLsResult status);
 
 } // namespace tvagentapi

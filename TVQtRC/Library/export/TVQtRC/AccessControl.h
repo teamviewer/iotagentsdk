@@ -38,8 +38,12 @@ enum class Access
 enum class AccessControl
 {
 	FileTransfer = 0,
-	AllowPartnerViewDesktop = 1,
-	RemoteControl = 2
+	RemoteView = 1,
+	RemoteControl = 2,
+	ScreenRecording = 3,
+
+	// deprecated, kept for compatibility
+	AllowPartnerViewDesktop = RemoteView,
 };
 
 } // namespace tvqtsdk

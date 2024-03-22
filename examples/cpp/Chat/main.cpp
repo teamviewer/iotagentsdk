@@ -92,16 +92,40 @@ Supported commands:
 
 struct ChatCommand
 {
+	ChatCommand() = default;
+
+	ChatCommand(ChatCommandType _type, const std::string& _payload)
+	: type{_type}
+	, payload{_payload}
+	{}
+
 	ChatCommandType type = ChatCommandType::Unknown;
 	// ChatCommandType::SendMessage has message string inside of payload field
 	// All the other types have ChatID string
 	std::string payload;
 };
 
-std::vector<ChatCommand> s_commands = {{ChatCommandType::Help, {}}};
+std::vector<ChatCommand> s_commands{{ChatCommandType::Help, {}}};
 
 struct ChatRoomMessage
 {
+	ChatRoomMessage() = default;
+
+	ChatRoomMessage(
+		const std::string& _messageId,
+		const std::string& _content,
+		const std::string& _sender,
+		tvagentapi::IChatModule::TimeStamp _timeStamp,
+		tvagentapi::IChatModule::RequestID _sendRequestId = tvagentapi::IChatModule::InvalidRequestID,
+		bool _isSendFailed = false)
+		: messageID{_messageId}
+		, content{_content}
+		, sender{_sender}
+		, timeStamp{_timeStamp}
+		, sendRequestID{_sendRequestId}
+		, isSendFailed{_isSendFailed}
+	{}
+
 	std::string messageID;
 	std::string content;
 	std::string sender;
@@ -366,7 +390,7 @@ void handleNewMessages(
 		ChatRoom* chatRoom = findChatRoomWithID(s_chatRooms, message.chatID);
 		if (chatRoom)
 		{
-			chatRoom->addMessage({message.messageID, message.content, message.sender, message.timeStamp});
+			chatRoom->addMessage(ChatRoomMessage{message.messageID, message.content, message.sender, message.timeStamp});
 		}
 	}
 }
@@ -503,13 +527,26 @@ int main()
 
 	// connect tvagentapi sdk to IoT Agent
 	// We pass logging to AgentConnection, but we still manage its lifetime and must pair it with IAgentAPI::destroyLogging()
-	// logging object will be used internally and we may only release it (in this case by calling IAgentAPI::destroyLogging()
+	// logging object will be used internally, and we may only release it (in this case by calling IAgentAPI::destroyLogging()
 	// after call to agentAPI->destroyAgentConnection();
-	tvagentapi::IAgentConnection* agentConnection = agentAPI->createAgentConnectionLocal(logging);
+	tvagentapi::IAgentConnection* agentConnection = agentAPI->createAgentConnection(logging);
 	if (!agentConnection)
 	{
 		std::cerr << "Failed to create connection" << std::endl;
 		return EXIT_FAILURE;
+	}
+
+	const char* baseSdkUrl = std::getenv("TV_BASE_SDK_URL");
+	const char* agentApiUrl = std::getenv("TV_AGENT_API_URL");
+	if (baseSdkUrl && agentApiUrl)
+	{
+		const tvagentapi::IAgentConnection::SetConnectionURLsResult result =
+			agentConnection->setConnectionURLs(baseSdkUrl, agentApiUrl);
+		if (result != tvagentapi::IAgentConnection::SetConnectionURLsResult::Success)
+		{
+			std::cerr << "Failed to set connection URLs: " << tvagentapi::toCString(result) << std::endl;
+			return EXIT_FAILURE;
+		}
 	}
 
 	tvagentapi::IChatModule* chatModule =
@@ -760,7 +797,7 @@ int main()
 	std::cout << "Cleaning up..." << std::endl;
 	agentAPI->destroyAgentConnection(agentConnection);
 
-	// after destroyAgentConnection() we are sure logging is not used and we can safely destroy it
+	// after destroyAgentConnection() we are sure logging is not used, and we can safely destroy it
 	agentAPI->destroyLogging(logging);
 
 	std::cout << "Exiting..." << std::endl;

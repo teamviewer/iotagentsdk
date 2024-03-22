@@ -33,18 +33,18 @@
 
 #include <assert.h>
 
-namespace
-{
-constexpr const char* DefaultRegistrationServiceLocation = "teamviewer-iot-agent-services/remoteScreen/registrationService";
-} // namespace
-
 namespace tvagentapi
 {
 
 IAgentConnection* AgentAPI::createAgentConnectionLocal(ILogging* logging/* = nullptr*/)
 {
+	return createAgentConnection(logging);
+}
+
+IAgentConnection* AgentAPI::createAgentConnection(ILogging* logging/* = nullptr*/)
+{
 	auto sharedConnection = std::shared_ptr<AgentConnection>(
-		AgentConnection::Create(logging, DefaultRegistrationServiceLocation));
+		AgentConnection::Create(logging));
 
 	if (!sharedConnection)
 	{

@@ -38,7 +38,15 @@ endif()
 project(TVAgentSDK VERSION ${TVAgentSDK_VERSION})
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(QT_MAJOR_VERSION "5" CACHE STRING "which major Qt version number should be used?")
+set(QT5_VERSION "5.3" CACHE INTERNAL "which major.minor Qt version number should be used?")
+set(QT6_VERSION "6.2" CACHE INTERNAL "which major.minor Qt version number should be used?")
+
+if (NOT((QT_MAJOR_VERSION STREQUAL 5) OR (QT_MAJOR_VERSION STREQUAL 6)))
+	message(FATAL_ERROR "Provided major Qt version number of ${QT_MAJOR_VERSION} is not supported. Only 5 or 6 is supported.")
+endif()
 
 add_compile_options(-Wall -Wextra -Wpedantic)
 
@@ -70,7 +78,7 @@ macro(tv_configure_package package_name package_name_version package_namespace p
 	)
 
 	if(ENABLE_QT_PLUGIN)
-		set(_CONFIG_PREAMBLE_ "find_package(Qt5 5.3 COMPONENTS Core REQUIRED)")
+		set(_CONFIG_PREAMBLE_ "find_package(Qt${QT_MAJOR_VERSION} ${QT${QT_MAJOR_VERSION}_VERSION} COMPONENTS Core REQUIRED)")
 	endif()
 
 	set(_TV_PACKAGE_NAME_ ${package_name})

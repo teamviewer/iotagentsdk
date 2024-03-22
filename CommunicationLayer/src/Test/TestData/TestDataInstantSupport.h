@@ -23,30 +23,59 @@
 //********************************************************************************//
 #pragma once
 
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
 #include <TVRemoteScreenSDKCommunication/InstantSupportService/InstantSupportData.h>
 #include <TVRemoteScreenSDKCommunication/InstantSupportService/InstantSupportError.h>
 
-#include <cstdint>
-
 namespace TestInstantSupportService
 {
-namespace TestData
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+struct TestData;
+
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::gRPCTransport>
 {
+	static constexpr const char* Socket = "unix:///tmp/instantSupport_test";
+	static constexpr const char* ComId = "tokengRPC";
+	static constexpr const char* AccessToken = "TestAccessToken";
+	static constexpr const char* Group = "TestGroup";
+	static constexpr const char* Description = "TestDescription";
+	static constexpr const char* Email = "max.mustermann@example.com";
+	static constexpr const char* SessionCode = "TestSessionCode";
+	static constexpr const char* Name = "Name";
 
-constexpr const char* Socket = "unix:///tmp/instantSupport_test";
-constexpr const char* ComId = "comID";
-constexpr const char* AccessToken = "TestAccessToken";
-constexpr const char* Group = "TestGroup";
-constexpr const char* Description = "TestDescription";
-constexpr const char* Email = "max.mustermann@example.com";
-constexpr const char* SessionCode = "TestSessionCode";
-constexpr const char* Name = "Name";
+	static constexpr TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError InvalidToken
+		= TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError::InvalidToken;
 
-const TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError InvalidToken
-	= TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError::InvalidToken;
+	static const TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportData& Data()
+	{
+		static const TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportData data
+			{ SessionCode, Name, Description, TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportState::Open };
+		return data;
+	}
+};
 
-const TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportData Data
-	= {SessionCode, Name, Description, TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportState::Open};
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
+{
+	static constexpr const char* Socket = "tv+tcp://127.0.0.1:9003";
+	static constexpr const char* ComId = "tokenSocketIO";
+	static constexpr const char* AccessToken = "Test_Access_Token";
+	static constexpr const char* Group = "Test_Group";
+	static constexpr const char* Description = "Test_Description";
+	static constexpr const char* Email = "max.mustermann@example.de";
+	static constexpr const char* SessionCode = "Test-Session-Code";
+	static constexpr const char* Name = "__Name__";
 
-} // namespace TestData
+	static constexpr TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError InvalidToken
+		= TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError::InvalidToken;
+
+	static const TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportData& Data()
+	{
+		static const TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportData data
+			{ SessionCode, Name, Description, TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportState::Closed };
+		return data;
+	}
+};
 } // namespace TestInstantSupportService

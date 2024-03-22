@@ -25,8 +25,11 @@ SOFTWARE
 __license__ = "MIT License"
 
 from datetime import datetime, timedelta
+from . import with_connect_urls
 
-def sub_test_chat_send_receive_messages(connection, expected_message_pairs, expect_chat_room_created):
+
+def sub_test_chat_send_receive_messages(connection, expected_message_pairs, expect_chat_room_created,
+                                        ):
     """
     Chat test helper for sending/receiving messages
 
@@ -257,7 +260,8 @@ def sub_test_chat_error_send_message(connection):
         pass
 
 
-def test_chat(behavior):
+@with_connect_urls
+def test_chat(behavior, base_sdk_url=None, agent_api_url=None):
     """
     Chat test helper with injectable behavior
 
@@ -271,7 +275,9 @@ def test_chat(behavior):
 
     api = tvagentapi.TVAgentAPI()
     logging = api.createFileLogging("./test.log")
-    connection = api.createAgentConnectionLocal(logging)
+    connection = api.createAgentConnection(logging)
+    if base_sdk_url and agent_api_url:
+        connection.setConnectionURLs(base_sdk_url, agent_api_url)
     chat = connection.getModule(tvagentapi.ModuleType.Chat)
     assert chat.isSupported()
 

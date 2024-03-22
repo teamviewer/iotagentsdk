@@ -158,16 +158,20 @@ bool InstantSupportModule::registerCallbacks()
 	auto communicationChannel = connection->getCommunicationChannel();
 	auto weakDispatcher = std::weak_ptr<IDispatcher>{connection->getDispatcher()};
 
+	const auto weakThis = m_weakThis;
 	m_instantSupportModifiedNotificationConnection = communicationChannel->instantSupportModifiedNotification().registerCallback(
-		[weakThis = m_weakThis, weakDispatcher]
+		[weakThis, weakDispatcher]
 		(TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportData data)
 		{
-			util::weakDispatcherPost(
-				weakDispatcher,
-				weakThis,
-				[data = std::move(data)](const auto& self)
+			struct WeakAction
+			{
+				explicit WeakAction(TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportData _data)
+				: data{std::move(_data)}
+				{}
+
+				void operator()(const std::shared_ptr<InstantSupportModule>& self)
 				{
-					// pay attention that SessoinData holds pointers to c-strings
+					// pay attention that SessionData holds pointers to c-strings
 					// which are valid while InstantSupportData is valid
 					util::safeCall(self->m_callbacks.sessionDataChangedCallback,
 						SessionData{
@@ -176,29 +180,34 @@ bool InstantSupportModule::registerCallbacks()
 							data.description.c_str(),
 							getStateFromCommunication(data.state)
 						});
-				});
+				}
+
+				TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportData data;
+			};
+
+			util::weakDispatcherPost(weakDispatcher, weakThis, WeakAction{std::move(data)});
 		});
 
 	m_requestInstantSupportErrorNotificationConnection = communicationChannel->instantSupportErrorNotification().registerCallback(
-		[weakThis = m_weakThis, weakDispatcher]
+		[weakThis, weakDispatcher]
 		(TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError errorCode)
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[errorCode](const auto& self)
+				[errorCode](const std::shared_ptr<InstantSupportModule>& self)
 				{
 					util::safeCall(self->m_callbacks.requestErrorCallback, getRequestErrorCodeFromCommunication(errorCode));
 				});
 		});
 
 	m_instantSupportRequestConnection = communicationChannel->instantSupportConnectionConfirmationRequested().registerCallback(
-		[weakThis = m_weakThis, weakDispatcher]()
+		[weakThis, weakDispatcher]()
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[](const auto& self)
+				[](const std::shared_ptr<InstantSupportModule>& self)
 				{
 					util::safeCall(self->m_callbacks.connectionRequestCallback);
 				});

@@ -31,18 +31,16 @@
 #include "Utils/DispatcherUtils.h"
 #include "ModuleFactory.h"
 
-#include <assert.h>
+#include <cassert>
 
 namespace tvagentapi
 {
 
-std::shared_ptr<AgentConnection> AgentConnection::Create(ILogging* logging, std::string registrationServiceLocation)
+std::shared_ptr<AgentConnection> AgentConnection::Create(ILogging* logging)
 {
 	auto loggingPrivateAdapter = std::make_shared<LoggingPrivateAdapter>(logging);
 
-	auto communicationChannel = CommunicationChannel::Create(
-		loggingPrivateAdapter,
-		std::move(registrationServiceLocation));
+	auto communicationChannel = CommunicationChannel::Create(loggingPrivateAdapter);
 
 	auto dispatcher = std::make_shared<LazyDispatcher>();
 
@@ -78,6 +76,25 @@ AgentConnection::~AgentConnection()
 	setLogging(nullptr);
 }
 
+AgentConnection::SetConnectionURLsResult AgentConnection::setConnectionURLs(const char* baseSdkURL, const char* agentAPIURL)
+{
+	if (baseSdkURL && agentAPIURL)
+	{
+		switch (m_communicationChannel->setUrls(baseSdkURL, agentAPIURL))
+		{
+			case BaseUrlParseResultCode::Success:
+				return SetConnectionURLsResult::Success;
+			case BaseUrlParseResultCode::CharacterLimitForPathExceeded:
+				return SetConnectionURLsResult::CharacterLimitForPathExceeded;
+			case BaseUrlParseResultCode::SchemaNotValid:
+				return SetConnectionURLsResult::SchemaNotValid;
+			case BaseUrlParseResultCode::ConnectionIsInUse:
+				return SetConnectionURLsResult::ConnectionIsInUse;
+		}
+	}
+	return SetConnectionURLsResult::SchemaNotValid;
+}
+
 void AgentConnection::start()
 {
 	if (m_status == Status::Connecting || m_status == Status::Connected || m_status == Status::ConnectionLost)
@@ -87,25 +104,26 @@ void AgentConnection::start()
 
 	auto weakDispatcher = std::weak_ptr<IDispatcher>{m_dispatcher};
 
+	const auto weakThis = m_weakThis;
 	m_agentCommunicationEstablishedConnection = m_communicationChannel->agentCommunicationEstablished().registerCallback(
-		[weakDispatcher, weakThis = m_weakThis]()
+		[weakDispatcher, weakThis]()
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[](const auto& self)
+				[](const std::shared_ptr<AgentConnection>& self)
 				{
 					util::safeCall(self->m_statusChangedCallback, Status::Connected);
 				});
 		});
 
 	m_agentCommunicationLostConnection = m_communicationChannel->agentCommunicationLost().registerCallback(
-		[weakDispatcher, weakThis = m_weakThis]()
+		[weakDispatcher, weakThis]()
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[](const auto& self)
+				[](const std::shared_ptr<AgentConnection>& self)
 				{
 					util::safeCall(self->m_statusChangedCallback, Status::ConnectionLost);
 				});
@@ -168,7 +186,7 @@ void AgentConnection::setStatusPostNotify(Status status)
 	util::dispatcherPost(
 		m_dispatcher.get(),
 		m_weakThis,
-		[status](const auto& self)
+		[status](const std::shared_ptr<AgentConnection>& self)
 		{
 			util::safeCall(self->m_statusChangedCallback, status);
 		});

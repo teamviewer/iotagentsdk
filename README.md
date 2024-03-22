@@ -22,11 +22,19 @@ On your particular embedded system, you may want to:
 
 ![Agent SDK Deployment Overview](./doc/agent_sdk_deployment_overview.png)
 
-The TeamViewer Agent SDK enables your application to connect to the TeamViewer IoT Agent process running on the same machine, and then provide your own implementations for these features. By loading a dynamic library, your application can talk to the IoT Agent, make requests and receive replies, send picture data, change settings, and set up callbacks for events that interest you. Under the hood, your app talks to the IoT Agent through IPC over Unix domain sockets.
+The TeamViewer Agent SDK enables your application to connect to the TeamViewer IoT Agent process running on the same machine, and then provide your own implementations for these features. By loading a dynamic library, your application can talk to the IoT Agent, make requests and receive replies, send picture data, change settings, and set up callbacks for events that interest you. Under the hood, your app talks to the IoT Agent through IPC over Unix domain sockets. If your app is on a different machine, it can talk to the IoT Agent over TCP sockets.
 
 ## Ways to use the SDK:
 
 ![Agent SDK Common cases](./doc/agent_sdk_common_cases.png)
+
+### **Qt API**
+
+Designed for direct integration into Qt apps running on the device. You can pass native types (`QString`, etc.), use the Qt framework to grab snapshots of your window and simulate input, etc.
+
+* Source: [TVQtRC/](TVQtRC/)
+* Build artifact: `libTVQtRC.so`
+* A fully featured Qt example application: [examples/Qt/](examples/Qt/)
 
 ### **C++ API**
 
@@ -36,25 +44,47 @@ New and modular, this aims to provide a clean, structured interface. In active d
 * Build artifact: `libTVAgentAPI.so`
 * Simple command-line example apps: [examples/cpp/](examples/cpp/)
 
-### **Qt API**
-
-Designed for direct integration into Qt apps running on the device. You can pass native types (`QString`, ...), use the Qt framework to grab snapshots of your window and simulate input, etc.
-
-* Source: [TVQtRC/](TVQtRC/)
-* Build artifact: `libTVQtRC.so`
-* A fully featured Qt example application: [examples/Qt/](examples/Qt/)
-
-### **Communication Layer API**
-
-For experienced users. The underlying layer used by the C++ and Qt APIs to send and receive raw IPC packets (through an intermediate helper object). Broken down into individual directories per component. Each produces its own `.a` static library your application can selectively link to.
-
-* Source: [CommunicationLayer/](CommunicationLayer/)
-* Build artifacts: one per component, e.g. `AccessControlService/Library/libAccessControlService.a`
-* Example usage can be found in the intermediate helper object: [TVAgentAPIPrivate/](TVAgentAPIPrivate/)
-
 ### **Python Bindings**
 
-A Python wrapper around the C++ API is also available at [Bindings/Python](./Bindings/Python/), providing a virtually 1:1 correspondence with the C++ counterpart. Users who prefer the convenience of Python can refer to the example scripts provided in [examples/py/](examples/py/)
+A Python wrapper around the C++ API is also available, providing a virtually 1:1 correspondence with C++. Users who prefer the convenience of Python can refer to the example scripts provided.
+
+* Source: [Bindings/Python](./Bindings/Python/)
+* Build artifact: `tvagentapi.so`
+* Example scripts: [examples/py/](examples/py/)
+
+## How does your app communicate with the Agent?
+
+The Agent SDK is designed to be flexible and accommodate a wide variety of hardware setups. Your app can run on the same machine as the Agent, or on a different machine.
+
+### Through Unix sockets (same machine):
+
+The Agent will be listening on multiple Unix sockets, most notably the registration service -- by default at `unix:///tmp/teamviewer-iot-agent-services/remoteScreen/registrationService`.
+
+Your app (through the SDK code it loads) then connects to this socket and requests the full list of sockets the Agent has open, each responsible for a particular piece of functionality.
+
+Your app (through the SDK code it loads) will also open multiple sockets of its own -- by default under `unix:///tmp` -- the Agent will talk to you through these. As soon as your application (via the SDK) opens its own sockets, it will communicate them to the Agent via the 'registrationService' socket above. This happens early in the startup phase.
+
+If your setup requires it, you can customize the location of these sockets using [setRemoteScreenSdkUrls()](./TVQtRC/Library/export/TVQtRC/Interface.h#73).
+
+👉 Make sure the Unix socket paths are writable by the Agent and your application.
+
+### Through TCP sockets (same or different machine):
+
+The Agent will be listening on multiple TCP sockets, most notably the registration service -- by default at `tcp+tv://127.0.0.1` (on port 9221).
+
+Similar to the above, your app (through the SDK code it loads) will talk to this service to discover what TCP sockets the Agent has open, and to announce what TCP sockets of its own it has open.
+
+By default, your app's sockets will be located at `tcp+tv://127.0.0.1` (between ports 9237 and 9326).
+
+You can customize these addresses using [setRemoteScreenSdkUrls()](./TVQtRC/Library/export/TVQtRC/Interface.h#73). NB: port numbers are not customizable.
+
+👉 Make sure the TCP ports between app<->Agent are allowed through the firewall.
+
+## Choosing the socket type
+
+It's up to you whether to use Unix or TCP sockets to communicate with the Agent. The choice is a combination of compilation flags and runtime arguments.
+
+See [setRemoteScreenSdkUrls()](./TVQtRC/Library/export/TVQtRC/Interface.h#73) for more information.
 
 ## System Requirements
 
@@ -71,10 +101,21 @@ On Debian systems, you will need the following development packages:
 * `libprotobuf-dev`
 * `protobuf-compiler`
 
-If you also plan to use the Qt API:
+If you plan to use the Qt5 API:
 
 * `qtbase5-dev`
 * `qtdeclarative5-dev`
+
+If you plan to use the Qt6 API:
+
+* `qt6-base-dev`
+* `qt6-declarative-dev`
+* `qml6-module-qtquick`
+* `qml6-module-qtquick-window`
+* `qml6-module-qtqml-workerscript`
+
+Depending on what kind of distribution you are using, it could be necessary to install:
+* `libgl1-mesa-dev`
 
 To build and use the Python bindings:
 
@@ -87,7 +128,7 @@ Depending on your build configuration, you may need to install the following lib
 * Google Protocol Buffers library (3.0 or newer)
 * Google gRPC library (1.16 or newer)
 * zlib (needed by gRPC)
-* Qt 5 (5.3 or newer)
+* Qt 5 (5.3 or newer) if you have Qt 5.2 or lower, screen capture can still work with limited functionality. Please contact https://www.teamviewer.com/en/global/contact-sales/ to start a discussion about your project.
 
 ### System Requirements
 
@@ -139,6 +180,12 @@ Disable building the Qt API + example app:
 cmake -DENABLE_QT_PLUGIN=OFF <path-to-source>/
 ```
 
+Configure for a Qt6 environment:
+
+```bash
+cmake -DQT_MAJOR_VERSION=6 <path-to-source>/
+```
+
 Enable building the Python bindings:
 
 ```bash
@@ -164,11 +211,12 @@ cmake -DCMAKE_INSTALL_PREFIX=<custom-install-path> <path-to-sources-root>
 
 ### Configuration
 
-At installation time, the IoT Agent creates a system group called `tv_api`. An application that wishes to communicate with the Agent must run as a user that is part of this group:
+👉 At installation time, the IoT Agent creates the `tv_api` group. To communicate with the Agent, your application must run as a user that is part of this group:
 
 ```bash
-# add current user to tv_api group
+# add current user to the 'tv_api' group
 usermod -a -G tv_api $USER
+# important: to ensure this takes effect, remember to logout/login (or open a new console/SSH session)
 ```
 
 If your application wants to handle screen grabbing and receive keyboard/mouse input, the IoT Agent needs to be configured accordingly (this functonality in the Agent is off by default):
@@ -214,6 +262,32 @@ teamviewer-iot-agent configure set RemoteScreenChannels 'EAP:FBPush:/dev/fb42'
 ```bash
 teamviewer-iot-agent configure set RemoteScreenChannels 'EAP:WL:/run/user/1000/wayland-0'
 ```
+
+## Qt-Plugin Runtime
+
+During runtime the Qt-Plugin's behavior can be influenced in several ways. Besides the environment variables from Qt and the QGuiApplications flags there are ways to influence the performance, CPU-load etc.
+
+### Environment Variables
+
+```bash
+TV_SDK_QT_FAVOUR_QTQUICK_GRAB = 1
+```
+By setting TV_SDK_QT_FAVOUR_QTQUICK_GRAB in the process' environment the QQuickWindow::grabWindow() can be requested explicitly for grabbing window contents on platforms other than EGLFS.
+
+Background:
+QQuickWindow::grabWindow() imposes a huge performance penalty for the rendering thread. This penalty could render a QtQuick based UI pretty much unusable - especially if there are animations. On the EGLFS platform QQuickWindow::grabWindow is although favoured as there a QQuickWindow cannot be grabbed using QScreen::grabWindow.
+
+```bash
+TV_SDK_QT_FORCE_INTERVAL_GRAB = 1
+```
+By setting TV_SDK_QT_FORCE_INTERVAL_GRAB in the process' environment even if event-based window grabbing is possible it will be ignored and its fallback (interval-based window grabbing) is chosen.
+
+```bash
+TV_SDK_QT_GRABS_PER_SECOND = 10
+```
+By setting TV_SDK_QT_GRABS_PER_SECOND in the process' environment the number of window grabs per second can be adjusted (default is 25).
+
+With a lower setting the CPU-load might be a lot less but the remote control performance will be decreased. It is recommended to choose a lower number for use cases where animations etc. are not important and CPU-time is limited.
 
 ## Creating Access Tokens for Instant Support
 

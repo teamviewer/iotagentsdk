@@ -36,14 +36,27 @@ namespace util
 template <typename T, typename F>
 void dispatcherPost(IDispatcher *dispatcher, std::weak_ptr<T> weakInstance, F&& func)
 {
-	dispatcher->post(
-		[weakInstance = std::move(weakInstance), f = std::forward<F>(func)]()
+	// C++11 lambda limitation workaround
+	// Avoids extra copy of F functor
+	struct WeakAction
+	{
+		WeakAction(std::weak_ptr<T> _weakInstance, F&& _func)
+		: weakInstance{std::move(_weakInstance)}
+		, func{std::move(_func)}
+		{}
+
+		void operator()()
 		{
 			if (auto instance = weakInstance.lock())
 			{
-				f(std::move(instance));
+				func(std::move(instance));
 			}
-		});
+		}
+
+		std::weak_ptr<T> weakInstance;
+		F func;
+	};
+	dispatcher->post(WeakAction{std::move(weakInstance), std::forward<F>(func)});
 }
 
 template <typename T, typename F>

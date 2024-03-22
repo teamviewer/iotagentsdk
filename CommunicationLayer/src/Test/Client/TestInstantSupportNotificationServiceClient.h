@@ -23,9 +23,64 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataInstantSupport.h"
+
+#include <TVRemoteScreenSDKCommunication/InstantSupportService/IInstantSupportNotificationServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/InstantSupportService/NotificationServiceFactory.h>
+
 namespace TestInstantSupportNotificationService
 {
 
-int TestInstantSupportNotificationServiceClient(int argc, char** argv);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestInstantSupportNotificationServiceClient(int /*argc*/, char** /*argv*/)
+{
+	using namespace TVRemoteScreenSDKCommunication::InstantSupportService;
+	using TestData = TestInstantSupportService::TestData<Framework>;
+	const std::string LogPrefix = "[InstantSupportNotificationService][Client][fw=" + std::to_string(Framework) + "] ";
+
+	TVRemoteScreenSDKCommunication::CallStatus response{};
+	const std::shared_ptr<IInstantSupportNotificationServiceClient> client =
+		NotificationServiceFactory::CreateClient<Framework>();
+
+	if (client->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::InstantSupportNotification)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	client->StartClient(TestData::Socket);
+
+	if (client->GetDestination() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	response = client->NotifyInstantSupportError(TestData::ComId, TestData::InvalidToken);
+
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "NotifyInstantSupportError successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "NotifyInstantSupportError failed" << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->NotifyInstantSupportModified(TestData::ComId, TestData::Data());
+
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "NotifyInstantSupportModified successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "NotifyInstantSupportModified failed" << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestInstantSupportNotificationService

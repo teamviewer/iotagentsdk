@@ -60,6 +60,8 @@ public:
 	void setRemoteScreenSdkBaseUrl(QUrl remoteScreenSdkBaseUrl) override;
 	BaseUrlParseResultCode setRemoteScreenSdkBaseUrlChecked(QUrl remoteScreenSdkBaseUrl) override;
 
+	BaseUrlParseResultCode setRemoteScreenSdkUrls(QUrl baseServerUrl, QUrl agentApiUrl) override;
+
 	void registerApplication() override;
 	void deregisterApplication() override;
 
@@ -68,17 +70,17 @@ public:
 
 	ControlMode getControlMode() const override;
 	void setControlMode(ControlMode value) override;
-	QMetaObject::Connection registerControlModeChanged(const std::function<void(ControlMode controlModeValue)>& slot, const QObject* context = nullptr) override;
+	QMetaObject::Connection registerControlModeChanged(const std::function<void(ControlMode controlModeValue)>& slot, const QObject* context) override;
 
 	bool getAccessMode(AccessControl feature, Access& requestedAccess) override;
 	bool setAccessMode(AccessControl feature, Access access) override;
 	bool accessConfirmationReply(AccessControl feature, bool confirmed) override;
-	QMetaObject::Connection registerAccessModeChanged(const std::function<void(AccessControl feature, Access access)>& slot, const QObject* context = nullptr) override;
-	QMetaObject::Connection registerAccessConfirmationRequest(const std::function<void(AccessControl feature, uint32_t timeout)>& slot, const QObject* context = nullptr) override;
+	QMetaObject::Connection registerAccessModeChanged(const std::function<void(AccessControl feature, Access access)>& slot, const QObject* context) override;
+	QMetaObject::Connection registerAccessConfirmationRequest(const std::function<void(AccessControl feature, uint32_t timeout)>& slot, const QObject* context) override;
 
-	QMetaObject::Connection registerForInstantSupportErrorNotification(const std::function<void(InstantSupportError errorCode)>& slot, const QObject* context = nullptr) override;
-	QMetaObject::Connection registerForInstantSupportModifiedNotification(const std::function<void(InstantSupportData data)>& slot, const QObject* context = nullptr) override;
-	QMetaObject::Connection registerForInstantSupportConfirmationRequest(const std::function<void(ConfirmationResponseFunction response)>& slot, const QObject* context = nullptr) override;
+	QMetaObject::Connection registerForInstantSupportErrorNotification(const std::function<void(InstantSupportError errorCode)>& slot, const QObject* context) override;
+	QMetaObject::Connection registerForInstantSupportModifiedNotification(const std::function<void(InstantSupportData data)>& slot, const QObject* context) override;
+	QMetaObject::Connection registerForInstantSupportConfirmationRequest(const std::function<void(ConfirmationResponseFunction response)>& slot, const QObject* context) override;
 
 	bool isTeamViewerSessionRunning() const override;
 	void terminateTeamViewerSessions() override;

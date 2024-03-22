@@ -37,6 +37,19 @@ enum class InstantSupportState
 
 struct InstantSupportData
 {
+	InstantSupportData() = default;
+
+	InstantSupportData(
+		const std::string& _sessionCode,
+		const std::string& _name,
+		const std::string& _description,
+		InstantSupportState _state)
+		: sessionCode(_sessionCode)
+		, name(_name)
+		, description(_description)
+		, state(_state)
+	{}
+
 	std::string sessionCode;
 	std::string name;
 	std::string description;

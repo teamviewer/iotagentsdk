@@ -27,20 +27,39 @@
 
 namespace TestChatInService
 {
-namespace TestData
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+struct TestData;
+
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::gRPCTransport>
 {
+	static constexpr const char* Socket = "unix:///tmp/chatIn";
+	static constexpr const char* ComId = "tokengRPC";
+	static constexpr const char* ChatId = "01234567-89ab-cdef-0123-456789abcdef";
+	static constexpr const char* ChatTitle = "title" ;
+	static constexpr TVRemoteScreenSDKCommunication::ChatService::ChatType ChatType = TVRemoteScreenSDKCommunication::ChatService::ChatType::Machine;
+	static constexpr const uint32_t ChatTypeId = 1234567890;
+	static constexpr TVRemoteScreenSDKCommunication::ChatService::ChatState ChatState = TVRemoteScreenSDKCommunication::ChatService::ChatState::Open;
+	static constexpr const uint32_t LocalId = 1234567890;
+	static constexpr const char* Content = "content";
+	static constexpr const uint32_t Count = 1;
+	static constexpr const char* MessageId = "f1234567-89ab-cdef-0123-456789abcde0";
+};
 
-constexpr const char* Socket = "unix:///tmp/chatIn";
-constexpr const char* ComId = "token";
-constexpr const char* ChatId = "01234567-89ab-cdef-0123-456789abcdef";
-constexpr const char* ChatTitle = "title" ;
-const TVRemoteScreenSDKCommunication::ChatService::ChatType ChatType = TVRemoteScreenSDKCommunication::ChatService::ChatType::Machine;
-constexpr const uint32_t ChatTypeId = 1234567890;
-const TVRemoteScreenSDKCommunication::ChatService::ChatState ChatState = TVRemoteScreenSDKCommunication::ChatService::ChatState::Open;
-constexpr const uint32_t LocalId = 1234567890;
-constexpr const char* Content = "content";
-constexpr const uint32_t Count = 1;
-constexpr const char* MessageId = "f1234567-89ab-cdef-0123-456789abcde0";
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
+{
+	static constexpr const char* Socket = "tv+tcp://127.0.0.1:9003";
+	static constexpr const char* ComId = "tokenSocketIO";
+	static constexpr const char* ChatId = "01234567-89ab-cdef-0123-456789defabc";
+	static constexpr const char* ChatTitle = "ChatTitle" ;
+	static constexpr TVRemoteScreenSDKCommunication::ChatService::ChatType ChatType = TVRemoteScreenSDKCommunication::ChatService::ChatType::Machine;
+	static constexpr const uint32_t ChatTypeId = 123456789;
+	static constexpr TVRemoteScreenSDKCommunication::ChatService::ChatState ChatState = TVRemoteScreenSDKCommunication::ChatService::ChatState::Open;
+	static constexpr const uint32_t LocalId = 123456789;
+	static constexpr const char* Content = "Content";
+	static constexpr const uint32_t Count = 1;
+	static constexpr const char* MessageId = "f1234567-89ab-cdef-0123-456789deabc0";
+};
 
-} // namespace TestData
 } // namespace TestChatInService

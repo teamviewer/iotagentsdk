@@ -23,6 +23,7 @@
 //********************************************************************************//
 #pragma once
 
+#include <TVRemoteScreenSDKCommunication/ImageService/ServiceFactory.h>
 #include <TVRemoteScreenSDKCommunication/ImageService/IImageServiceServer.h>
 
 #include <memory>
@@ -33,9 +34,34 @@ namespace TestImageServicePerformance
 
 struct SharedInformation
 {
-	std::atomic<uint64_t> counter {0};
+	std::atomic<uint64_t> counter{0};
 };
 
-std::shared_ptr<TVRemoteScreenSDKCommunication::ImageService::IImageServiceServer> TestImageService(SharedInformation& information, const std::string& location);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+std::shared_ptr<TVRemoteScreenSDKCommunication::ImageService::IImageServiceServer> TestImageService(
+	SharedInformation& information,
+	const std::string& location)
+{
+	using namespace TVRemoteScreenSDKCommunication::ImageService;
+	const std::shared_ptr<IImageServiceServer> server = ServiceFactory::CreateServer<Framework>();
+
+	const auto receiveFunction = [&information](
+		const std::string& /*communicationId*/,
+		int32_t /*x*/,
+		int32_t /*y*/,
+		int32_t /*width*/,
+		int32_t /*height*/,
+		const std::string& /*pictureData*/,
+		const IImageServiceServer::UpdateImageResponseCallback& response)
+	{
+		++information.counter;
+		response(TVRemoteScreenSDKCommunication::CallStatus::Ok);
+	};
+	server->SetUpdateImageCallback(receiveFunction);
+
+	server->StartServer(location);
+
+	return server;
+}
 
 } // namespace TestImageServicePerformance

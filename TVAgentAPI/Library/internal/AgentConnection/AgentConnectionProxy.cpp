@@ -32,6 +32,13 @@ AgentConnectionProxy::AgentConnectionProxy(std::shared_ptr<AgentConnection> conn
 {
 }
 
+IAgentConnection::SetConnectionURLsResult AgentConnectionProxy::setConnectionURLs(
+	const char* baseSdkURL,
+	const char* agentAPIURL)
+{
+	return m_connection->setConnectionURLs(baseSdkURL, agentAPIURL);
+}
+
 void AgentConnectionProxy::start()
 {
 	return m_connection->start();

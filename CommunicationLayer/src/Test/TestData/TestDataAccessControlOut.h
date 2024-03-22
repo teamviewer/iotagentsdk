@@ -29,15 +29,28 @@
 
 namespace TestAccessControlOutService
 {
-namespace TestData
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+struct TestData;
+
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::gRPCTransport>
 {
+	static constexpr const char* Socket = "unix:///tmp/accessControlOut";
+	static constexpr const char* ComId = "tokengRPC";
+	static constexpr TVRemoteScreenSDKCommunication::AccessControlService::AccessControl feature = TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::FileTransfer;
+	static constexpr uint32_t timeout = 30;
+	static constexpr TVRemoteScreenSDKCommunication::AccessControlService::Access access = TVRemoteScreenSDKCommunication::AccessControlService::Access::AfterConfirmation;
+	static constexpr bool confirmed = true;
+};
 
-constexpr const char* Socket = "unix:///tmp/accessControlOut";
-constexpr const char* ComId = "token";
-const TVRemoteScreenSDKCommunication::AccessControlService::AccessControl feature = TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::FileTransfer;
-const uint32_t timeout = 30;
-const TVRemoteScreenSDKCommunication::AccessControlService::Access access = TVRemoteScreenSDKCommunication::AccessControlService::Access::AfterConfirmation;
-const bool confirmed = true;
-
-} // namespace TestData
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
+{
+	static constexpr const char* Socket = "tv+tcp://127.0.0.1:9003";
+	static constexpr const char* ComId = "tokenSocketIO";
+	static constexpr TVRemoteScreenSDKCommunication::AccessControlService::AccessControl feature = TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::FileTransfer;
+	static constexpr uint32_t timeout = 30;
+	static constexpr TVRemoteScreenSDKCommunication::AccessControlService::Access access = TVRemoteScreenSDKCommunication::AccessControlService::Access::AfterConfirmation;
+	static constexpr bool confirmed = true;
+};
 } // namespace TestAccessControlOutService

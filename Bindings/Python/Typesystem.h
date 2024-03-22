@@ -32,6 +32,11 @@ namespace tvagentapipy
 
 struct PyTypeMeta final
 {
+	PyTypeMeta(PyTypeObject* pyTypeObject, const char* publicName)
+	: pyTypeObject{pyTypeObject}
+	, publicName{publicName}
+	{}
+
 	PyTypeObject* pyTypeObject = nullptr;
 	const char* publicName = nullptr;
 };

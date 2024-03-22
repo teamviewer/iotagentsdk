@@ -34,12 +34,27 @@ namespace tvqtsdk
 
 struct Screen
 {
+	Screen() = default;
+
+	Screen(QString _name, const QRect& _geometry)
+	: name{std::move(_name)}
+	, geometry{_geometry}
+	{}
+
 	QString name{};
 	QRect geometry{};
 };
 
 struct VirtualDesktop
 {
+	VirtualDesktop() = default;
+
+	VirtualDesktop(int32_t _width, int32_t _height, QVector<Screen> _screens)
+	: width{_width}
+	, height{_height}
+	, screens{std::move(_screens)}
+	{}
+
 	int32_t width = 0;
 	int32_t height = 0;
 	QVector<Screen> screens;

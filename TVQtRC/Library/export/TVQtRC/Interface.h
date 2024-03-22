@@ -45,7 +45,7 @@ namespace tvqtsdk
 class TVQtRCPluginInterface
 {
 public:
-	virtual ~TVQtRCPluginInterface() {}
+	virtual ~TVQtRCPluginInterface() = default;
 
 	/**
 	 * @brief setRemoteScreenSdkBaseUrl sets a custom base URL where the plugin will locate the socket used to communicate
@@ -53,8 +53,9 @@ public:
 	 * this method, you should do so once early on after the plugin has been loaded, before any [register*] methods.
 	 * Affects all subsequently initiated communication sessions.
 	 * @param remoteScreenSdkBaseUrl the new base URL, e.g., "unix:///root/tvrun"
+	 * @deprecated use setRemoteScreenSdkUrls
 	 */
-	virtual void setRemoteScreenSdkBaseUrl(QUrl remoteScreenSdkBaseUrl) = 0;
+	Q_DECL_DEPRECATED virtual void setRemoteScreenSdkBaseUrl(QUrl remoteScreenSdkBaseUrl) = 0;
 
 	/**
 	 * @brief setRemoteScreenSdkBaseUrlChecked sets a custom base URL where the plugin will locate the socket used to communicate
@@ -65,8 +66,29 @@ public:
 	 * If the limit is reached, the function will return a corresponding error code and the SDK will not use the provided path.
 	 * In that case, please provide a shorter path to this function.
 	 * @param remoteScreenSdkBaseUrl the new base URL, e.g., "unix:///root/tvrun"
+	 * @deprecated use setRemoteScreenSdkUrls
 	 */
-	virtual BaseUrlParseResultCode setRemoteScreenSdkBaseUrlChecked(QUrl remoteScreenSdkBaseUrl) = 0;
+	Q_DECL_DEPRECATED virtual BaseUrlParseResultCode setRemoteScreenSdkBaseUrlChecked(QUrl remoteScreenSdkBaseUrl) = 0;
+
+	/**
+	 * @brief setRemoteScreenSdkUrls sets a custom base URL where the plugin will host its server sockets
+	 * and agent URL which locates the IoT Agent API entry point.
+	 * If never called, by default @p baseServerUrl is @c unix:///tmp or @c tcp+tv://127.0.0.1
+	 * and @p agentApiUrl is @c unix:///tmp/teamviewer-iot-agent-services/remoteScreen/registrationService or @c tcp+tv://127.0.0.1:9221
+	 * depending on which flags the SDK has been built with.
+	 * Check TV_COMM_ENABLE_GRPC and TV_COMM_ENABLE_PLAIN_SOCKET CMake options.
+	 * The gRPC version is always preferable over TCP once if compiled with both options enabled (by default both are ON).
+	 * If you call this method, you should do so once early on after the plugin has been loaded,
+	 * before any [register*] methods.
+	 * Affects all subsequently initiated communication sessions.
+	 * This functions checks if the base URL in combination with the created sockets names, will exceed the limit for socket names.
+	 * If the limit is reached, the function will return a corresponding error code and the SDK will not use the provided path.
+	 * In that case, please provide a shorter path to this function.
+	 * Apart from that it checks consistency and validity of the URLs given (e.g. if the schemes differ, rejects the arguments).
+	 * @param baseServerUrl the new base URL
+	 * @param agentApiUrl path to agent API entry point
+	 */
+	virtual BaseUrlParseResultCode setRemoteScreenSdkUrls(QUrl baseServerUrl, QUrl agentApiUrl) = 0;
 
 	/**
 	 * @brief registerApplication registers the current application on the TeamViewer agent and initiates communication.
@@ -82,7 +104,7 @@ public:
 	 * @brief registerApplication shuts down all communication with the TeamViewer agent.
 	 * If there is a remote control session running, it will be stopped and any registered window will be
 	 * deregistered.
-	 * NOTE: All registered external slots stay registerd (e.g. using registerAgentCommunicationStatusChanged()).
+	 * NOTE: All registered external slots stay registered (e.g. using registerAgentCommunicationStatusChanged()).
 	 */
 	virtual void deregisterApplication() = 0;
 
@@ -128,7 +150,7 @@ public:
 	 * @brief getAccessMode requests the current access mode for the given feature
 	 * @param feature is the AccessControl value for which access mode is requested
 	 * @param access contains the requested access mode, if the return value of this function is false then requestedAccess will stay unchanged
-	 * @return true if this function call is successfull, false otherwise
+	 * @return true if this function call is successful, false otherwise
 	 */
 	virtual bool getAccessMode(AccessControl feature, Access& access) = 0;
 
@@ -136,7 +158,7 @@ public:
 	 * @brief setAccessMode requests to set the given access value for the given feature
 	 * @param feature is the AccessControl value to set the given access mode to this feature
 	 * @param access is the access mode value to set
-	 * @return true if this function call is successfull, false otherwise
+	 * @return true if this function call is successful, false otherwise
 	 */
 	virtual bool setAccessMode(AccessControl feature, Access access) = 0;
 
@@ -149,7 +171,7 @@ public:
 	virtual QMetaObject::Connection registerAccessModeChanged(const std::function<void(AccessControl feature, Access access)>& slot, const QObject* context = nullptr) = 0;
 
 	/**
-	 * @brief registerAcessConfirmationRequest registers the given slot to handle an access confirmation request for the given feature. The reply should be sent by accessConfirmationReply().
+	 * @brief registerAccessConfirmationRequest registers the given slot to handle an access confirmation request for the given feature. The reply should be sent by accessConfirmationReply().
 	 * @param slot function to execute for this event
 	 * @param context trackable QObject that indicates if the slot can be called safely
 	 * @return connection object for tracking and managing the resulting signal-slot relationship
@@ -182,10 +204,10 @@ public:
 	virtual QMetaObject::Connection registerForInstantSupportConfirmationRequest(const std::function<void(ConfirmationResponseFunction response)>& slot, const QObject* context = nullptr) = 0;
 
 	/**
-	 * @brief accessConfirmationReply sends the confirmation reply for the given feature on the access confirmation request received by registerAcessConfirmationRequest()
+	 * @brief accessConfirmationReply sends the confirmation reply for the given feature on the access confirmation request received by registerAccessConfirmationRequest()
 	 * @param feature is the name of the feature for which confirmation reply is sent
 	 * @param confirmed true if the access for the given feature is confirmed, false if not confirmed
-	 * @return true if this function call is successfull, false otherwise
+	 * @return true if this function call is successful, false otherwise
 	 */
 	virtual bool accessConfirmationReply(AccessControl feature, bool confirmed) = 0;
 
@@ -249,7 +271,7 @@ public:
 	 * @param description Description for the service case
 	 * @param sessionCode Session code is an optional parameter.
 	 * If it is not empty then it will be checked to be valid, otherwise new session code will be created.
-	 * @return true if this function call is successfull, false otherwise
+	 * @return true if this function call is successful, false otherwise
 	 */
 	virtual bool requestInstantSupport(
 		const QString& accessToken,
@@ -267,7 +289,7 @@ public:
 	 * @param sessionCode Session code is an optional parameter.
 	 * If it is not empty then it will be checked to be valid, otherwise new session code will be created.
 	 * @param email Email address of the operator, is an optional parameter
-	 * @return true if this function call is successfull, false otherwise
+	 * @return true if this function call is successful, false otherwise
 	 */
 	virtual bool requestInstantSupportV2(
 		const QString& accessToken,

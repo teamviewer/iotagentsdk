@@ -41,6 +41,40 @@
 namespace tvqtsdk
 {
 
+namespace
+{
+
+void ConvertButtonEventToQtValues(MouseButton button, bool pressed, Qt::MouseButton& changedButton, Qt::MouseButtons& buttonsState)
+{
+	changedButton = Qt::MouseButton::NoButton;
+
+	switch (button)
+	{
+	case MouseButton::Left:
+		changedButton = Qt::MouseButton::LeftButton;
+		break;
+	case MouseButton::Middle:
+		changedButton = Qt::MouseButton::MiddleButton;
+		break;
+	case MouseButton::Right:
+		changedButton = Qt::MouseButton::RightButton;
+		break;
+	case MouseButton::Unknown:
+		changedButton = Qt::MouseButton::NoButton;
+	}
+
+	if (pressed)
+	{
+		buttonsState |= changedButton;
+	}
+	else
+	{
+		buttonsState &= ~changedButton;
+	}
+}
+
+} // namespace
+
 InputSimulator::InputSimulator(
 	const std::weak_ptr<CommunicationAdapter>& adapter,
 	const std::shared_ptr<ILogging>& logging,
@@ -165,35 +199,6 @@ void InputSimulator::simulateMouse(const std::shared_ptr<SimulateMouseCommand>& 
 
 }
 
-void ConvertButtonEventToQtValues(MouseButton button, bool pressed, Qt::MouseButton& changedButton, Qt::MouseButtons& buttonsState)
-{
-	changedButton = Qt::MouseButton::NoButton;
-
-	switch (button)
-	{
-	case MouseButton::Left:
-		changedButton = Qt::MouseButton::LeftButton;
-		break;
-	case MouseButton::Middle:
-		changedButton = Qt::MouseButton::MiddleButton;
-		break;
-	case MouseButton::Right:
-		changedButton = Qt::MouseButton::RightButton;
-		break;
-	case MouseButton::Unknown:
-		changedButton = Qt::MouseButton::NoButton;
-	}
-
-	if (pressed)
-	{
-		buttonsState |= changedButton;
-	}
-	else
-	{
-		buttonsState &= ~changedButton;
-	}
-}
-
 void InputSimulator::simulateMousePress(QWindow* window, const QPoint& point, MouseButton button)
 {
 	Q_ASSERT(window);
@@ -205,6 +210,8 @@ void InputSimulator::simulateMousePress(QWindow* window, const QPoint& point, Mo
 		{
 			QEvent::MouseButtonPress,
 			point,
+			point,
+			window->mapToGlobal(point),
 			changedButton,
 			m_pressedMouseButtons,
 			m_convertedModifiers
@@ -216,10 +223,10 @@ void InputSimulator::simulateMouseRelease(QWindow* window, const QPoint& point, 
 {
 	Q_ASSERT(window);
 
+	qint64 currentTimestamp = QDateTime::currentMSecsSinceEpoch();
+
 	Qt::MouseButton changedButton;
 	ConvertButtonEventToQtValues(button, false, changedButton, m_pressedMouseButtons);
-
-	qint64 currentTimestamp = QDateTime::currentMSecsSinceEpoch();
 
 	/*
 	 * How to know if it s a doubleclick
@@ -245,6 +252,7 @@ void InputSimulator::simulateMouseRelease(QWindow* window, const QPoint& point, 
 					QEvent::MouseButtonDblClick,
 					point,
 					point,
+					window->mapToGlobal(point),
 					changedButton,
 					m_pressedMouseButtons,
 					m_convertedModifiers
@@ -261,16 +269,19 @@ void InputSimulator::simulateMouseRelease(QWindow* window, const QPoint& point, 
 			QEvent::MouseButtonRelease,
 			point,
 			point,
+			window->mapToGlobal(point),
 			changedButton,
 			m_pressedMouseButtons,
 			m_convertedModifiers
 		};
+
 	QCoreApplication::postEvent(window, ev);
 }
 
 void InputSimulator::simulateMouseMove(QWindow* window, const QPoint& point)
 {
 	Q_ASSERT(window);
+
 	auto ev = new QMouseEvent
 		{
 			QEvent::MouseMove,

@@ -24,9 +24,13 @@ SOFTWARE
 """
 __license__ = "MIT License"
 
+from . import with_connect_urls
 
+
+@with_connect_urls
 def test_instant_support(request_data=None, expected_session_data=None, expected_error_code=None,
-                         incoming_connection_response=None, amend_support_case_data=None):
+                         incoming_connection_response=None, amend_support_case_data=None,
+                         base_sdk_url=None, agent_api_url=None):
     """
     Instant Support test helper
 
@@ -80,7 +84,9 @@ def test_instant_support(request_data=None, expected_session_data=None, expected
         response_success = True
 
     api = tvagentapi.TVAgentAPI()
-    connection = api.createAgentConnectionLocal(None)
+    connection = api.createAgentConnection(None)
+    if base_sdk_url and agent_api_url:
+        connection.setConnectionURLs(base_sdk_url, agent_api_url)
     instant_support_module = connection.getModule(tvagentapi.ModuleType.InstantSupport)
     connection.setCallbacks(statusChanged=lambda status: connection_status_changed(status, instant_support_module))
     instant_support_module.setCallbacks(

@@ -36,12 +36,28 @@ public:
 	/**
 	 * @brief createAgentConnectionLocal creates an instance for connection to a running instance of TeamViewer IoT Agent
 	 * The returned connection is to be used in subsequent calls to create functionality modules (e.g. Instant Support, TV Session Management, Remote Control, etc.).
-	 * @param logging would be used internaly for logging, logging ownership remains on caller side and is not transferred to the connection. If logging is nullptr no logging happens.
+	 * @param logging would be used internally for logging, logging ownership remains on caller side and is not transferred to the connection. If logging is nullptr no logging happens.
 	 * The caller must ensure that ILogging is valid before at any moment until destroyAgentConnection() is called.
-	 * NOTE: The ownership of the created connection is tranferred to the caller. Use destroyAgentConnection() to delete created connection
+	 * NOTE: The ownership of the created connection is transferred to the caller. Use destroyAgentConnection() to delete created connection
 	 * @return a pointer to the connection or nullptr in case of a resource error.
+	 * @deprecated use createAgentConnection
 	 */
 	virtual IAgentConnection* createAgentConnectionLocal(ILogging* logging = nullptr) = 0;
+
+	/**
+	 * @brief createAgentConnection creates an instance of a connection to the running TeamViewer IoT Agent instance.
+	 * By default the connection already has the parameters for connecting to the agent.
+	 * You can change them via @p setConnectionURLs method before starting the connection.
+	 * The returned connection is to be used in subsequent calls to create functionality modules
+	 * (e.g. Instant Support, TV Session Management, Access Control, etc.).
+	 *
+	 * @param logging optional interface used internally for logging. Ownership remains on the caller's side and is not transferred to the connection. If nullptr, logging is disabled.
+	 * The caller must ensure ILogging remains valid at all times until destroyAgentConnection() is called.
+	 * NOTE: The ownership of the created connection is transferred to the caller, who will eventually dispose of it via destroyAgentConnection().
+	 * @return a pointer to the connection or nullptr in case of a resource error.
+	 */
+	virtual IAgentConnection* createAgentConnection(ILogging* logging = nullptr) = 0;
+
 	/**
 	 * @brief destroyAgentConnection destroys an instance of IAgentConnection created with createAgentConnection()
 	 * NOTE: After this call no more logging happens.

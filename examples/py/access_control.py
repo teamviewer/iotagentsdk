@@ -25,6 +25,7 @@ SOFTWARE
 __license__ = "MIT License"
 
 from argparse import ArgumentParser
+import os
 import tvagentapi
 
 Feature = tvagentapi.AccessControlModule.Feature
@@ -34,17 +35,20 @@ Access = tvagentapi.AccessControlModule.Access
 choices = [a.name for a in Access]
 parser = ArgumentParser(description="Access controls management.")
 parser.add_argument('-f', '--file-transfer',help='set file transfer access control',
-    choices=choices, default=None)
+    choices=choices, default='')
 parser.add_argument('-v', '--remote-view', help='set remote view access control',
-    choices=choices, default=None)
+    choices=choices, default='')
 parser.add_argument('-c', '--remote-control', help='set remote control access control',
-    choices=choices, default=None)
+    choices=choices, default='')
+parser.add_argument('-r', '--screen-recording', help='set screen recording access control',
+    choices=choices, default='')
 args = parser.parse_args()
 
 set_controls = {
-    Feature.FileTransfer: getattr(Access, args.file_transfer) if args.file_transfer else None,
-    Feature.RemoteView: getattr(Access, args.remote_view) if args.remote_view else None,
-    Feature.RemoteControl: getattr(Access, args.remote_control) if args.remote_control else None,
+    Feature.FileTransfer: getattr(Access, args.file_transfer, None),
+    Feature.RemoteView: getattr(Access, args.remote_view, None),
+    Feature.RemoteControl: getattr(Access, args.remote_control, None),
+    Feature.ScreenRecording: getattr(Access, args.screen_recording, None),
 }
 
 
@@ -53,7 +57,7 @@ def connection_status_changed(status, ac_module):
     if status == tvagentapi.AgentConnection.Status.Connected:
 
         print("Feature - Access:")
-        for feature in (Feature.FileTransfer, Feature.RemoteView, Feature.RemoteControl):
+        for feature in (Feature.FileTransfer, Feature.RemoteView, Feature.RemoteControl, Feature.ScreenRecording):
             print(f"\t{feature.name} - {ac_module.getAccess(feature).name}")
 
         # set access controls
@@ -81,7 +85,9 @@ Confirm Access Control request? (y/N): """)
 
 
 api = tvagentapi.TVAgentAPI()
-connection = api.createAgentConnectionLocal()
+connection = api.createAgentConnection()
+if 'TV_BASE_SDK_URL' in os.environ and 'TV_AGENT_API_URL' in os.environ:
+    connection.setConnectionURLs(os.environ['TV_BASE_SDK_URL'], os.environ['TV_AGENT_API_URL'])
 
 access_control_module = connection.getModule(tvagentapi.ModuleType.AccessControl)
 assert access_control_module.isSupported(), "Access Control Module not supported"

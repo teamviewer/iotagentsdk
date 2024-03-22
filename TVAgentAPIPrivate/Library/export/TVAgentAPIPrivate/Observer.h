@@ -98,11 +98,12 @@ public:
 			it = m_observerControl->callbacks.emplace(m_observerControl->callbacks.end(), std::forward<F>(cb));
 		}
 
+		const auto weakOC = std::weak_ptr<ObserverControl>(m_observerControl);
 		return ObserverConnection
 		{
-			[oC = std::weak_ptr<ObserverControl>(m_observerControl), it]()
+			[weakOC, it]()
 			{
-				if (const auto obsCtrl = oC.lock())
+				if (const auto obsCtrl = weakOC.lock())
 				{
 					std::lock_guard<std::recursive_mutex> lock(obsCtrl->accessMtx);
 					obsCtrl->callbacks.erase(it);

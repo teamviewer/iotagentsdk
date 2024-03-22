@@ -37,6 +37,8 @@ public:
 	AgentConnectionProxy(std::shared_ptr<AgentConnection> connection);
 	~AgentConnectionProxy() override = default;
 
+	SetConnectionURLsResult setConnectionURLs(const char* baseSdkURL, const char* agentAPIURL) override;
+
 	void start() override;
 	void stop() override;
 	Status getStatus() const override;

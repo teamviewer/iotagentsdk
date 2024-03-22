@@ -23,9 +23,63 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataViewGeometry.h"
+
+#include <TVRemoteScreenSDKCommunication/ViewGeometryService/IViewGeometryServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/ViewGeometryService/ServiceFactory.h>
+
+#include <iostream>
+
 namespace TestViewGeometryService
 {
 
-int TestViewGeometryServiceClient(int argc, char** argv);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestViewGeometryServiceClient(int /*argc*/, char** /*argv*/)
+{
+	using namespace TVRemoteScreenSDKCommunication::ViewGeometryService;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[ViewGeometryService][Client][fw=" + std::to_string(Framework) + "] ";
+
+	const auto client = ServiceFactory::CreateClient<Framework>();
+
+	if (client->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::ViewGeometry)
+	{
+		std::cerr << LogPrefix << "Unexpected service type\n";
+		exit(EXIT_FAILURE);
+	}
+
+	client->StartClient(TestData::Socket);
+	if (client->GetDestination() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location\n";
+		exit(EXIT_FAILURE);
+	}
+
+	auto result = client->UpdateVirtualDesktop(TestData::ComId, TestData::virtualDesktop());
+	if (result.IsOk())
+	{
+		std::cout << LogPrefix << "UpdateVirtualDesktop successful\n";
+	}
+	else
+	{
+		std::cerr << LogPrefix << "UpdateVirtualDesktop Error: " <<
+			result.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	result = client->UpdateAreaOfInterest(TestData::ComId, TestData::areaOfInterest());
+	if (result.IsOk())
+	{
+		std::cout << LogPrefix << "UpdateAreaOfInterest successful\n";
+	}
+	else
+	{
+		std::cerr << LogPrefix << "UpdateAreaOfInterest Error: " <<
+			result.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestViewGeometryService

@@ -42,9 +42,10 @@ class LoggingProxy;
 class AgentConnection final : public IAgentConnection
 {
 public:
-	static std::shared_ptr<AgentConnection> Create(ILogging* logging, std::string registrationServiceLocation);
+	static std::shared_ptr<AgentConnection> Create(ILogging* logging);
 	~AgentConnection() override;
 
+	SetConnectionURLsResult setConnectionURLs(const char* baseSdkURL, const char* agentAPIURL) override;
 	void start() override;
 	void stop() override;
 	Status getStatus() const override;
@@ -52,7 +53,7 @@ public:
 	bool processEvents(bool waitForMoreEvents, uint32_t timeoutMs) override;
 	IModule* getModule(IModule::Type moduleType) override;
 
-	// Non virtual, doesn't leak out to user facing IAgentConnection
+	// Non-virtual, doesn't leak out to user facing IAgentConnection
 	std::shared_ptr<CommunicationChannel> getCommunicationChannel() const;
 	std::shared_ptr<IDispatcher> getDispatcher() const;
 	void setLogging(ILogging* logging);

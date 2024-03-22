@@ -35,7 +35,7 @@ from tvagentapi_test.chat import sub_test_chat_error_send_message
 
 # Test cases
 test_cases = {
-    'test_send_receive': lambda: test_chat(
+    'test_send_receive': test_chat(
         behavior=[
             # receive and send first messages to create the chat
             lambda connection: sub_test_chat_send_receive_messages(
@@ -54,13 +54,13 @@ test_cases = {
             )
         ]
     ),
-    'test_load_messages': lambda: test_chat(
+    'test_load_messages': test_chat(
         behavior=[
             lambda connection: sub_test_chat_send_receive_messages(connection, expect_chat_room_created=False, expected_message_pairs=[("Hello", "Hi 😀")]),
             lambda connection: sub_test_chat_load_messages(connection, messages_to_load=2, expected_messages=["Hello", "Hi 😀"])
         ]
     ),
-    'test_delete_history': lambda: test_chat(
+    'test_delete_history': test_chat(
         behavior=[
             lambda connection: sub_test_chat_send_receive_messages(connection, expect_chat_room_created=False, expected_message_pairs=[("Hello", "Hi 😀")]),
             lambda connection: sub_test_chat_load_messages(connection, messages_to_load=2, expected_messages=["Hello", "Hi 😀"]),
@@ -68,13 +68,13 @@ test_cases = {
             lambda connection: sub_test_chat_load_messages(connection, messages_to_load=2, expected_messages=[])
         ]
     ),
-    'test_delete_chat': lambda: test_chat(
+    'test_delete_chat': test_chat(
         behavior=[
             lambda connection: sub_test_chat_send_receive_messages(connection, expect_chat_room_created=False, expected_message_pairs=[("Hello", None)]),
             lambda connection: sub_test_chat_delete_chat(connection, number_of_rooms_to_delete=1)
         ]
     ),
-    'test_error_cases': lambda: test_chat(
+    'test_error_cases': test_chat(
         behavior=[
             lambda connection: sub_test_chat_send_receive_messages(connection, expect_chat_room_created=False, expected_message_pairs=[("Hello", None)]),
             lambda connection: sub_test_chat_error_send_message(connection)

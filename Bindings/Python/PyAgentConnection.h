@@ -55,5 +55,6 @@ struct PyAgentConnection final
 
 PyTypeObject* GetPyTypeAgentConnection();
 PyTypeObject* GetPyTypeAgentConnection_Status();
+PyTypeObject* GetPyTypeAgentConnection_SetConnectionURLsResult();
 
 } // namespace tvagentapipy

@@ -27,6 +27,7 @@ __license__ = "MIT License"
 import select
 import sys
 import time
+import os
 
 import tvagentapi
 
@@ -282,7 +283,9 @@ def history_deleted(chat_id):
 
 
 api = tvagentapi.TVAgentAPI()
-connection = api.createAgentConnectionLocal()
+connection = api.createAgentConnection()
+if 'TV_BASE_SDK_URL' in os.environ and 'TV_AGENT_API_URL' in os.environ:
+    connection.setConnectionURLs(os.environ['TV_BASE_SDK_URL'], os.environ['TV_AGENT_API_URL'])
 connection.setCallbacks(statusChanged=connection_status_chaged)
 
 chat = connection.getModule(tvagentapi.ModuleType.Chat)

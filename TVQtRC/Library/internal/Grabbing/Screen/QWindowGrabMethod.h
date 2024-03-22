@@ -30,7 +30,9 @@
 
 #include <QtCore/QPointer>
 #include <QtGui/QWindow>
+#include <QtCore/QTimer>
 
+#include <atomic>
 #include <mutex>
 
 namespace tvqtsdk
@@ -51,25 +53,26 @@ public:
 	ColorFormat getColorFormat() override;
 
 private:
-	class GrabResultProxy;
 	Q_SLOT void reactOnScreenUpdate();
+	Q_SLOT void sendIfScreenChanged();
 
 	void signalImageDefinitionChanged();
 
-	QSharedPointer<GrabResultProxy> m_grabResultContainer;
+#ifdef WIDGETS_EVENT_DRIVEN_GRABBING
+	Q_SLOT void conditionalReactOnScreenUpdate();
+
+	QPointer<QObject> m_listener;
+	std::atomic_bool m_repainting{true};
+#endif
+
 	QMetaObject::Connection m_grabWindowConnection;
+	QMetaObject::Connection m_timerConnection;
 	const QPointer<QWindow> m_window = nullptr;
-	QTimer* m_timer = nullptr;
+	const QPointer<QTimer> m_timer = nullptr;
 	QImage::Format m_grabColorFormat = QImage::Format::Format_Invalid;
-};
 
-class QWindowGrabMethod::GrabResultProxy final : public QObject
-{
-	Q_OBJECT
-public:
-	GrabResultProxy() = default;
-
-	Q_SIGNAL void grabResultProvided(const tvqtsdk::ScreenGrabResult& result);
+	ScreenGrabResult m_lastGrabResult;
+	std::mutex m_backbufferMutex;
 };
 
 } // namespace tvqtsdk

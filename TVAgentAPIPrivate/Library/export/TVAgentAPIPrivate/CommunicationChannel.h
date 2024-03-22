@@ -25,18 +25,19 @@
 
 #include "ILoggingPrivate.h"
 
-#include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/ConnectionData.h>
 #include <TVRemoteScreenSDKCommunication/AccessControlService/AccessControl.h>
+#include <TVRemoteScreenSDKCommunication/ChatService/Chat.h>
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/ParseUrl.h>
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/ServiceType.h>
+#include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/ConnectionData.h>
 #include <TVRemoteScreenSDKCommunication/ImageService/ColorFormat.h>
+#include <TVRemoteScreenSDKCommunication/InputService/KeyState.h>
+#include <TVRemoteScreenSDKCommunication/InputService/MouseButton.h>
 #include <TVRemoteScreenSDKCommunication/InstantSupportService/InstantSupportData.h>
 #include <TVRemoteScreenSDKCommunication/InstantSupportService/InstantSupportError.h>
-#include <TVRemoteScreenSDKCommunication/InputService/MouseButton.h>
-#include <TVRemoteScreenSDKCommunication/InputService/KeyState.h>
 #include <TVRemoteScreenSDKCommunication/SessionControlService/ControlMode.h>
 #include <TVRemoteScreenSDKCommunication/SessionStatusService/GrabStrategy.h>
 #include <TVRemoteScreenSDKCommunication/ViewGeometryService/VirtualDesktop.h>
-#include <TVRemoteScreenSDKCommunication/ChatService/Chat.h>
-#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/ServiceType.h>
 
 #include "Observer.h"
 
@@ -49,78 +50,17 @@
 
 namespace TVRemoteScreenSDKCommunication
 {
-namespace ConnectivityService
-{
-class IConnectivityServiceServer;
-class IConnectivityServiceClient;
-} // namespace ConnectivityService
-
-namespace ImageService
-{
-class IImageServiceClient;
-} // namespace ImageService
-
-namespace ImageNotificationService
-{
-class IImageNotificationServiceClient;
-} // ImageNotificationService
-
-namespace InputService
-{
-class IInputServiceServer;
-} // namespace InputService
-
 namespace RegistrationService
 {
 class IRegistrationServiceClient;
-struct ServiceInformation;
 } // namespace RegistrationService
-
-namespace SessionControlService
-{
-class ISessionControlServiceClient;
-} // namespace SessionControlService
-
-namespace SessionStatusService
-{
-class ISessionStatusServiceServer;
-} // namespace SessionStatusService
-
-namespace InstantSupportService
-{
-class IInstantSupportServiceClient;
-class IInstantSupportNotificationServiceServer;
-} // namespace InstantSupportService
-
-namespace ConnectionConfirmationService
-{
-class IConnectionConfirmationResponseServiceClient;
-class IConnectionConfirmationRequestServiceServer;
-} //ConnectionConfirmationService
-
-namespace AccessControlService
-{
-class IAccessControlInServiceClient;
-class IAccessControlOutServiceServer;
-} // namespace AccessControlService
-
-namespace ViewGeometryService
-{
-class IViewGeometryServiceClient;
-} // namespace ViewGeometryService
-
-namespace ChatService
-{
-class IChatInServiceClient;
-class IChatOutServiceServer;
-} // namespace ChatService
-
 } // namespace TVRemoteScreenSDKCommunication
 
 namespace tvagentapi
 {
 
 class ILoggingPrivate;
+class ServicesMediator;
 
 enum class ViewGeometrySendResult
 {
@@ -134,19 +74,21 @@ enum BaseUrlParseResultCode
 {
 	Success,
 	CharacterLimitForPathExceeded,
-	SchemaNotValid
+	SchemaNotValid,
+	ConnectionIsInUse,
 };
 
 class CommunicationChannel final
 {
 public:
 	static std::shared_ptr<CommunicationChannel> Create(
-		std::shared_ptr<ILoggingPrivate> logging,
-		std::string registrationServiceLocation);
+		std::shared_ptr<ILoggingPrivate> logging);
 	~CommunicationChannel();
 
 	bool setRemoteScreenSdkBaseUrl(const std::string& url);
 	BaseUrlParseResultCode setRemoteScreenSdkBaseUrlChecked(const std::string& url);
+
+	BaseUrlParseResultCode setUrls(const std::string& baseServerUrl, const std::string& agentApiUrl);
 
 	void startup();
 	void shutdown();
@@ -184,7 +126,7 @@ public:
 		int32_t y,
 		int32_t width,
 		int32_t height,
-		const std::string& pictureData) const;
+		std::string pictureData);
 	void sendImageDefinitionForGrabResult(
 		const std::string& imageSourceTitle,
 		int32_t width,
@@ -216,11 +158,19 @@ public:
 	bool deleteChat();
 
 private:
-	CommunicationChannel(std::shared_ptr<ILoggingPrivate> logging, std::string registrationServiceLocation);
+	struct GrabResult
+	{
+		int32_t x;
+		int32_t y;
+		int32_t width;
+		int32_t height;
+		std::string pictureData;
+	};
+
+	explicit CommunicationChannel(std::shared_ptr<ILoggingPrivate> logging);
 
 	void shutdownInternal();
 
-	std::string getServerLocation(const TVRemoteScreenSDKCommunication::ServiceType serviceType) const;
 	bool establishConnection();
 	bool setupClientAndServer();
 
@@ -233,20 +183,14 @@ private:
 	bool setupChatOutService();
 
 	bool setupConnectivityClient();
-	bool setupImageClient();
-	bool setupImageNotificationClient();
-	bool setupSessionControlClient();
-	bool setupChatInClient();
-	bool setupInstantSupportClient();
-	bool setupConnectionConfirmationResponseClient();
-	bool setupAccessControlInClient();
-
-	bool setupViewGeometryClient();
 
 	void sendDisconnect() const;
 	void startPing();
 
 	void tearDown();
+
+	void startScreenGrabResultWorker();
+	void sendScreenGrabResultBuffer(GrabResult& sendBuffer);
 
 	struct Condition
 	{
@@ -254,71 +198,30 @@ private:
 		std::mutex mutex;
 	};
 
+	template <TVRemoteScreenSDKCommunication::ServiceType Type>
+	bool setupClient();
+
+	bool registerService(TVRemoteScreenSDKCommunication::ServiceType type);
+
 	const std::shared_ptr<ILoggingPrivate> m_logging;
-	const std::string m_registrationServiceLocation;
 	const std::unique_ptr<Condition> m_disconnectCondition;
 	const std::unique_ptr<Condition> m_shutdownCondition;
 
-	std::string m_socketPrefix;			// e.g. "unix://"
-	std::string m_serviceFolderPath;	// e.g. "/tmp/" (NB: always trailing '/')
-
-	std::mutex m_inputServiceServerMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::InputService::IInputServiceServer> m_inputServiceServer;
-
-	std::mutex m_connectivityServiceServerMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::ConnectivityService::IConnectivityServiceServer> m_connectivityServiceServer;
-
-	std::mutex m_sessionStatusServiceServerMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::SessionStatusService::ISessionStatusServiceServer> m_sessionStatusServiceServer;
-
-	std::mutex m_accessControlOutServiceServerMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::AccessControlService::IAccessControlOutServiceServer> m_accessControlOutServiceServer;
-
-	std::mutex m_instantSupportNotificationServiceServerMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::InstantSupportService::IInstantSupportNotificationServiceServer> m_instantSupportNotificationServiceServer;
-
-	std::mutex m_connectionConfirmationRequestServiceServerMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::ConnectionConfirmationService::IConnectionConfirmationRequestServiceServer> m_connectionConfirmationRequestServiceServer;
-
-	std::mutex m_chatOutServiceServerMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::ChatService::IChatOutServiceServer> m_chatOutServiceServer;
-
-	mutable std::mutex m_imageServiceClientMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::ImageService::IImageServiceClient> m_imageServiceClient;
-
-	mutable std::mutex m_connectivityServiceClientMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::ConnectivityService::IConnectivityServiceClient> m_connectivityServiceClient;
-
-	mutable std::mutex m_registrationServiceClientMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::RegistrationService::IRegistrationServiceClient> m_registrationServiceClient;
-
-	std::mutex m_sessionControlServiceClientMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::SessionControlService::ISessionControlServiceClient> m_sessionControlServiceClient;
-
-	mutable std::mutex m_imageNotificationServiceClientMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::ImageNotificationService::IImageNotificationServiceClient> m_imageNotificationServiceClient;
-
-	std::mutex m_instantSupportServiceClientMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::InstantSupportService::IInstantSupportServiceClient> m_instantSupportServiceClient;
-
-	std::mutex m_connectionConfirmationResponseServiceClientMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::ConnectionConfirmationService::IConnectionConfirmationResponseServiceClient> m_connectionConfirmationResponseServiceClient;
-
-	mutable std::mutex m_accessControlInServiceClientMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::AccessControlService::IAccessControlInServiceClient> m_accessControlInServiceClient;
-
-	mutable std::mutex m_viewGeometryServiceClientMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::ViewGeometryService::IViewGeometryServiceClient> m_viewGeometryServiceClient;
-
-	mutable std::mutex m_chatInServiceClientMutex;
-	std::unique_ptr<TVRemoteScreenSDKCommunication::ChatService::IChatInServiceClient> m_chatInServiceClient;
+	TVRemoteScreenSDKCommunication::UrlComponents m_serverUrlComponents;
+	TVRemoteScreenSDKCommunication::TransportFramework m_transportFramework =
+		TVRemoteScreenSDKCommunication::UnknownTransport;
 
 	std::string m_communicationId;
-	std::vector<TVRemoteScreenSDKCommunication::RegistrationService::ServiceInformation> m_serviceInformations;
+	std::unique_ptr<ServicesMediator> m_servicesMediator;
 
-	std::thread m_thread;
+	std::thread m_communicationThread;
 
 	std::atomic_bool m_isRunning{false};
+
+	std::atomic_bool m_processGrabResult{false};
+	const std::unique_ptr<Condition> m_grabResultCondition;
+	GrabResult m_grabResultBuffer;
+	std::thread m_grabResultThread;
 
 	std::weak_ptr<CommunicationChannel> m_weakThis;
 
@@ -380,7 +283,7 @@ private:
 			m_simulateMouseMoveRequested;
 	
 	Observer<void(
-		TVRemoteScreenSDKCommunication::InputService::KeyState keyState,
+		TVRemoteScreenSDKCommunication::InputService::MouseButtonState buttonState,
 		int32_t posX,
 		int32_t posY,
 		TVRemoteScreenSDKCommunication::InputService::MouseButton button)>
@@ -431,29 +334,29 @@ private:
 			m_closedChat;
 
 public:
-	auto& accessConfirmationRequested() { return m_accessConfirmationRequested; }
-	auto& accessModeChangeNotified() { return m_accessModeChangeNotified; }
-	auto& agentCommunicationEstablished() { return m_agentCommunicationEstablished; }
-	auto& agentCommunicationLost() { return m_agentCommunicationLost; }
-	auto& instantSupportErrorNotification() { return m_instantSupportErrorNotification; }
-	auto& instantSupportModifiedNotification() { return m_instantSupportModifiedNotification; }
-	auto& instantSupportConnectionConfirmationRequested() { return m_instantSupportConnectionConfirmationRequested; }
-	auto& rcSessionStarted() { return m_rcSessionStarted; }
-	auto& rcSessionStopped() { return m_rcSessionStopped; }
-	auto& tvSessionStarted() { return m_tvSessionStarted; }
-	auto& tvSessionStopped() { return m_tvSessionStopped; }
-	auto& simulateKeyInputRequested() { return m_simulateKeyInputRequested; }
-	auto& simulateMouseMoveRequested() { return m_simulateMouseMoveRequested; }
-	auto& simulateMousePressReleaseRequested() { return m_simulateMousePressReleaseRequested; }
-	auto& simulateMouseWheelRequested() { return m_simulateMouseWheelRequested; }
-	auto& chatCreated() { return m_chatCreated; }
-	auto& chatsRemoved() { return m_chatsRemoved; }
-	auto& receivedMessages() { return m_receivedMessages; }
-	auto& messageSent() { return m_messageSent; }
-	auto& messageNotSent() { return m_messageNotSent; }
-	auto& loadedMessages() { return m_loadedMessages; }
-	auto& deletedHistory() { return m_deletedHistory; }
-	auto& closedChat() { return m_closedChat; }
+	auto accessConfirmationRequested() -> decltype(m_accessConfirmationRequested)& { return m_accessConfirmationRequested; }
+	auto accessModeChangeNotified() -> decltype(m_accessModeChangeNotified)& { return m_accessModeChangeNotified; }
+	auto agentCommunicationEstablished() -> decltype(m_agentCommunicationEstablished)& { return m_agentCommunicationEstablished; }
+	auto agentCommunicationLost() -> decltype(m_agentCommunicationLost)& { return m_agentCommunicationLost; }
+	auto instantSupportErrorNotification() -> decltype(m_instantSupportErrorNotification)& { return m_instantSupportErrorNotification; }
+	auto instantSupportModifiedNotification() -> decltype(m_instantSupportModifiedNotification)& { return m_instantSupportModifiedNotification; }
+	auto instantSupportConnectionConfirmationRequested() -> decltype(m_instantSupportConnectionConfirmationRequested)& { return m_instantSupportConnectionConfirmationRequested; }
+	auto rcSessionStarted() -> decltype(m_rcSessionStarted)& { return m_rcSessionStarted; }
+	auto rcSessionStopped() -> decltype(m_rcSessionStopped)& { return m_rcSessionStopped; }
+	auto tvSessionStarted() -> decltype(m_tvSessionStarted)& { return m_tvSessionStarted; }
+	auto tvSessionStopped() -> decltype(m_tvSessionStopped)& { return m_tvSessionStopped; }
+	auto simulateKeyInputRequested() -> decltype(m_simulateKeyInputRequested)& { return m_simulateKeyInputRequested; }
+	auto simulateMouseMoveRequested() -> decltype(m_simulateMouseMoveRequested)& { return m_simulateMouseMoveRequested; }
+	auto simulateMousePressReleaseRequested() -> decltype(m_simulateMousePressReleaseRequested)& { return m_simulateMousePressReleaseRequested; }
+	auto simulateMouseWheelRequested() -> decltype(m_simulateMouseWheelRequested)& { return m_simulateMouseWheelRequested; }
+	auto chatCreated() -> decltype(m_chatCreated)& { return m_chatCreated; }
+	auto chatsRemoved() -> decltype(m_chatsRemoved)& { return m_chatsRemoved; }
+	auto receivedMessages() -> decltype(m_receivedMessages)& { return m_receivedMessages; }
+	auto messageSent() -> decltype(m_messageSent)& { return m_messageSent; }
+	auto messageNotSent() -> decltype(m_messageNotSent)& { return m_messageNotSent; }
+	auto loadedMessages() -> decltype(m_loadedMessages)& { return m_loadedMessages; }
+	auto deletedHistory() -> decltype(m_deletedHistory)& { return m_deletedHistory; }
+	auto closedChat() -> decltype(m_closedChat)& { return m_closedChat; }
 };
 
 } // namespace tvagentapi

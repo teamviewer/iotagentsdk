@@ -29,7 +29,8 @@ enum BaseUrlParseResultCode
 {
 	Success,
 	CharacterLimitForPathExceeded,
-	SchemaNotValid
+	SchemaNotValid,
+	ConnectionIsInUse,
 };
 
 }	// namespace tvqtsdk

@@ -23,9 +23,66 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataImageNotifcation.h"
+
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
+#include <TVRemoteScreenSDKCommunication/ImageNotificationService/IImageNotificationServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/ImageNotificationService/ServiceFactory.h>
+
+#include <iostream>
+#include <memory>
+#include <string>
+
 namespace TestImageNotificationService
 {
 
-int TestImageNotificationServiceClient(int argc, char** argv);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestImageNotificationServiceClient(int /*argc*/, char** /*argv*/)
+{
+	using namespace TVRemoteScreenSDKCommunication::ImageNotificationService;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[ImageNotificationService][Client][fw=" + std::to_string(Framework) + "] ";
+
+	const std::shared_ptr<IImageNotificationServiceClient> client = ServiceFactory::CreateClient<Framework>();
+	if (client->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::ImageNotification)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	client->StartClient(TestData::Socket);
+	if (client->GetDestination() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	TVRemoteScreenSDKCommunication::CallStatus response{};
+
+	response = client->UpdateImageDefinition(TestData::ComId, TestData::ImageSourceTitle, TestData::Width, TestData::Height);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "UpdateImageDefinition successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "UpdateImageDefinition Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->NotifiyImageChanged(TestData::ComId, TestData::X, TestData::Y, TestData::Width, TestData::Height);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "NotifyImageChange successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "UpdateImageDefinition Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestImageNotificationService

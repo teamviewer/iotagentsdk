@@ -34,6 +34,7 @@ const char* toCString(IAccessControlModule::Feature feature)
 		case Feature::FileTransfer:     return "FileTransfer";
 		case Feature::RemoteView:       return "RemoteView";
 		case Feature::RemoteControl:    return "RemoteControl";
+		case Feature::ScreenRecording:  return "ScreenRecording";
 	}
 	return "";
 }

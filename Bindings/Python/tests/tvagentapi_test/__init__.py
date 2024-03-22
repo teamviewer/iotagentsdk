@@ -26,6 +26,7 @@ __license__ = "MIT License"
 
 import multiprocessing
 import argparse
+import os
 import warnings
 
 
@@ -98,6 +99,20 @@ def run_tests_from_args(test_cases=None):
             warnings.warn(f"No test '{n}' in test_cases")
         else:
             run_test_process(test_name=n, target=test_cases[n])
+
+
+def with_connect_urls(func):
+    """
+    Returns a new partial function whose kwargs are amended with base_sdk_url and agent_api_url args taken
+    from the environment and forwarded to the target function.
+    See https://docs.python.org/3/library/functools.html#functools.partial
+    """
+    def newfunc(*args, **kwargs):
+        if 'TV_BASE_SDK_URL' in os.environ and 'TV_AGENT_API_URL' in os.environ:
+            kwargs['base_sdk_url'] = os.environ['TV_BASE_SDK_URL']
+            kwargs['agent_api_url'] = os.environ['TV_AGENT_API_URL']
+        return lambda: func(*args, **kwargs)
+    return newfunc
 
 
 def tvwebapicall(method):

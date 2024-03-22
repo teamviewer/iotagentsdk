@@ -23,18 +23,36 @@
 //********************************************************************************//
 #pragma once
 
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
 #include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/ServiceType.h>
 
 namespace TestRegistrationService
 {
-namespace TestData
+
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+struct TestData;
+
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::gRPCTransport>
 {
+	static constexpr const char* Socket = "unix:///tmp/registrationService";
+	static constexpr const char* ComId = "tokengRPC";
+	static constexpr const char* ComVersion = "1.0";
+	static constexpr const char* ServiceLocation = "/tmp/imageService";
+	static constexpr TVRemoteScreenSDKCommunication::ServiceType ServiceType =
+		TVRemoteScreenSDKCommunication::ServiceType::Image;
+};
 
-constexpr const char* Socket = "unix:///tmp/registrationService";
-constexpr const char* ComId = "token";
-constexpr const char* ComVersion = "1.0";
-constexpr const char* ServiceLocation = "/tmp/imageService";
-const TVRemoteScreenSDKCommunication::ServiceType ServiceType = TVRemoteScreenSDKCommunication::ServiceType::Image;
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
+{
+	static constexpr const char* Socket = "tv+tcp://127.0.0.1:9003";
+	static constexpr const char* ComId = "tokenSocketIO";
+	static constexpr const char* ComVersion = "1.0";
+	static constexpr const char* ServiceLocation = "tv+tcp://127.0.0.1:9004";
+	static constexpr TVRemoteScreenSDKCommunication::ServiceType ServiceType =
+		TVRemoteScreenSDKCommunication::ServiceType::Image;
+};
 
-} // namespace TestData
 } // namespace TestRegistrationService

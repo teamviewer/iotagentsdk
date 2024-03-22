@@ -25,9 +25,12 @@ SOFTWARE
 __license__ = "MIT License"
 
 from datetime import datetime, timedelta
+from . import with_connect_urls
 
 
-def test_tv_session_management(expected_session_counts, terminate_sessions_after=None):
+@with_connect_urls
+def test_tv_session_management(expected_session_counts, terminate_sessions_after=None,
+                               base_sdk_url=None, agent_api_url=None):
     """
     TV Session Management test helper
 
@@ -65,7 +68,9 @@ def test_tv_session_management(expected_session_counts, terminate_sessions_after
         current_session_counts.append(sessions_count)
 
     api = tvagentapi.TVAgentAPI()
-    connection = api.createAgentConnectionLocal(None)
+    connection = api.createAgentConnection(None)
+    if base_sdk_url and agent_api_url:
+        connection.setConnectionURLs(base_sdk_url, agent_api_url)
     tv_session_management = connection.getModule(tvagentapi.ModuleType.TVSessionManagement)
     connection.setCallbacks(statusChanged=lambda status: connection_status_changed(status, tv_session_management))
     tv_session_management.setCallbacks(

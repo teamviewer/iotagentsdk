@@ -23,9 +23,84 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataInput.h"
+
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
+#include <TVRemoteScreenSDKCommunication/InputService/IInputServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/InputService/ServiceFactory.h>
+
 namespace TestInputService
 {
 
-int TestInputServiceClient(int argc, char** argv);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestInputServiceClient(int /*argc*/, char** /*argv*/)
+{
+	using namespace TVRemoteScreenSDKCommunication::InputService;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[InputService][Client][fw=" + std::to_string(Framework) + "] ";
+
+	const std::shared_ptr<IInputServiceClient> client = ServiceFactory::CreateClient<Framework>();
+	if (client->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::Input)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	client->StartClient(TestData::Socket);
+	if (client->GetDestination() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	TVRemoteScreenSDKCommunication::CallStatus response{};
+
+	response = client->SimulateKey(TestData::ComId, TestData::KeyState, TestData::XkbSymbol, TestData::UnicodeCharacter, TestData::XkbModifiers);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "SimulateKey successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "SimulateKey Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->SimulateMouseMove(TestData::ComId, TestData::PosX, TestData::PosY);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "SimulateMouseMove successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "SimulateMouseMove Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->SimulateMousePressRelease(TestData::ComId, TestData::ButtonState, TestData::PosX, TestData::PosY, TestData::Button);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "SimulateMousePressRelease successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "SimulateMousePressRelease Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->SimulateMouseWheel(TestData::ComId, TestData::PosX, TestData::PosY, TestData::Angle);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "SimulateMouseWheel successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "SimulateMouseWheel Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestInputService

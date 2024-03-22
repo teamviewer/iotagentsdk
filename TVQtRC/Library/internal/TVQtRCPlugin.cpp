@@ -49,9 +49,6 @@ namespace tvqtsdk
 namespace
 {
 
-constexpr const char* RegistrationServiceLocation =
-	"teamviewer-iot-agent-services/remoteScreen/registrationService";
-
 void registerMetatypes()
 {
 	qRegisterMetaType<std::shared_ptr<SimulateKeyCommand>>();
@@ -68,8 +65,9 @@ bool isValidAccessControl(AccessControl feature)
 	switch (feature)
 	{
 		case AccessControl::FileTransfer:
-		case AccessControl::AllowPartnerViewDesktop:
+		case AccessControl::RemoteView:
 		case AccessControl::RemoteControl:
+		case AccessControl::ScreenRecording:
 		return true;
 	}
 	return false;
@@ -78,13 +76,12 @@ bool isValidAccessControl(AccessControl feature)
 } // namespace
 
 TVQtRCPlugin::TVQtRCPlugin(QObject* parent)
-	: QObject(parent),
-	  m_logging(std::make_shared<Logging>()),
-	  m_loggingProxy(std::make_shared<LoggingProxy>(m_logging)),
-	  m_communicationAdapter(CommunicationAdapter::Create(
+	: QObject(parent)
+	, m_logging(std::make_shared<Logging>())
+	, m_loggingProxy(std::make_shared<LoggingProxy>(m_logging))
+	, m_communicationAdapter(CommunicationAdapter::Create(
 		  m_loggingProxy,
-		  std::make_shared<LoggingPrivateAdapter>(m_logging),
-		  RegistrationServiceLocation))
+		  std::make_shared<LoggingPrivateAdapter>(m_logging)))
 {
 	registerMetatypes();
 
@@ -173,6 +170,11 @@ void TVQtRCPlugin::setRemoteScreenSdkBaseUrl(QUrl remoteScreenSdkBaseUrl)
 BaseUrlParseResultCode TVQtRCPlugin::setRemoteScreenSdkBaseUrlChecked(QUrl remoteScreenSdkBaseUrl)
 {
 	return m_communicationAdapter->setRemoteScreenSdkBaseUrlChecked(remoteScreenSdkBaseUrl);
+}
+
+BaseUrlParseResultCode TVQtRCPlugin::setRemoteScreenSdkUrls(QUrl baseServerUrl, QUrl agentApiUrl)
+{
+	return m_communicationAdapter->setRemoteScreenSdkUrls(baseServerUrl, agentApiUrl);
 }
 
 void TVQtRCPlugin::registerApplication()
@@ -392,6 +394,10 @@ QMetaObject::Connection TVQtRCPlugin::registerAgentCommunicationStatusChanged(co
 void TVQtRCPlugin::startLogging(const QString& logFolderPath)
 {
 	m_logging->startLogging(logFolderPath);
+	m_logging->logInfo(QString("Started file logging to path %1").arg(logFolderPath));
+#ifdef TV_VERSION
+	m_logging->logInfo(QString("TV Agent SDK version %1").arg(TV_VERSION));
+#endif
 }
 
 void TVQtRCPlugin::stopLogging()
@@ -427,7 +433,8 @@ void TVQtRCPlugin::reactOnInstantSupportModified(tvqtsdk::InstantSupportData dat
 
 void TVQtRCPlugin::reactOnInstantSupportConnectionConfirmationRequest()
 {
-	auto confirmationResponseCallback = [commadapter = m_communicationAdapter](ConnectionUserConfirmation confirmation)
+	const auto commadapter = m_communicationAdapter;
+	auto confirmationResponseCallback = [commadapter](ConnectionUserConfirmation confirmation)
 	{
 		QMetaObject::invokeMethod(
 			commadapter.get(),

@@ -23,22 +23,36 @@
 //********************************************************************************//
 #pragma once
 
-#include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/ConnectionData.h>
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
 
-#include <cstdint>
+#include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/ConnectionData.h>
 
 namespace TestConnectionConfirmationService
 {
-namespace TestData
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+struct TestData;
+
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::gRPCTransport>
 {
+	static constexpr const char* Socket = "unix:///tmp/connection_confirmation_test";
+	static constexpr const char* ComId = "tokengRPC";
+	static const TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionType ConnectionTypeInstantSupport
+		= TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionType::InstantSupport;
 
-constexpr const char* Socket = "unix:///tmp/connection_confirmation_test";
-constexpr const char* ComId = "comID";
-const TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionType ConnectionTypeInstantSupport
-	= TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionType::InstantSupport;
+	static const TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionUserConfirmation Accepted
+		= TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionUserConfirmation::Accepted;
+};
 
-const TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionUserConfirmation Accepted
-	= TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionUserConfirmation::Accepted;
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
+{
+	static constexpr const char* Socket = "tv+tcp://127.0.0.1:9003";
+	static constexpr const char* ComId = "tokenSocketIO";
+	static const TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionType ConnectionTypeInstantSupport
+		= TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionType::InstantSupport;
 
-} // namespace TestData
+	static const TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionUserConfirmation Accepted
+		= TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionUserConfirmation::Denied;
+};
 } // namespace TestConnectionConfirmationService

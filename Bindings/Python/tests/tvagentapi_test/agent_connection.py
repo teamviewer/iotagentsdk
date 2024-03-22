@@ -24,7 +24,12 @@ SOFTWARE
 """
 __license__ = "MIT License"
 
-def test_agent_connection(wait_for_more_events=True, more_events_timeout_ms=100, process_events_expect_error=False):
+from . import with_connect_urls
+
+
+@with_connect_urls
+def test_agent_connection(wait_for_more_events=True, more_events_timeout_ms=100, process_events_expect_error=False,
+                          base_sdk_url=None, agent_api_url=None):
     import tvagentapi
 
     ConnStatus = tvagentapi.AgentConnection.Status
@@ -39,7 +44,9 @@ def test_agent_connection(wait_for_more_events=True, more_events_timeout_ms=100,
             connected_obtained = True
 
     api = tvagentapi.TVAgentAPI()
-    connection = api.createAgentConnectionLocal(None)
+    connection = api.createAgentConnection(None)
+    if base_sdk_url and agent_api_url:
+        res = connection.setConnectionURLs(base_sdk_url, agent_api_url)
     connection.setCallbacks(statusChanged=connection_status_changed)
     connection.start()
     while not connected_obtained:

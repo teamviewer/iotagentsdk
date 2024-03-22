@@ -23,6 +23,8 @@
 //********************************************************************************//
 #pragma once
 
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
 #include <TVRemoteScreenSDKCommunication/ImageService/ColorFormat.h>
 
 #include <cstdint>
@@ -30,19 +32,46 @@
 
 namespace TestImageService
 {
-namespace TestData
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+struct TestData;
+
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::gRPCTransport>
 {
+	static constexpr const char* Socket = "unix:///tmp/imageServer";
+	static constexpr const char* ComId = "tokengRPC";
+	static constexpr const char* ImageSourceTitle = "testImage";
+	static constexpr int32_t Width = 12;
+	static constexpr int32_t Height = 32;
+	static constexpr int32_t X = 0;
+	static constexpr int32_t Y = 0;
+	static constexpr double Dpi = 60.12;
+	static const TVRemoteScreenSDKCommunication::ImageService::ColorFormat ColorFormat =
+		TVRemoteScreenSDKCommunication::ImageService::ColorFormat::BGRA32;
+	static const std::string& Picture()
+	{
+		static const std::string pic(8294538, '*');
+		return pic;
+	}
+};
 
-constexpr const char* Socket = "unix:///tmp/imageServer";
-constexpr const char* ComId = "token";
-constexpr const char* ImageSourceTitle = "testImage";
-const int32_t Width = 12;
-const int32_t Height = 32;
-const int32_t X = 0;
-const int32_t Y = 0;
-const double Dpi = 60.12;
-const std::string Picture(8294538, '*');
-const TVRemoteScreenSDKCommunication::ImageService::ColorFormat ColorFormat = TVRemoteScreenSDKCommunication::ImageService::ColorFormat::BGRA32;
-
-} // namespace TestData
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
+{
+	static constexpr const char* Socket = "tv+tcp://127.0.0.1:9004";
+	static constexpr const char* ComId = "tokenSocketIO";
+	static constexpr const char* ImageSourceTitle = "TestImage";
+	static constexpr int32_t Width = 12;
+	static constexpr int32_t Height = 32;
+	static constexpr int32_t X = 0;
+	static constexpr int32_t Y = 0;
+	static constexpr double Dpi = 60.12;
+	static const TVRemoteScreenSDKCommunication::ImageService::ColorFormat ColorFormat =
+		TVRemoteScreenSDKCommunication::ImageService::ColorFormat::RGBA32;
+	static const std::string& Picture()
+	{
+		static const std::string pic(8294538, '+');
+		return pic;
+	}
+};
 } // namespace TestImageService

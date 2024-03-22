@@ -23,17 +23,63 @@
 //********************************************************************************//
 #pragma once
 
-#include <string>
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
+#include <TVRemoteScreenSDKCommunication/InputService/IInputServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/InputService/ServiceFactory.h>
+
 #include <atomic>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <unistd.h>
 
 namespace TestInputServicePerformance
 {
+
+constexpr const char* LogPrefix = "[InputService][Client] ";
+constexpr const char* ComId = "token";
+constexpr TVRemoteScreenSDKCommunication::InputService::KeyState KeyState = TVRemoteScreenSDKCommunication::InputService::KeyState::Down;
+constexpr uint32_t XkbSymbol = 14;
+constexpr uint32_t UnicodeCharacter = 16;
+constexpr uint32_t XkbModifiers = 123456;
 
 struct StopCondition
 {
 	std::atomic_bool run{false};
 };
 
-int TestInputServiceClient(StopCondition& stopCondition, const std::string& location);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestInputServiceClient(StopCondition& stopCondition, const std::string& location)
+{
+	using namespace TVRemoteScreenSDKCommunication::InputService;
+	const std::shared_ptr<IInputServiceClient> client = ServiceFactory::CreateClient<Framework>();
+
+	client->StartClient(location);
+
+	TVRemoteScreenSDKCommunication::CallStatus response{};
+
+	int errorCounter = 0;
+
+	while (stopCondition.run)
+	{
+		response = client->SimulateKey(ComId, KeyState, XkbSymbol, UnicodeCharacter, XkbModifiers);
+		if (response.IsOk() == false)
+		{
+			std::cerr << "Response failed because: " << response.errorMessage << std::endl;
+			if (errorCounter > 10)
+			{
+				return EXIT_FAILURE;
+			}
+			++errorCounter;
+			sleep(1);
+		}
+		else
+		{
+			errorCounter = 0;
+		}
+	}
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestInputServicePerformance

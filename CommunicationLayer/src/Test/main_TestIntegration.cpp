@@ -21,8 +21,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  //
 // SOFTWARE.                                                                      //
 //********************************************************************************//
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
 #include "Client/TestAccessControlInServiceClient.h"
 #include "Client/TestAccessControlOutServiceClient.h"
+#include "Client/TestAugmentRCSessionInvitationConsumerServiceClient.h"
+#include "Client/TestAugmentRCSessionInvitationControlServiceClient.h"
 #include "Client/TestChatInServiceClient.h"
 #include "Client/TestChatOutServiceClient.h"
 #include "Client/TestConnectionConfirmationServiceClient.h"
@@ -39,6 +43,8 @@
 
 #include "Server/TestAccessControlInServiceServer.h"
 #include "Server/TestAccessControlOutServiceServer.h"
+#include "Server/TestAugmentRCSessionInvitationConsumerServiceServer.h"
+#include "Server/TestAugmentRCSessionInvitationControlServiceServer.h"
 #include "Server/TestChatInServiceServer.h"
 #include "Server/TestChatOutServiceServer.h"
 #include "Server/TestConnectionConfirmationServiceServer.h"
@@ -55,154 +61,209 @@
 
 #include <iostream>
 
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestOnFramework(int argc, char** argv)
+{
+	using namespace TVRemoteScreenSDKCommunication;
+
+	{
+		const std::shared_ptr<AccessControlService::IAccessControlInServiceServer> accessControlServer =
+			TestAccessControlInService::TestAccessControlInServiceServer<Framework>();
+		const int testResult = TestAccessControlInService::TestAccessControlInServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<AccessControlService::IAccessControlOutServiceServer> accessControlOutServer =
+			TestAccessControlOutService::TestAccessControlOutServiceServer<Framework>();
+		const int testResult = TestAccessControlOutService::TestAccessControlOutServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<AugmentRCSessionInvitationService::IAugmentRCSessionInvitationConsumerServiceServer> augmentRCSessionInvitationConsumerServiceServer =
+				TestAugmentRCSessionInvitationConsumerService::TestAugmentRCSessionInvitationConsumerServiceServer<Framework>();
+		const int testResult = TestAugmentRCSessionInvitationConsumerService::TestAugmentRCSessionInvitationConsumerServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<AugmentRCSessionInvitationService::IAugmentRCSessionInvitationControlServiceServer> augmentRCSessionInvitationControlServiceServer =
+				TestAugmentRCSessionInvitationControlService::TestAugmentRCSessionInvitationControlServiceServer<Framework>();
+		const int testResult = TestAugmentRCSessionInvitationControlService::TestAugmentRCSessionInvitationControlServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<ChatService::IChatInServiceServer> ChatServer = TestChatInService::TestChatInServiceServer<Framework>();
+		const int testResult = TestChatInService::TestChatInServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<ChatService::IChatOutServiceServer> ChatOutServer = TestChatOutService::TestChatOutServiceServer<Framework>();
+		const int testResult = TestChatOutService::TestChatOutServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<ConnectionConfirmationService::IConnectionConfirmationRequestServiceServer>
+			connectionConfirmationRequestServiceServer =
+				TestConnectionConfirmationService::TestConnectionConfirmationRequestServiceServer<Framework>();
+		const int testResult =
+			TestConnectionConfirmationService::TestConnectionConfirmationRequestServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<ConnectionConfirmationService::IConnectionConfirmationResponseServiceServer>
+			connectionConfirmationResponseServiceServer =
+				TestConnectionConfirmationService::TestConnectionConfirmationResponseServiceServer<Framework>();
+		const int testResult =
+			TestConnectionConfirmationService::TestConnectionConfirmationResponseServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<ConnectivityService::IConnectivityServiceServer> connectivityServer =
+			TestConnectivityService::TestConnectivityService<Framework>();
+		const int testResult = TestConnectivityService::TestConnectivityServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<ImageService::IImageServiceServer> imageServer =
+			TestImageService::TestImageService<Framework>();
+		const int testResult = TestImageService::TestImageServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<ImageNotificationService::IImageNotificationServiceServer> imageNotificationServer =
+			TestImageNotificationService::TestImageNotificationService<Framework>();
+		const int testResult = TestImageNotificationService::TestImageNotificationServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<InputService::IInputServiceServer> inputServer =
+			TestInputService::TestInputService<Framework>();
+		const int testResult = TestInputService::TestInputServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<InstantSupportService::IInstantSupportServiceServer> instantSupport =
+			TestInstantSupportService::TestInstantSupportServiceServer<Framework>();
+		const int testResult = TestInstantSupportService::TestInstantSupportServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<InstantSupportService::IInstantSupportNotificationServiceServer> instantSupport =
+			TestInstantSupportNotificationService::TestInstantSupportNotificationServiceServer<Framework>();
+		const int testResult =
+			TestInstantSupportNotificationService::TestInstantSupportNotificationServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<RegistrationService::IRegistrationServiceServer> registrationServer =
+			TestRegistrationService::TestRegistrationService<Framework>();
+		const int testResult = TestRegistrationService::TestRegistrationServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<SessionControlService::ISessionControlServiceServer> sessionControlServer =
+			TestSessionControlService::TestSessionControlService<Framework>();
+		const int testResult = TestSessionControlService::TestSessionControlServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<SessionStatusService::ISessionStatusServiceServer> sessionStatusServer =
+			TestSessionStatusService::TestSessionStatusService<Framework>();
+		const int testResult = TestSessionStatusService::TestSessionStatusServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	{
+		const std::shared_ptr<ViewGeometryService::IViewGeometryServiceServer> viewGeometryServer =
+			TestViewGeometryService::TestViewGeometryService<Framework>();
+		const int testResult = TestViewGeometryService::TestViewGeometryServiceClient<Framework>(argc, argv);
+		if (testResult == EXIT_FAILURE)
+		{
+			return EXIT_FAILURE;
+		}
+	}
+
+	std::cout << "Integration Test with Framework=" << Framework << " successful" << std::endl;
+	return EXIT_SUCCESS;
+}
+
 int main(int argc, char** argv)
 {
-
-	using namespace TVRemoteScreenSDKCommunication;
-	{
-		const std::shared_ptr<ConnectivityService::IConnectivityServiceServer> connectivityServer = TestConnectivityService::TestConnectivityService();
-		const int testResult = TestConnectivityService::TestConnectivityServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<InputService::IInputServiceServer> inputServer = TestInputService::TestInputService();
-		const int testResult = TestInputService::TestInputServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<RegistrationService::IRegistrationServiceServer> registrationServer = TestRegistrationService::TestRegistrationService();
-		const int testResult = TestRegistrationService::TestRegistrationServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<ImageService::IImageServiceServer> imageServer = TestImageService::TestImageService();
-		const int testResult = TestImageService::TestImageServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<SessionControlService::ISessionControlServiceServer> sessionControlServer = TestSessionControlService::TestSessionControlService();
-		const int testResult = TestSessionControlService::TestSessionControlServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<SessionStatusService::ISessionStatusServiceServer> sessionStatusServer = TestSessionStatusService::TestSessionStatusService();
-		const int testResult = TestSessionStatusService::TestSessionStatusServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<ImageNotificationService::IImageNotificationServiceServer> imageNotificationServer = TestImageNotificationService::TestImageNotificationService();
-		const int testResult = TestImageNotificationService::TestImageNotificationServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<AccessControlService::IAccessControlInServiceServer> accessControlServer = TestAccessControlInService::TestAccessControlInServiceServer();
-		const int testResult = TestAccessControlInService::TestAccessControlInServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<AccessControlService::IAccessControlOutServiceServer> accessControlOutServer = TestAccessControlOutService::TestAccessControlOutServiceServer();
-		const int testResult = TestAccessControlOutService::TestAccessControlOutServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<InstantSupportService::IInstantSupportServiceServer> instantSupport = TestInstantSupportService::TestInstantSupportServiceServer();
-		const int testResult = TestInstantSupportService::TestInstantSupportServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<ViewGeometryService::IViewGeometryServiceServer> viewGeometryServer = TestViewGeometryService::TestViewGeometryService();
-		const int testResult = TestViewGeometryService::TestViewGeometryServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<InstantSupportService::IInstantSupportNotificationServiceServer> instantSupport = TestInstantSupportNotificationService::TestInstantSupportNotificationServiceServer();
-		const int testResult = TestInstantSupportNotificationService::TestInstantSupportNotificationServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<ChatService::IChatInServiceServer> ChatServer = TestChatInService::TestChatInServiceServer();
-		const int testResult = TestChatInService::TestChatInServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<ChatService::IChatOutServiceServer> ChatOutServer = TestChatOutService::TestChatOutServiceServer();
-		const int testResult = TestChatOutService::TestChatOutServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<ConnectionConfirmationService::IConnectionConfirmationRequestServiceServer> connectionConfirmationRequestServiceServer = TestConnectionConfirmationService::TestConnectionConfirmationRequestServiceServer();
-		const int testResult = TestConnectionConfirmationService::TestConnectionConfirmationRequestServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	{
-		const std::shared_ptr<ConnectionConfirmationService::IConnectionConfirmationResponseServiceServer> connectionConfirmationResponseServiceServer = TestConnectionConfirmationService::TestConnectionConfirmationResponseServiceServer();
-		const int testResult = TestConnectionConfirmationService::TestConnectionConfirmationResponseServiceClient(argc, argv);
-		if (testResult == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	}
-
-	std::cout << "Integration Test successful" << std::endl;
-	return EXIT_SUCCESS;
+	return
+#ifdef TV_COMM_ENABLE_GRPC
+		TestOnFramework<TVRemoteScreenSDKCommunication::gRPCTransport>(argc, argv)
+#ifdef TV_COMM_ENABLE_PLAIN_SOCKET
+		||
+#endif
+#endif
+#ifdef TV_COMM_ENABLE_PLAIN_SOCKET
+		TestOnFramework<TVRemoteScreenSDKCommunication::TCPSocketTransport>(argc, argv)
+#endif
+	;
 }

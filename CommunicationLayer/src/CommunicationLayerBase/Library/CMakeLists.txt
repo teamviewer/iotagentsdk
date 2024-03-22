@@ -24,19 +24,27 @@
 project(CommunicationLayerBase)
 
 set(SOURCES_EXPORT
+	export/TVRemoteScreenSDKCommunication/CommunicationLayerBase/CallStatus.cpp
 	export/TVRemoteScreenSDKCommunication/CommunicationLayerBase/CallStatus.h
 	export/TVRemoteScreenSDKCommunication/CommunicationLayerBase/IServiceClient.h
 	export/TVRemoteScreenSDKCommunication/CommunicationLayerBase/IServiceServer.h
 	export/TVRemoteScreenSDKCommunication/CommunicationLayerBase/ServiceType.h
+	export/TVRemoteScreenSDKCommunication/CommunicationLayerBase/ParseUrl.h
+	export/TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h
 )
 
-add_library(${PROJECT_NAME} INTERFACE)
+set(SOURCES_INTERNAL
+	export/TVRemoteScreenSDKCommunication/CommunicationLayerBase/ParseUrl.cpp)
 
-foreach(_item IN LISTS SOURCES_EXPORT)
-	target_sources(${PROJECT_NAME} INTERFACE
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${_item}>
-	)
-endforeach()
+add_library(${PROJECT_NAME} STATIC ${SOURCES_EXPORT} ${SOURCES_INTERNAL} )
+
+if(TV_COMM_ENABLE_GRPC)
+	target_compile_definitions(${PROJECT_NAME} INTERFACE TV_COMM_ENABLE_GRPC)
+endif()
+
+if(TV_COMM_ENABLE_PLAIN_SOCKET)
+	target_compile_definitions(${PROJECT_NAME} INTERFACE TV_COMM_ENABLE_PLAIN_SOCKET)
+endif()
 
 target_include_directories(${PROJECT_NAME} INTERFACE
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/export>

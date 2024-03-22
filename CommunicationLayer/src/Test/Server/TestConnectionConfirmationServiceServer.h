@@ -23,17 +23,119 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataConnectionConfirmation.h"
+
 #include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/IConnectionConfirmationRequestServiceServer.h>
 #include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/IConnectionConfirmationResponseServiceServer.h>
-#include <memory>
+#include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/ConnectionData.h>
+#include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/RequestServiceFactory.h>
+
+#include <iostream>
 
 namespace TestConnectionConfirmationService
 {
 
 using namespace TVRemoteScreenSDKCommunication::ConnectionConfirmationService;
 
-std::shared_ptr<IConnectionConfirmationRequestServiceServer> TestConnectionConfirmationRequestServiceServer();
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+std::shared_ptr<IConnectionConfirmationRequestServiceServer> TestConnectionConfirmationRequestServiceServer()
+{
+	using namespace TVRemoteScreenSDKCommunication::ConnectionConfirmationService;
+	using TVRemoteScreenSDKCommunication::CallStatus;
+	using TVRemoteScreenSDKCommunication::CallState;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[ConnectionConfirmationRequestService][Server][fw=" + std::to_string(Framework) + "] ";
 
-std::shared_ptr<IConnectionConfirmationResponseServiceServer> TestConnectionConfirmationResponseServiceServer();
+	const std::shared_ptr<IConnectionConfirmationRequestServiceServer> server =
+		RequestServiceFactory::CreateServer<Framework>();
+
+	if (server->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::ConnectionConfirmationRequest)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	const auto connectionConfirmationRequestCallback = [LogPrefix](
+		const std::string& comId,
+		TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionType connectionType,
+		const IConnectionConfirmationRequestServiceServer::RequestConnectionConfirmationResponseCallback& response)
+	{
+		std::cout << LogPrefix << "Received connection confirmation request" << std::endl;
+
+		if (comId == TestData::ComId && connectionType == TestData::ConnectionTypeInstantSupport)
+		{
+			response(CallStatus::Ok);
+		}
+		else
+		{
+			std::cerr << LogPrefix << "Corrupted Data" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+	};
+
+	server->SetRequestConnectionConfirmationCallback(connectionConfirmationRequestCallback);
+
+	server->StartServer(TestData::Socket);
+
+	if (server->GetLocation() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	return server;
+}
+
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+std::shared_ptr<IConnectionConfirmationResponseServiceServer> TestConnectionConfirmationResponseServiceServer()
+{
+	using namespace TVRemoteScreenSDKCommunication::ConnectionConfirmationService;
+	using TVRemoteScreenSDKCommunication::CallStatus;
+	using TVRemoteScreenSDKCommunication::CallState;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[ConnectionConfirmationResponseService][Server][fw=" + std::to_string(Framework) + "] ";
+
+	const std::shared_ptr<IConnectionConfirmationResponseServiceServer> server =
+		ResponseServiceFactory::CreateServer<Framework>();
+
+	if (server->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::ConnectionConfirmationResponse)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	const auto connectionConfirmationCallback = [LogPrefix](
+		const std::string& comId,
+		ConnectionType connectionType,
+		ConnectionUserConfirmation confirmation,
+		const IConnectionConfirmationResponseServiceServer::ConfirmConnectionRequestResponseCallback& response)
+	{
+		std::cout << LogPrefix << "Received connection confirmation response" << std::endl;
+
+		if (comId == TestData::ComId
+			&& connectionType == TestData::ConnectionTypeInstantSupport
+			&& confirmation == TestData::Accepted)
+		{
+			response(CallStatus::Ok);
+		}
+		else
+		{
+			std::cerr << LogPrefix << "Corrupted Data" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+	};
+
+	server->SetConfirmConnectionRequestCallback(connectionConfirmationCallback);
+
+	server->StartServer(TestData::Socket);
+
+	if (server->GetLocation() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	return server;
+}
 
 } // namespace TestConnectionConfirmationOutService

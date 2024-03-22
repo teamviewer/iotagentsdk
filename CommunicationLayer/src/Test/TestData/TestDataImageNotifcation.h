@@ -23,21 +23,39 @@
 //********************************************************************************//
 #pragma once
 
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
 #include <cstdint>
 #include <string>
 
 namespace TestImageNotificationService
 {
-namespace TestData
+
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+struct TestData;
+
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::gRPCTransport>
 {
+	static constexpr const char* Socket = "unix:///tmp/imageNotificationServer";
+	static constexpr const char* ComId = "token";
+	static constexpr const char* ImageSourceTitle = "testImage";
+	static constexpr int32_t Width = 12;
+	static constexpr int32_t Height = 32;
+	static constexpr int32_t X = 0;
+	static constexpr int32_t Y = 0;
+};
 
-constexpr const char* Socket = "unix:///tmp/imageNotificationServer";
-constexpr const char* ComId = "token";
-constexpr const char* ImageSourceTitle = "testImage";
-const int32_t Width = 12;
-const int32_t Height = 32;
-const int32_t X = 0;
-const int32_t Y = 0;
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
+{
+	static constexpr const char* Socket = "tv+tcp://127.0.0.1:9003";
+	static constexpr const char* ComId = "token42";
+	static constexpr const char* ImageSourceTitle = "TestImage";
+	static constexpr int32_t Width = 14;
+	static constexpr int32_t Height = 36;
+	static constexpr int32_t X = 1;
+	static constexpr int32_t Y = 1;
+};
 
-} // namespace TestData
 } // namespace TestImageNotificationService

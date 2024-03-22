@@ -23,9 +23,64 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataConnectivity.h"
+
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
+#include <TVRemoteScreenSDKCommunication/ConnectivityService/IConnectivityServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/ConnectivityService/ServiceFactory.h>
+
+#include <iostream>
+
 namespace TestConnectivityService
 {
 
-int TestConnectivityServiceClient(int argc, char** argv);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestConnectivityServiceClient(int /*argc*/, char** /*argv*/)
+{
+	using namespace TVRemoteScreenSDKCommunication::ConnectivityService;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[ConnectivityService][Client][fw=" + std::to_string(Framework) + "] ";
+
+	const std::shared_ptr<IConnectivityServiceClient> client = ServiceFactory::CreateClient<Framework>();
+	if (client->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::Connectivity)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	client->StartClient(TestData::Socket);
+	if (client->GetDestination() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	TVRemoteScreenSDKCommunication::CallStatus response;
+
+	response = client->IsAvailable(TestData::ComId);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "IsAvailable successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "IsAvailable Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->Disconnect(TestData::ComId);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "Disconnect successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "Disconnect Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestConnectivityService

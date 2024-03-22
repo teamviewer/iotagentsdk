@@ -23,20 +23,38 @@
 //********************************************************************************//
 #pragma once
 
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
 #include <TVRemoteScreenSDKCommunication/SessionStatusService/GrabStrategy.h>
 #include <cstdint>
 
 namespace TestSessionStatusService
 {
-namespace TestData
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+struct TestData;
+
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::gRPCTransport>
 {
+	static constexpr const char* Socket = "unix:///tmp/sessionStatus";
+	static constexpr const char* ComId = "tokengRPC";
+	static constexpr TVRemoteScreenSDKCommunication::SessionStatusService::GrabStrategy GrabStrategy =
+		TVRemoteScreenSDKCommunication::SessionStatusService::GrabStrategy::EventDrivenByApp;
+	static constexpr int32_t DummyTVSessionID = -1024;
+	static constexpr int32_t SessionCountStarted = 2;
+	static constexpr int32_t SessionCountStopped = 0;
+};
 
-constexpr const char* Socket = "unix:///tmp/sessionStatus";
-constexpr const char* ComId = "token";
-constexpr TVRemoteScreenSDKCommunication::SessionStatusService::GrabStrategy GrabStrategy = TVRemoteScreenSDKCommunication::SessionStatusService::GrabStrategy::EventDrivenByApp;
-constexpr int32_t DummyTVSessionID = -1024;
-constexpr int32_t SessionCountStarted = 2;
-constexpr int32_t SessionCountStopped = 0;
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
+{
+	static constexpr const char* Socket = "tv+tcp://127.0.0.1:9003";
+	static constexpr const char* ComId = "tokenSocketIO";
+	static constexpr TVRemoteScreenSDKCommunication::SessionStatusService::GrabStrategy GrabStrategy =
+		TVRemoteScreenSDKCommunication::SessionStatusService::GrabStrategy::ChangeNotificationOnly;
+	static constexpr int32_t DummyTVSessionID = -512;
+	static constexpr int32_t SessionCountStarted = 3;
+	static constexpr int32_t SessionCountStopped = 1;
+};
 
-} // namespace TestData
 } // namespace TestSessionStatusService

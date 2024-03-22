@@ -41,13 +41,12 @@ struct CallStatus
 	{
 	}
 
-	// Intentionally allowed conversion from CallState to CallStatus
-	CallStatus(CallState _state)
+	explicit CallStatus(CallState _state)
 		: state(_state)
 	{
 	}
 
-	CallStatus(CallState _state, const std::string& _errorMessage)
+	CallStatus(CallState _state, std::string _errorMessage)
 		: state(_state),
 		  errorMessage(std::move(_errorMessage))
 	{
@@ -60,6 +59,9 @@ struct CallStatus
 
 	CallState state = CallState::Failed;
 	std::string errorMessage;
+
+	static const CallStatus Ok;
+	static const CallStatus Failed;
 };
 
 } // namespace TVRemoteScreenSDKCommunication

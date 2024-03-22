@@ -58,11 +58,14 @@ bool featureFromCommunication(CommunicationFeature feature, Feature& outFeature)
 		case CommunicationFeature::FileTransfer:
 			outFeature = Feature::FileTransfer;
 			return true;
-		case CommunicationFeature::AllowPartnerViewDesktop:
+		case CommunicationFeature::RemoteView:
 			outFeature = Feature::RemoteView;
 			return true;
 		case CommunicationFeature::RemoteControl:
 			outFeature = Feature::RemoteControl;
+			return true;
+		case CommunicationFeature::ScreenRecording:
+			outFeature = Feature::ScreenRecording;
 			return true;
 	}
 	return false;
@@ -76,10 +79,13 @@ bool featureToCommunication(Feature feature, CommunicationFeature& outFeature)
 			outFeature = CommunicationFeature::FileTransfer;
 			return true;
 		case Feature::RemoteView:
-			outFeature = CommunicationFeature::AllowPartnerViewDesktop;
+			outFeature = CommunicationFeature::RemoteView;
 			return true;
 		case Feature::RemoteControl:
 			outFeature = CommunicationFeature::RemoteControl;
+			return true;
+		case Feature::ScreenRecording:
+			outFeature = CommunicationFeature::ScreenRecording;
 			return true;
 	}
 	return false;
@@ -216,8 +222,9 @@ bool AccessControlModule::registerCallbacks()
 	auto communicationChannel = connection->getCommunicationChannel();
 	auto weakDispatcher = std::weak_ptr<IDispatcher>{connection->getDispatcher()};
 
+	const auto weakThis = m_weakThis;
 	m_accessChangeNotificationConnection = communicationChannel->accessModeChangeNotified().registerCallback(
-		[weakThis = m_weakThis, weakDispatcher]
+		[weakThis, weakDispatcher]
 		(CommunicationFeature communicationFeature, CommunicationAccess communicationAccess)
 		{
 			Feature feature;
@@ -230,14 +237,14 @@ bool AccessControlModule::registerCallbacks()
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[feature, access](const auto& self)
+				[feature, access](const std::shared_ptr<AccessControlModule>& self)
 				{
 					util::safeCall(self->m_callbacks.accessChangedCallback, feature, access);
 				});
 		});
 
 	m_accessConfirmationRequestedConnection = communicationChannel->accessConfirmationRequested().registerCallback(
-		[weakThis = m_weakThis, weakDispatcher]
+		[weakThis, weakDispatcher]
 		(CommunicationFeature communicationFeature, uint32_t timeout)
 		{
 			(void)timeout; // c++ api doesn't support timeout
@@ -251,7 +258,7 @@ bool AccessControlModule::registerCallbacks()
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[feature](const auto& self)
+				[feature](const std::shared_ptr<AccessControlModule>& self)
 				{
 					util::safeCall(self->m_callbacks.accessRequestCallback, feature);
 				});

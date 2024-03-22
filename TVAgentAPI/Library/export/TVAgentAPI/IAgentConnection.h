@@ -37,13 +37,42 @@ public:
 	enum class Status : int32_t
 	{
 		Disconnected = 0,	// initial state - no connection to the IoT Agent
-		Disconnecting,		// connection to the IoT Agent is shuting down
+		Disconnecting,		// connection to the IoT Agent is shutting down
 		Connecting,			// trying to establish the connection to the IoT Agent
-		Connected,			// connection to the IoT Agent is sucessfully established
+		Connected,			// connection to the IoT Agent is successfully established
 		ConnectionLost,		// connectivity check with the IoT Agent timed out
 	};
 
+	enum class SetConnectionURLsResult : int32_t
+	{
+		Success = 0,					// no error
+		CharacterLimitForPathExceeded,	// resulting url for services is too long
+		SchemaNotValid,					// given URL format is not supported or mismatched
+		ConnectionIsInUse,				// you cannot change URLs in the active connection. stop() it first.
+	};
+
 	virtual ~IAgentConnection() = default;
+
+	/**
+	 * @brief setConnectionURLs sets a custom base URL where the plugin will host its server sockets
+	 * and agent URL which locates the IoT Agent API entry point.
+	 * If never called, by default @p baseSdkUrl is @c unix:///tmp or @c tcp+tv://127.0.0.1
+	 * and @p agentApiUrl is @c unix:///tmp/teamviewer-iot-agent-services/remoteScreen/registrationService or @c tcp+tv://127.0.0.1:9221
+	 * depending on which flags the SDK has been built with.
+	 * Check TV_COMM_ENABLE_GRPC and TV_COMM_ENABLE_PLAIN_SOCKET CMake options.
+	 * The gRPC version is always preferable over TCP once if compiled with both options enabled (by default both are ON).
+	 * If you call this method, you should do so once early on after the plugin has been loaded,
+	 * before any [register*] methods.
+	 * Affects all subsequently initiated communication sessions.
+	 * This functions checks if the base URL in combination with the created sockets names, will exceed the limit for socket names.
+	 * If the limit is reached, the function will return a corresponding error code and the SDK will not use the provided path.
+	 * In that case, please provide a shorter path to this function.
+	 * Apart from that it checks consistency and validity of the URLs given (e.g. if the schemes differ, rejects the arguments).
+	 * @param baseSdkUrl the new base URL
+	 * @param agentApiUrl path to agent API entry point
+	 * @return result of URLs' change as enum value, see @p SetConnectionURLsResult
+	 */
+	virtual SetConnectionURLsResult setConnectionURLs(const char* baseSdkUrl, const char* agentApiUrl) = 0;
 
 	/**
 	 * @brief start tries to establish a connection to a running TeamViewer IoT Agent and maintains it until stop() is called.
@@ -72,7 +101,7 @@ public:
 	virtual void setStatusChangedCallback(StatusChangedCallback callback) = 0;
 
 	/**
-	 * @brief processEvents is responsible to execute all actions/events/etc. (or simply: "events") that are pendning in order they are issued:
+	 * @brief processEvents is responsible to execute all actions/events/etc. (or simply: "events") that are pending in order they are issued:
 	 * - triggers user's callbacks
 	 * - updates internal states
 	 * - notifies modules

@@ -41,6 +41,8 @@ struct
 		tvagentapi::IAccessControlModule::Access::Denied;
 	tvagentapi::IAccessControlModule::Access remoteControlAccess =
 		tvagentapi::IAccessControlModule::Access::Denied;
+	tvagentapi::IAccessControlModule::Access screenRecordingAccess =
+		tvagentapi::IAccessControlModule::Access::Denied;
 } s_accessData;
 
 bool s_isInterrupted = false;
@@ -68,7 +70,8 @@ void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* 
 
 	printf("Getting current access...\n");
 
-	for (const auto feature: {Feature::FileTransfer, Feature::RemoteView, Feature::RemoteControl})
+	for (const auto feature:
+		{Feature::FileTransfer, Feature::RemoteView, Feature::RemoteControl, Feature::ScreenRecording})
 	{
 		tvagentapi::IAccessControlModule::Access access = Access::Denied;
 		if (!accessControlModule->getAccess(feature, access))
@@ -86,13 +89,15 @@ void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* 
 		}
 	}
 
-	printf("Setting access...\n\t{%s => %s, %s => %s, %s => %s}\n",
+	printf("Setting access...\n\t{%s => %s, %s => %s, %s => %s, %s => %s}\n",
 		tvagentapi::toCString(Feature::FileTransfer),
 		tvagentapi::toCString(s_accessData.fileTransferAccess),
 		tvagentapi::toCString(Feature::RemoteView),
 		tvagentapi::toCString(s_accessData.remoteViewAccess),
 		tvagentapi::toCString(Feature::RemoteControl),
-		tvagentapi::toCString(s_accessData.remoteControlAccess));
+		tvagentapi::toCString(s_accessData.remoteControlAccess),
+		tvagentapi::toCString(Feature::ScreenRecording),
+		tvagentapi::toCString(s_accessData.screenRecordingAccess));
 
 	if (!accessControlModule->setAccess(
 			Feature::FileTransfer,
@@ -113,6 +118,13 @@ void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* 
 			s_accessData.remoteControlAccess))
 	{
 		fprintf(stderr, "Failed to change access for remote control");
+	}
+
+	if (!accessControlModule->setAccess(
+			Feature::ScreenRecording,
+			s_accessData.screenRecordingAccess))
+	{
+		fprintf(stderr, "Failed to change access for screen recording");
 	}
 }
 
@@ -165,9 +177,10 @@ Set access control per feature. Options change defaults in access control.
 Usage: example_AccessControl [options...]
 
 Options:
-	-f, --file-transfer  - set initial file transfer access
-	-v, --remote-view    - set initial remote view access
-	-c, --remote-control - set initial remote control access
+	-f, --file-transfer    - set initial file transfer access
+	-v, --remote-view      - set initial remote view access
+	-c, --remote-control   - set initial remote control access
+	-r, --screen-recording - set initial screen recording access
 
 Acceptable access values:
 	%d - Allowed
@@ -187,9 +200,10 @@ By default everything is denied.
 
 	constexpr struct option longOptions[] =
 	{
-		{ "file-transfer",	required_argument, nullptr, 'f' },
-		{ "remote-view",	required_argument, nullptr, 'v' },
-		{ "remote-control",	required_argument, nullptr, 'c' },
+		{ "file-transfer",		required_argument, nullptr, 'f' },
+		{ "remote-view",		required_argument, nullptr, 'v' },
+		{ "remote-control",		required_argument, nullptr, 'c' },
+		{ "screen-recording",	required_argument, nullptr, 'r' },
 		{}
 	};
 
@@ -212,7 +226,7 @@ By default everything is denied.
 		exit(EXIT_FAILURE);
 	};
 
-	while ((opt = getopt_long(argc, argv, "hf:v:c:", longOptions, &index)) != -1)
+	while ((opt = getopt_long(argc, argv, "hf:v:c:r:", longOptions, &index)) != -1)
 	{
 		switch (opt)
 		{
@@ -227,6 +241,9 @@ By default everything is denied.
 				break;
 			case 'c':
 				s_accessData.remoteControlAccess = toAccess(optarg);
+				break;
+			case 'r':
+				s_accessData.screenRecordingAccess = toAccess(optarg);
 				break;
 			default:
 				printUsage(stderr);
@@ -264,14 +281,27 @@ int main(int argc, char* argv[])
 
 	// connect tvagentapi sdk to IoT Agent
 	// We pass logging to AgentConnection, but we still manage its lifetime and must pair it with IAgentAPI::destroyLogging()
-	// logging object will be used internally and we may only release it (in this case by calling IAgentAPI::destroyLogging()
+	// logging object will be used internally, and we may only release it (in this case by calling IAgentAPI::destroyLogging()
 	// after call to agentAPI->destroyAgentConnection();
 	tvagentapi::IAgentConnection* agentConnection =
-		agentAPI->createAgentConnectionLocal(logging);
+		agentAPI->createAgentConnection(logging);
 	if (!agentConnection)
 	{
 		fputs("Failed to create connection\n", stderr);
 		return EXIT_FAILURE;
+	}
+
+	const char* baseSdkUrl = std::getenv("TV_BASE_SDK_URL");
+	const char* agentApiUrl = std::getenv("TV_AGENT_API_URL");
+	if (baseSdkUrl && agentApiUrl)
+	{
+		const tvagentapi::IAgentConnection::SetConnectionURLsResult result =
+			agentConnection->setConnectionURLs(baseSdkUrl, agentApiUrl);
+		if (result != tvagentapi::IAgentConnection::SetConnectionURLsResult::Success)
+		{
+			fprintf(stderr, "Failed to set connection URLs: %s", tvagentapi::toCString(result));
+			return EXIT_FAILURE;
+		}
 	}
 
 	tvagentapi::IAccessControlModule* accessControlModule =
@@ -317,7 +347,7 @@ int main(int argc, char* argv[])
 	printf("Cleaning up...\n");
 	agentAPI->destroyAgentConnection(agentConnection);
 
-	// after destroyAgentConnection() we are sure logging is not used and we can safely destroy it
+	// after destroyAgentConnection() we are sure logging is not used, and we can safely destroy it
 	agentAPI->destroyLogging(logging);
 
 	printf("Exiting...\n");

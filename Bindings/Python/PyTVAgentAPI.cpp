@@ -50,7 +50,7 @@ int PyTVAgentAPI_init(PyTVAgentAPI* self, PyObject* args, PyObject* kwargs)
 }
 
 // Methods
-PyObject* PyTVAgentAPI_createAgentConnectionLocal(PyTVAgentAPI* self, PyObject* args)
+PyObject* PyTVAgentAPI_createAgentConnection(PyTVAgentAPI* self, PyObject* args)
 {
 	PyLogging* pyLogging = nullptr;
 
@@ -79,6 +79,12 @@ PyObject* PyTVAgentAPI_createAgentConnectionLocal(PyTVAgentAPI* self, PyObject* 
 	auto pyAgentConnection = MakeWrapperObject<PyAgentConnection>(self, pyLogging);
 
 	return reinterpret_cast<PyObject*>(pyAgentConnection);
+}
+
+PyObject* PyTVAgentAPI_createAgentConnectionLocal(PyTVAgentAPI* self, PyObject* args)
+{
+	PyErr_Warn(PyExc_DeprecationWarning, "use createAgentConnection");
+	return PyTVAgentAPI_createAgentConnection(self, args);
 }
 
 PyObject* PyTVAgentAPI_createFileLogging(PyTVAgentAPI* self, PyObject* arg)
@@ -111,6 +117,21 @@ FileLogging is thread safe and its methods can be safely called from user code.
 :return file logging object.
 )__");
 
+PyDoc_STRVAR(createAgentConnection,
+R"__(createAgentConnection($self, logger)
+--
+
+Creates an instance of a connection to the running TeamViewer IoT Agent instance.
+By default the connection already has the parameters for connecting to the agent.
+You can change them via :p setConnectionURLs method before starting the connection.
+The returned connection is to be used in subsequent calls to create functionality modules
+(e.g. Instant Support, TV Session Management, Access Control, etc.).
+
+:param logger: used internally for logging; logger ownership remains on caller's side and is not transferred to the connection.
+If no logger is passed no logging happens.
+:return agent connection object.
+)__");
+
 PyDoc_STRVAR(createAgentConnectionLocal,
 R"__(createAgentConnectionLocal($self, logger)
 --
@@ -119,9 +140,10 @@ Creates an instance of a connection to the running TeamViewer IoT Agent instance
 The returned connection is to be used in subsequent calls to create functionality modules
 (e.g. Instant Support, TV Session Management, Access Control, etc.).
 
-:param logger: would be used internaly for logging; logging ownership remains on caller side and is not transferred to the connection.
+:param logger: would be used internally for logging; logging ownership remains on caller side and is not transferred to the connection.
 If no logger is passed no logging happens.
 :return agent connection object.
+:deprecated use createAgentConnection.
 )__");
 
 } // namespace DocStrings
@@ -133,6 +155,13 @@ PyMethodDef PyTVAgentAPI_methods[] =
 		PyCFunctionCast(PyTVAgentAPI_createFileLogging),
 		METH_O,
 		DocStrings::createFileLogging
+	},
+
+	{
+		"createAgentConnection",
+		PyCFunctionCast(PyTVAgentAPI_createAgentConnection),
+		METH_VARARGS,
+		DocStrings::createAgentConnection
 	},
 
 	{

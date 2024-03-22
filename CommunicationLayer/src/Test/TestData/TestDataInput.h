@@ -23,6 +23,8 @@
 //********************************************************************************//
 #pragma once
 
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
 #include <TVRemoteScreenSDKCommunication/InputService/KeyState.h>
 #include <TVRemoteScreenSDKCommunication/InputService/MouseButton.h>
 
@@ -30,19 +32,44 @@
 
 namespace TestInputService
 {
-namespace TestData
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+struct TestData;
+
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::gRPCTransport>
 {
+	static constexpr const char* Socket = "unix:///tmp/inputServer";
+	static constexpr const char* ComId = "tokengRPC";
+	static constexpr TVRemoteScreenSDKCommunication::InputService::KeyState KeyState =
+		TVRemoteScreenSDKCommunication::InputService::KeyState::Down;
+	static constexpr uint32_t XkbSymbol = 14;
+	static constexpr uint32_t UnicodeCharacter = 16;
+	static constexpr uint32_t XkbModifiers = 123456;
+	static constexpr int32_t PosX = 42;
+	static constexpr int32_t PosY = 43;
+	static constexpr TVRemoteScreenSDKCommunication::InputService::MouseButton Button =
+		TVRemoteScreenSDKCommunication::InputService::MouseButton::Left;
+	static constexpr TVRemoteScreenSDKCommunication::InputService::MouseButtonState ButtonState =
+		TVRemoteScreenSDKCommunication::InputService::MouseButtonState::Pressed;
+	static constexpr int32_t Angle = -3;
+};
 
-constexpr const char* Socket = "unix:///tmp/inputServer";
-constexpr const char* ComId = "token";
-const TVRemoteScreenSDKCommunication::InputService::KeyState KeyState = TVRemoteScreenSDKCommunication::InputService::KeyState::Down;
-const uint32_t XkbSymbol = 14;
-const uint32_t UnicodeCharacter = 16;
-const uint32_t XkbModifiers = 123456;
-const int32_t PosX = 42;
-const int32_t PosY = 43;
-const TVRemoteScreenSDKCommunication::InputService::MouseButton Button = TVRemoteScreenSDKCommunication::InputService::MouseButton::Left;
-const int32_t Angle = -3;
-
-} // namespace TestData
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
+{
+	static constexpr const char* Socket = "tv+tcp://127.0.0.1:9003";
+	static constexpr const char* ComId = "tokenSocketIO";
+	static constexpr TVRemoteScreenSDKCommunication::InputService::KeyState KeyState =
+		TVRemoteScreenSDKCommunication::InputService::KeyState::Up;
+	static constexpr uint32_t XkbSymbol = 15;
+	static constexpr uint32_t UnicodeCharacter = 17;
+	static constexpr uint32_t XkbModifiers = 12345;
+	static constexpr int32_t PosX = 43;
+	static constexpr int32_t PosY = 44;
+	static constexpr TVRemoteScreenSDKCommunication::InputService::MouseButton Button =
+		TVRemoteScreenSDKCommunication::InputService::MouseButton::Right;
+	static constexpr TVRemoteScreenSDKCommunication::InputService::MouseButtonState ButtonState =
+		TVRemoteScreenSDKCommunication::InputService::MouseButtonState::Released;
+	static constexpr int32_t Angle = -2;
+};
 } // namespace TestInputService

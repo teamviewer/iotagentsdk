@@ -134,27 +134,28 @@ bool TVSessionManagementModule::registerCallbacks()
 	auto communicationChannel = connection->getCommunicationChannel();
 	auto weakDispatcher = std::weak_ptr<IDispatcher>{connection->getDispatcher()};
 
+	const auto weakThis = m_weakThis;
 	m_tvSessionStartedConnection = communicationChannel->tvSessionStarted().registerCallback(
-		[weakThis = m_weakThis, weakDispatcher]
+		[weakThis, weakDispatcher]
 		(int32_t tvSessionID, int32_t tvSessionsCount)
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[tvSessionID, tvSessionsCount](const auto& self)
+				[tvSessionID, tvSessionsCount](const std::shared_ptr<TVSessionManagementModule>& self)
 				{
 					util::safeCall(self->m_callbacks.sessionStartedCallback, tvSessionID, tvSessionsCount);
 				});
 		});
 
 	m_tvSessionStoppedConnection = communicationChannel->tvSessionStopped().registerCallback(
-		[weakThis = m_weakThis, weakDispatcher]
+		[weakThis, weakDispatcher]
 		(int32_t tvSessionID, int32_t tvSessionsCount)
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[tvSessionID, tvSessionsCount](const auto& self)
+				[tvSessionID, tvSessionsCount](const std::shared_ptr<TVSessionManagementModule>& self)
 				{
 					util::safeCall(self->m_callbacks.sessionStoppedCallback, tvSessionID, tvSessionsCount);
 				});

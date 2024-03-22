@@ -42,10 +42,12 @@ public:
 		/// File Transfer access feature, partner can transfer files to the machine.
 		FileTransfer = 0,
 		/// Screen sharing, partner can view the screen of the machine.
-		/// If RemoteView feature is Denied, remote controlling the machine is not possible.
+		/// If AllowRemoteView/RemoteView feature is Denied, remote controlling the machine is not possible.
 		RemoteView = 1,
 		/// Partner can control the machine.
-		RemoteControl = 2
+		RemoteControl = 2,
+		/// Partner can record the remote screen session
+		ScreenRecording = 3,
 	};
 
 	enum class Access : int32_t

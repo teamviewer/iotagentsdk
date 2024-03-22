@@ -23,17 +23,74 @@
 //********************************************************************************//
 #pragma once
 
-#include <string>
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
+#include <TVRemoteScreenSDKCommunication/ImageService/IImageServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/ImageService/ServiceFactory.h>
+
 #include <atomic>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <unistd.h>
 
 namespace TestImageServicePerformance
 {
+
+constexpr const char* LogPrefix = "[ImageService][Client] ";
+constexpr const char* ComId = "comId";
+constexpr int32_t X = 0;
+constexpr int32_t Y = 0;
+constexpr int32_t Width = 100;
+constexpr int32_t Height = 100;
 
 struct StopCondition
 {
 	std::atomic_bool run{false};
 };
 
-int TestImageServiceClient(StopCondition& stopCondition, const std::string& location, const std::string& picturePath);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestImageServiceClient(StopCondition& stopCondition, const std::string& location, const std::string& picturePath)
+{
+	using namespace TVRemoteScreenSDKCommunication::ImageService;
+	const std::shared_ptr<IImageServiceClient> client = ServiceFactory::CreateClient<Framework>();
+
+	client->StartClient(location);
+
+	std::string picture;
+
+	{
+		std::ifstream file(picturePath.c_str(), std::ios::binary | std::ios::ate);
+
+		std::streamsize size = file.tellg();
+		file.seekg(0, std::ios::beg);
+		picture.resize(size, '\0');
+		file.read(&picture.front(), size);
+	}
+
+	int errorCounter = 0;
+
+	while (stopCondition.run)
+	{
+		const TVRemoteScreenSDKCommunication::CallStatus response = client->UpdateImage(ComId, X, Y, Width, Height, picture);
+		if (response.IsOk() == false)
+		{
+			if (errorCounter > 10)
+			{
+				std::cerr << "Response failed because: " << response.errorMessage << std::endl;
+				return EXIT_FAILURE;
+			}
+			++errorCounter;
+			sleep(1);
+		}
+		else
+		{
+			errorCounter = 0;
+		}
+	}
+
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestImageServicePerformance

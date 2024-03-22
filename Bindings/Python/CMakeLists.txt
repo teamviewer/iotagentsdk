@@ -24,6 +24,7 @@
 cmake_minimum_required(VERSION 3.12)
 project(bindings_Python)
 
+# Stick to https://devguide.python.org/versions/
 find_package (Python3 3.8 REQUIRED COMPONENTS Development)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

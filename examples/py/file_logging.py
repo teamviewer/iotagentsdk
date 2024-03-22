@@ -24,6 +24,7 @@ SOFTWARE
 """
 __license__ = "MIT License"
 
+import os
 import tvagentapi
 
 log_filename = 'example.log'
@@ -31,10 +32,12 @@ api = tvagentapi.TVAgentAPI()
 
 # internal tvagentapi logging will be appended to file the file
 logging = api.createFileLogging(log_filename)
-connection = api.createAgentConnectionLocal(logging)
+connection = api.createAgentConnection(logging)
+if 'TV_BASE_SDK_URL' in os.environ and 'TV_AGENT_API_URL' in os.environ:
+    connection.setConnectionURLs(os.environ['TV_BASE_SDK_URL'], os.environ['TV_AGENT_API_URL'])
 
 # you can also use logging for your own needs
-logging.logInfo("log some infromation")
+logging.logInfo("log some information")
 logging.logError("log an error")
 
 connection.start()

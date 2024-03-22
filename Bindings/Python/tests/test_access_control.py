@@ -28,9 +28,9 @@ from tvagentapi_test.access_control import test_file_transfer_access_request
 
 # Test cases
 test_cases = {
-    'test_file_transfer_access_accept': lambda: test_file_transfer_access_request('accept'),
-    'test_file_transfer_access_reject': lambda: test_file_transfer_access_request('reject'),
-    'test_file_transfer_access_timeout': lambda: test_file_transfer_access_request('timeout'),
+    'test_file_transfer_access_accept': test_file_transfer_access_request('accept'),
+    'test_file_transfer_access_reject': test_file_transfer_access_request('reject'),
+    'test_file_transfer_access_timeout': test_file_transfer_access_request('timeout'),
 }
 
 if __name__ == "__main__":

@@ -24,6 +24,7 @@
 #pragma once
 
 #include <TVRemoteScreenSDKCommunication/InputService/IInputServiceServer.h>
+#include <TVRemoteScreenSDKCommunication/InputService/ServiceFactory.h>
 
 #include <atomic>
 #include <memory>
@@ -34,9 +35,34 @@ namespace TestInputServicePerformance
 
 struct SharedInformation
 {
-	std::atomic<uint64_t> counter {0};
+	std::atomic<uint64_t> counter{0};
 };
 
-std::shared_ptr<TVRemoteScreenSDKCommunication::InputService::IInputServiceServer> TestInputService(SharedInformation& information, const std::string& location);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+std::shared_ptr<TVRemoteScreenSDKCommunication::InputService::IInputServiceServer> TestInputService(
+	SharedInformation& information,
+	const std::string& location)
+{
+	using namespace TVRemoteScreenSDKCommunication::InputService;
+	const std::shared_ptr<IInputServiceServer> server = ServiceFactory::CreateServer<Framework>();
+
+	const auto receiveFunction = [&information](
+		const std::string& /*communicationId*/,
+		TVRemoteScreenSDKCommunication::InputService::KeyState /*keyState*/,
+		uint32_t /*xkbSymbol*/,
+		uint32_t /*unicodeCharacter*/,
+		uint32_t /*xkbModifiers*/,
+		const TVRemoteScreenSDKCommunication::InputService::IInputServiceServer::SimulateKeyResponseCallback& response)
+	{
+		++information.counter;
+		response(TVRemoteScreenSDKCommunication::CallStatus::Ok);
+	};
+
+	server->SetSimulateKeyCallback(receiveFunction);
+
+	server->StartServer(location);
+
+	return server;
+}
 
 } // namespace TestInputServicePerformance

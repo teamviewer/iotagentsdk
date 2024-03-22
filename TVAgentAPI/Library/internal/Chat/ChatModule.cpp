@@ -267,8 +267,9 @@ bool ChatModule::registerCallbacks()
 	auto communicationChannel = connection->getCommunicationChannel();
 	auto weakDispatcher = std::weak_ptr<IDispatcher>{connection->getDispatcher()};
 
+	const auto weakThis = m_weakThis;
 	auto chatCreatedAction =
-		[weakThis = m_weakThis, weakDispatcher](
+		[weakThis, weakDispatcher](
 			std::string chatId,
 			std::string title,
 			TVRemoteScreenSDKCommunication::ChatService::ChatType sdkchatType,
@@ -277,7 +278,7 @@ bool ChatModule::registerCallbacks()
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[chatId, title, sdkchatType, chatTypeId](const auto& self)
+				[chatId, title, sdkchatType, chatTypeId](const std::shared_ptr<ChatModule>& self)
 				{
 					util::safeCall(
 						self->m_callbacks.chatCreated,
@@ -291,13 +292,13 @@ bool ChatModule::registerCallbacks()
 	m_connections.push_back(communicationChannel->chatCreated().registerCallback(chatCreatedAction));
 
 	auto chatsRemovedAction =
-		[weakThis = m_weakThis, weakDispatcher](
+		[weakThis, weakDispatcher](
 			std::vector<std::string> chatIds)
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[chatIds = std::move(chatIds)](const auto& self)
+				[chatIds](const std::shared_ptr<ChatModule>& self)
 				{
 					if (self->m_callbacks.chatsRemoved.callback == nullptr)
 					{
@@ -321,13 +322,13 @@ bool ChatModule::registerCallbacks()
 	m_connections.push_back(communicationChannel->chatsRemoved().registerCallback(chatsRemovedAction));
 
 	auto chatClosedAction =
-		[weakThis = m_weakThis, weakDispatcher](
+		[weakThis, weakDispatcher](
 			std::string chatId)
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[chatId](const auto& self)
+				[chatId](const std::shared_ptr<ChatModule>& self)
 				{
 					util::safeCall(
 						self->m_callbacks.chatClosed,
@@ -338,13 +339,13 @@ bool ChatModule::registerCallbacks()
 	m_connections.push_back(communicationChannel->closedChat().registerCallback(chatClosedAction));
 
 	auto receivedMessagesAction =
-		[weakThis = m_weakThis, weakDispatcher](
+		[weakThis, weakDispatcher](
 			std::vector<TVRemoteScreenSDKCommunication::ChatService::ReceivedMessage> messages)
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[messages = std::move(messages)](const auto& self)
+				[messages](const std::shared_ptr<ChatModule>& self)
 				{
 					if (self->m_callbacks.receivedMessages.callback == nullptr)
 					{
@@ -376,7 +377,7 @@ bool ChatModule::registerCallbacks()
 	m_connections.push_back(communicationChannel->receivedMessages().registerCallback(receivedMessagesAction));
 
 	auto sendMessageSuccessAction =
-		[weakThis = m_weakThis, weakDispatcher](
+		[weakThis, weakDispatcher](
 			uint32_t localId,
 			std::string messageId,
 			uint64_t timeStamp)
@@ -384,7 +385,7 @@ bool ChatModule::registerCallbacks()
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[localId, messageId = std::move(messageId), timeStamp](const auto& self)
+				[localId, messageId, timeStamp](const std::shared_ptr<ChatModule>& self)
 				{
 					util::safeCall(
 						self->m_callbacks.sendMessageFinished,
@@ -398,13 +399,13 @@ bool ChatModule::registerCallbacks()
 	m_connections.push_back(communicationChannel->messageSent().registerCallback(sendMessageSuccessAction));
 
 	auto sendMessageFailureAction =
-		[weakThis = m_weakThis, weakDispatcher](
+		[weakThis, weakDispatcher](
 			uint32_t localId)
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[localId](const auto& self)
+				[localId](const std::shared_ptr<ChatModule>& self)
 				{
 					util::safeCall(
 						self->m_callbacks.sendMessageFinished,
@@ -418,13 +419,13 @@ bool ChatModule::registerCallbacks()
 	m_connections.push_back(communicationChannel->messageNotSent().registerCallback(sendMessageFailureAction));
 
 	auto messagesLoadedAction =
-		[weakThis = m_weakThis, weakDispatcher](
+		[weakThis, weakDispatcher](
 			std::vector<TVRemoteScreenSDKCommunication::ChatService::ReceivedMessage> messages, bool hasMore)
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[messages = std::move(messages), hasMore](const auto& self)
+				[messages, hasMore](const std::shared_ptr<ChatModule>& self)
 				{
 					std::vector<ChatMessage> messagesConverted;
 					messagesConverted.reserve(messages.size());
@@ -451,13 +452,13 @@ bool ChatModule::registerCallbacks()
 	m_connections.push_back(communicationChannel->loadedMessages().registerCallback(messagesLoadedAction));
 
 	auto historyDeletedAction =
-		[weakThis = m_weakThis, weakDispatcher](
+		[weakThis, weakDispatcher](
 			std::string chatId)
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,
 				weakThis,
-				[chatId](const auto& self)
+				[chatId](const std::shared_ptr<ChatModule>& self)
 				{
 					util::safeCall(
 						self->m_callbacks.historyDeleted,

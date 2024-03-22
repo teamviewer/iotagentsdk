@@ -23,9 +23,85 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataSessionStatus.h"
+
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
+#include <TVRemoteScreenSDKCommunication/SessionStatusService/ISessionStatusServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/SessionStatusService/ServiceFactory.h>
+
+#include <iostream>
+
 namespace TestSessionStatusService
 {
 
-int TestSessionStatusServiceClient(int argc, char** argv);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestSessionStatusServiceClient(int /*argc*/, char** /*argv*/)
+{
+	using namespace TVRemoteScreenSDKCommunication::SessionStatusService;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[SessionStatusService][Client][fw=" + std::to_string(Framework) + "] ";
+	const std::shared_ptr<ISessionStatusServiceClient> client = ServiceFactory::CreateClient<Framework>();
+	if (client->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::SessionStatus)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	client->StartClient(TestData::Socket);
+	if (client->GetDestination() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	TVRemoteScreenSDKCommunication::CallStatus response;
+
+	response = client->RemoteControlStarted(TestData::ComId, TestData::GrabStrategy);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "StartedRemoteControl successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "StartedRemoteControl Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->RemoteControlStopped(TestData::ComId);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "StoppedRemoteControl successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "StoppedRemoteControl Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->TVSessionStarted(TestData::ComId, TestData::DummyTVSessionID, TestData::SessionCountStarted);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "TVSessionStarted successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "TVSessionStarted Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->TVSessionStopped(TestData::ComId, TestData::DummyTVSessionID, TestData::SessionCountStopped);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "TVSessionStopped successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "TVSessionStopped Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestSessionStatusService

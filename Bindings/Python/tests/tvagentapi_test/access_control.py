@@ -24,8 +24,11 @@ SOFTWARE
 """
 __license__ = "MIT License"
 
+from . import with_connect_urls
 
-def test_file_transfer_access_request(action: str):
+
+@with_connect_urls
+def test_file_transfer_access_request(action: str, base_sdk_url=None, agent_api_url=None):
     """
     Test handling an incoming File Transfer access confirmation request
 
@@ -68,7 +71,9 @@ def test_file_transfer_access_request(action: str):
                 pass # time out. NB: this will look like 'reject' on client side.
 
     api = tvagentapi.TVAgentAPI()
-    connection = api.createAgentConnectionLocal(None)
+    connection = api.createAgentConnection(None)
+    if base_sdk_url and agent_api_url:
+        connection.setConnectionURLs(base_sdk_url, agent_api_url)
 
     access_control_module = connection.getModule(tvagentapi.ModuleType.AccessControl)
 

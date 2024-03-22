@@ -23,9 +23,63 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataImage.h"
+
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
+#include <TVRemoteScreenSDKCommunication/ImageService/IImageServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/ImageService/ServiceFactory.h>
+
+#include <iostream>
+
 namespace TestImageService
 {
 
-int TestImageServiceClient(int argc, char** argv);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestImageServiceClient(int /*argc*/, char** /*argv*/)
+{
+	using namespace TVRemoteScreenSDKCommunication::ImageService;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[ImageService][Client][fw=" + std::to_string(Framework) + "] ";
+
+	const std::shared_ptr<IImageServiceClient> client = ServiceFactory::CreateClient<Framework>();
+	if (client->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::Image)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	client->StartClient(TestData::Socket);
+	if (client->GetDestination() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	TVRemoteScreenSDKCommunication::CallStatus response{};
+
+	response = client->UpdateImageDefinition(TestData::ComId, TestData::ImageSourceTitle, TestData::Width, TestData::Height, TestData::ColorFormat, TestData::Dpi);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "UpdateImageDefinition successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "UpdateImageDefinition Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->UpdateImage(TestData::ComId, TestData::X, TestData::Y, TestData::Width, TestData::Height, TestData::Picture());
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "UpdateImage successful" << std::endl;
+	}
+	else
+	{
+		std::cout << LogPrefix << "UpdateImage successful" << std::endl;
+	}
+
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestImageService

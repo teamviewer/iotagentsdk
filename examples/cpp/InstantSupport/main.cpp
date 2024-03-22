@@ -232,14 +232,27 @@ int main(int argc, char* argv[])
 	}
 
 	// connect tvagentapi sdk to IoT Agent
-	// We pass logging to AgentConnection, but we still manage it's lifetime and must pair it with IAgentAPI::destroyLogging()
-	// logging object will be used internally and we may only release it (in this case by calling IAgentAPI::destroyLogging()
+	// We pass logging to AgentConnection, but we still manage its lifetime and must pair it with IAgentAPI::destroyLogging()
+	// logging object will be used internally, and we may only release it (in this case by calling IAgentAPI::destroyLogging()
 	// after call to agentAPI->destroyAgentConnection();
-	tvagentapi::IAgentConnection* agentConnection = agentAPI->createAgentConnectionLocal(logging);
+	tvagentapi::IAgentConnection* agentConnection = agentAPI->createAgentConnection(logging);
 	if (!agentConnection)
 	{
 		fputs("Failed to create connection\n", stderr);
 		return EXIT_FAILURE;
+	}
+
+	const char* baseSdkUrl = std::getenv("TV_BASE_SDK_URL");
+	const char* agentApiUrl = std::getenv("TV_AGENT_API_URL");
+	if (baseSdkUrl && agentApiUrl)
+	{
+		const tvagentapi::IAgentConnection::SetConnectionURLsResult result =
+			agentConnection->setConnectionURLs(baseSdkUrl, agentApiUrl);
+		if (result != tvagentapi::IAgentConnection::SetConnectionURLsResult::Success)
+		{
+			fprintf(stderr, "Failed to set connection URLs: %s", tvagentapi::toCString(result));
+			return EXIT_FAILURE;
+		}
 	}
 
 	tvagentapi::IInstantSupportModule* instantSupportModule =
@@ -286,7 +299,7 @@ int main(int argc, char* argv[])
 	printf("Cleaning up...\n");
 	agentAPI->destroyAgentConnection(agentConnection);
 
-	// after destroyAgentConnection() we are sure logging is not used and we can safely destroy it
+	// after destroyAgentConnection() we are sure logging is not used, and we can safely destroy it
 	agentAPI->destroyLogging(logging);
 
 	printf("Exiting...\n");

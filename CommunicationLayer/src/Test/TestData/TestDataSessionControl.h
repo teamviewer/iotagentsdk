@@ -23,19 +23,36 @@
 //********************************************************************************//
 #pragma once
 
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
 #include <TVRemoteScreenSDKCommunication/SessionControlService/ControlMode.h>
-#include <initializer_list>
+
+#include <vector>
 
 namespace TestSessionControlService
 {
-namespace TestData
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+struct TestData;
+
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::gRPCTransport>
 {
+	static constexpr const char* Socket = "unix:///tmp/sessionControl";
+	static constexpr const char* ComId = "tokengRPC";
+	static constexpr const char* Reason = "reason";
+	static constexpr TVRemoteScreenSDKCommunication::SessionControlService::ControlMode Mode =
+		TVRemoteScreenSDKCommunication::SessionControlService::ControlMode::Disable;
+	static std::vector<int> RunningTVSessions() {return {3, 0, -80000, 42, 2093}; }
+};
 
-constexpr const char* Socket = "unix:///tmp/sessionControl";
-constexpr const char* ComId = "token";
-constexpr const char* Reason = "reason";
-constexpr TVRemoteScreenSDKCommunication::SessionControlService::ControlMode Mode = TVRemoteScreenSDKCommunication::SessionControlService::ControlMode::Disable;
-constexpr std::initializer_list<int> RunningTVSessions = {3, 0, -80000, 42, 2093};
-
-} // namespace TestData
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
+{
+	static constexpr const char* Socket = "tv+tcp://127.0.0.1:9003";
+	static constexpr const char* ComId = "tokenSocketIO";
+	static constexpr const char* Reason = "Reason";
+	static constexpr TVRemoteScreenSDKCommunication::SessionControlService::ControlMode Mode =
+		TVRemoteScreenSDKCommunication::SessionControlService::ControlMode::FullControl;
+	static std::vector<int> RunningTVSessions() {return {30, 0, -70000, 42 + 42, 314159}; }
+};
 } // namespace TestSessionControlService

@@ -30,6 +30,8 @@ link_libraries(atomic)
 set(SOURCES_TESTDATA
 	TestData/TestDataAccessControlIn.h
 	TestData/TestDataAccessControlOut.h
+	TestData/TestDataAugmentRCSessionInvitationConsumer.h
+	TestData/TestDataAugmentRCSessionInvitationControl.h
 	TestData/TestDataChatIn.h
 	TestData/TestDataChatOut.h
 	TestData/TestDataConnectionConfirmation.h
@@ -43,141 +45,88 @@ set(SOURCES_TESTDATA
 	TestData/TestDataSessionStatus.h
 	TestData/TestDataViewGeometry.h
 )
-
 add_library(${PROJECT_NAME}_sharedTestData INTERFACE)
-
-foreach(_item IN LISTS SOURCES_TESTDATA)
-	target_sources(${PROJECT_NAME}_sharedTestData INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/${_item}")
+foreach(_sourceFile IN LISTS SOURCES_TESTDATA)
+	target_sources(${PROJECT_NAME}_sharedTestData INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/${_sourceFile}")
 endforeach()
 
-
 set(SOURCES_CLIENT
-	Client/TestAccessControlInServiceClient.cpp
 	Client/TestAccessControlInServiceClient.h
-	Client/TestAccessControlOutServiceClient.cpp
 	Client/TestAccessControlOutServiceClient.h
-	Client/TestChatInServiceClient.cpp
+	Client/TestAugmentRCSessionInvitationConsumerServiceClient.h
+	Client/TestAugmentRCSessionInvitationControlServiceClient.h
 	Client/TestChatInServiceClient.h
-	Client/TestChatOutServiceClient.cpp
 	Client/TestChatOutServiceClient.h
-	Client/TestConnectionConfirmationServiceClient.cpp
 	Client/TestConnectionConfirmationServiceClient.h
-	Client/TestConnectivityServiceClient.cpp
 	Client/TestConnectivityServiceClient.h
-	Client/TestImageNotificationServiceClient.cpp
 	Client/TestImageNotificationServiceClient.h
-	Client/TestImageServiceClient.cpp
 	Client/TestImageServiceClient.h
-	Client/TestInputServiceClient.cpp
 	Client/TestInputServiceClient.h
-	Client/TestRegistrationServiceClient.cpp
 	Client/TestRegistrationServiceClient.h
-	Client/TestInstantSupportNotificationServiceClient.cpp
 	Client/TestInstantSupportNotificationServiceClient.h
-	Client/TestInstantSupportServiceClient.cpp
 	Client/TestInstantSupportServiceClient.h
-	Client/TestSessionControlServiceClient.cpp
 	Client/TestSessionControlServiceClient.h
-	Client/TestSessionStatusServiceClient.cpp
 	Client/TestSessionStatusServiceClient.h
-	Client/TestViewGeometryServiceClient.cpp
 	Client/TestViewGeometryServiceClient.h
 )
-
-add_library(${PROJECT_NAME}_sharedClient STATIC ${SOURCES_CLIENT})
+add_library(${PROJECT_NAME}_sharedClient INTERFACE)
+foreach(_sourceFile IN LISTS SOURCES_CLIENT)
+	target_sources(${PROJECT_NAME}_sharedClient INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/${_sourceFile}")
+endforeach()
 target_link_libraries(${PROJECT_NAME}_sharedClient
-	PRIVATE
+	INTERFACE
 		${PROJECT_NAME}_sharedTestData
-	PUBLIC
-		AccessControlService
-		ChatService
-		ConnectionConfirmationService
-		ConnectivityService
-		ImageNotificationService
-		ImageService
-		InputService
-		InstantSupportService
-		RegistrationService
-		SessionControlService
-		SessionStatusService
-		ViewGeometryService
+		Services
 )
 
 set(SOURCES_SERVER
-	Server/TestAccessControlInServiceServer.cpp
 	Server/TestAccessControlInServiceServer.h
-	Server/TestAccessControlOutServiceServer.cpp
 	Server/TestAccessControlOutServiceServer.h
-	Server/TestChatInServiceServer.cpp
+	Server/TestAugmentRCSessionInvitationConsumerServiceServer.h
+	Server/TestAugmentRCSessionInvitationControlServiceServer.h
 	Server/TestChatInServiceServer.h
-	Server/TestChatOutServiceServer.cpp
 	Server/TestChatOutServiceServer.h
-	Server/TestConnectionConfirmationServiceServer.cpp
 	Server/TestConnectionConfirmationServiceServer.h
-	Server/TestConnectivityService.cpp
 	Server/TestConnectivityService.h
-	Server/TestImageNotificationService.cpp
 	Server/TestImageNotificationService.h
-	Server/TestImageService.cpp
 	Server/TestImageService.h
-	Server/TestInputService.cpp
 	Server/TestInputService.h
-	Server/TestInstantSupportNotificationServiceServer.cpp
 	Server/TestInstantSupportNotificationServiceServer.h
-	Server/TestInstantSupportServiceServer.cpp
 	Server/TestInstantSupportServiceServer.h
-	Server/TestRegistrationService.cpp
 	Server/TestRegistrationService.h
-	Server/TestSessionControlService.cpp
 	Server/TestSessionControlService.h
-	Server/TestSessionStatusService.cpp
 	Server/TestSessionStatusService.h
-	Server/TestViewGeometryService.cpp
 	Server/TestViewGeometryService.h
 )
-
-add_library(${PROJECT_NAME}_sharedServer STATIC ${SOURCES_SERVER})
+add_library(${PROJECT_NAME}_sharedServer INTERFACE)
+foreach(_sourceFile IN LISTS SOURCES_SERVER)
+	target_sources(${PROJECT_NAME}_sharedServer INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/${_sourceFile}")
+endforeach()
 target_link_libraries(${PROJECT_NAME}_sharedServer
-	PRIVATE
+	INTERFACE
 		${PROJECT_NAME}_sharedTestData
-	PUBLIC
-		AccessControlService
-		ChatService
-		ConnectionConfirmationService
-		ConnectivityService
-		ImageNotificationService
-		ImageService
-		InputService
-		InstantSupportService
-		RegistrationService
-		SessionControlService
-		SessionStatusService
-		ViewGeometryService
+		Services
 )
 
 set(SOURCES_CLIENT_PERFORMANCE
-	Client/ImageTestPerformanceClient.cpp
 	Client/ImageTestPerformanceClient.h
-	Client/InputTestPerformanceClient.cpp
 	Client/InputTestPerformanceClient.h
 )
-add_library(${PROJECT_NAME}_performanceClient STATIC ${SOURCES_CLIENT_PERFORMANCE})
-target_link_libraries(${PROJECT_NAME}_performanceClient
-	PUBLIC
-		ImageService InputService RegistrationService SessionStatusService SessionControlService ConnectivityService
-)
+add_library(${PROJECT_NAME}_performanceClient INTERFACE)
+foreach(_sourceFile IN LISTS SOURCES_CLIENT_PERFORMANCE)
+	target_sources(${PROJECT_NAME}_performanceClient INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/${_sourceFile}")
+endforeach()
+target_link_libraries(${PROJECT_NAME}_performanceClient INTERFACE Services)
 
 set(SOURCES_SERVER_PERFORMANCE
-	Server/ImageTestPerformanceServer.cpp
 	Server/ImageTestPerformanceServer.h
-	Server/InputTestPerformanceServer.cpp
 	Server/InputTestPerformanceServer.h
 )
-add_library(${PROJECT_NAME}_performanceServer STATIC ${SOURCES_SERVER_PERFORMANCE})
-target_link_libraries(${PROJECT_NAME}_performanceServer
-	PUBLIC
-		ImageService InputService RegistrationService SessionStatusService SessionControlService ConnectivityService
-)
+add_library(${PROJECT_NAME}_performanceServer INTERFACE)
+foreach(_sourceFile IN LISTS SOURCES_SERVER_PERFORMANCE)
+	target_sources(${PROJECT_NAME}_performanceServer INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/${_sourceFile}")
+endforeach()
+target_link_libraries(${PROJECT_NAME}_performanceServer INTERFACE Services)
 
 set(SOURCES_PERFORMANCETEST_CLIENT
 	main_TestPerformance_Client.cpp
@@ -199,3 +148,10 @@ add_executable(${PROJECT_NAME}_Integration ${SOURCES_INTEGRATIONTEST})
 target_link_libraries(${PROJECT_NAME}_Integration PRIVATE ${PROJECT_NAME}_sharedClient)
 target_link_libraries(${PROJECT_NAME}_Integration PRIVATE ${PROJECT_NAME}_sharedServer)
 add_test(NAME ${PROJECT_NAME}_Integration COMMAND ${PROJECT_NAME}_Integration)
+
+set(SOURCES_PARSEURLTEST
+	main_TestParseUrl.cpp
+)
+add_executable(${PROJECT_NAME}_ParseUrl ${SOURCES_PARSEURLTEST})
+target_link_libraries(${PROJECT_NAME}_ParseUrl PRIVATE CommunicationLayerBase)
+add_test(NAME ${PROJECT_NAME}_ParseUrl COMMAND ${PROJECT_NAME}_ParseUrl)

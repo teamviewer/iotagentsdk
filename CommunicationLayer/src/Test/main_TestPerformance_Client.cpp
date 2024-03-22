@@ -24,22 +24,41 @@
 #include "Client/ImageTestPerformanceClient.h"
 #include "Client/InputTestPerformanceClient.h"
 
-#include <fstream>
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
 #include <iostream>
 #include <thread>
 #include <unistd.h>
 
 constexpr const char* FTPSToken = "FTPS";
 constexpr const char* KTPSToken = "KTPS";
+constexpr const char* gRPCToken = "gRPC";
+constexpr const char* SocketIOToken = "SocketIO";
 constexpr const char* PicturePathToken = "PicturePath";
 constexpr const char* TestTimeToken = "TestTime";
-constexpr const char* DefaultImageServiceLocation = "/tmp/imageService";
-constexpr const char* DefaultInputServiceLocation = "/tmp/inputService";
-constexpr const char* GrpcUnixDefintion = "unix://";
 constexpr const char Seperator = '=';
 constexpr size_t SeperatorSize = 1;
 constexpr size_t TokenIsAtTheBeginningIndex = 0;
 static_assert(SeperatorSize == 1, "seperator must be a single char");
+
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+struct SvcConnData;
+
+template<>
+struct SvcConnData<TVRemoteScreenSDKCommunication::gRPCTransport>
+{
+	static constexpr const char* DefaultImageServiceLocation = "/tmp/imageService";
+	static constexpr const char* DefaultInputServiceLocation = "/tmp/inputService";
+	static constexpr const char* Prefix = "unix://";
+};
+
+template<>
+struct SvcConnData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
+{
+	static constexpr const char* DefaultImageServiceLocation = ":9003";
+	static constexpr const char* DefaultInputServiceLocation = ":9004";
+	static constexpr const char* Prefix = "127.0.0.1";
+};
 
 struct KTPS
 {
@@ -57,6 +76,8 @@ struct CommandLineResult
 	int testTime = 60; // seconds
 	KTPS ktps;
 	FTPS ftps;
+	bool testgRPC = false;
+	bool testSocketIO = false;
 };
 
 CommandLineResult ParseCommandLine(int argc, char** argv)
@@ -77,6 +98,16 @@ CommandLineResult ParseCommandLine(int argc, char** argv)
 		{
 			result.ktps.isSet = true;
 			continue;
+		}
+
+		if (argument == gRPCToken)
+		{
+			result.testgRPC = true;
+		}
+
+		if (argument == SocketIOToken)
+		{
+			result.testSocketIO = true;
 		}
 
 		const size_t picturePathLocation = argument.find(PicturePathToken);
@@ -121,7 +152,7 @@ void PrintHelp()
 	std::cout
 		<< "Usage: TVRemoteScreenSDKCommunicationTest_PerformanceTestClient ["
 		<< FTPSToken << " " << PicturePathToken << Seperator << "<PathToPicture>] ["
-		<< KTPSToken << "] ["
+		<< KTPSToken << "] [" << gRPCToken << "|" << SocketIOToken << "] ["
 		<< TestTimeToken << Seperator << "<seconds>]" << std::endl
 		<< "	" << FTPSToken << ": Frame transmissions per second" << std::endl
 		<< "	" << KTPSToken << ": Key transmissions per second" << std::endl
@@ -129,53 +160,41 @@ void PrintHelp()
 		<< "This programm will send the defined set of data to the TVRemoteScreenSDKCommunicationTest_PerformanceTestServer." << std::endl;
 }
 
-int main(int argc, char** argv)
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+void RunTest(const CommandLineResult& cmdLineResult)
 {
-	const CommandLineResult parseResult = ParseCommandLine(argc, argv);
-
-	if (parseResult.ftps.isSet && parseResult.ftps.picturePath.empty())
-	{
-		std::cerr << "Missing picutre path" << std::endl;
-		PrintHelp();
-		return EXIT_FAILURE;
-	}
-
-	if (!parseResult.ftps.isSet && !parseResult.ktps.isSet)
-	{
-		PrintHelp();
-		return EXIT_FAILURE;
-	}
-
 	TestImageServicePerformance::StopCondition stopConditionImage;
 	stopConditionImage.run = true;
 	std::thread imageThread;
-	const bool imageTestRequested = parseResult.ftps.isSet && !parseResult.ftps.picturePath.empty();
+	const bool imageTestRequested = cmdLineResult.ftps.isSet && !cmdLineResult.ftps.picturePath.empty();
 	if (imageTestRequested)
 	{
-		imageThread = std::thread([&stopConditionImage, &parseResult]()
+		imageThread = std::thread([&stopConditionImage, &cmdLineResult]()
 		{
-			TestImageServicePerformance::TestImageServiceClient(
+			TestImageServicePerformance::TestImageServiceClient<Framework>(
 				stopConditionImage,
-				std::string(GrpcUnixDefintion) + std::string(DefaultImageServiceLocation),
-				parseResult.ftps.picturePath);
+				std::string(SvcConnData<Framework>::Prefix) +
+					std::string(SvcConnData<Framework>::DefaultImageServiceLocation),
+				cmdLineResult.ftps.picturePath);
 		});
 	}
 
 	TestInputServicePerformance::StopCondition stopConditionInput;
 	stopConditionInput.run = true;
 	std::thread inputThread;
-	const bool inputTestRequested = parseResult.ktps.isSet;
+	const bool inputTestRequested = cmdLineResult.ktps.isSet;
 	if (inputTestRequested)
 	{
 		inputThread = std::thread([&stopConditionInput]()
 		{
-			TestInputServicePerformance::TestInputServiceClient(
+			TestInputServicePerformance::TestInputServiceClient<Framework>(
 				stopConditionInput,
-				std::string(GrpcUnixDefintion) + std::string(DefaultInputServiceLocation));
+				std::string(SvcConnData<Framework>::Prefix) +
+					std::string(SvcConnData<Framework>::DefaultInputServiceLocation));
 		});
 	}
 
-	sleep(parseResult.testTime);
+	sleep(cmdLineResult.testTime);
 
 	stopConditionImage.run = false;
 
@@ -189,5 +208,55 @@ int main(int argc, char** argv)
 	if (inputTestRequested)
 	{
 		inputThread.join();
+	}
+}
+
+int main(int argc, char** argv)
+{
+	const CommandLineResult parseResult = ParseCommandLine(argc, argv);
+
+	if (parseResult.ftps.isSet && parseResult.ftps.picturePath.empty())
+	{
+		std::cerr << "Missing picture path" << std::endl;
+		PrintHelp();
+		return EXIT_FAILURE;
+	}
+
+	if (!parseResult.ftps.isSet && !parseResult.ktps.isSet)
+	{
+		PrintHelp();
+		return EXIT_FAILURE;
+	}
+
+	if (parseResult.testgRPC && parseResult.testSocketIO)
+	{
+		std::cerr << "You can test only one transport at once" << std::endl;
+		PrintHelp();
+		return EXIT_FAILURE;
+	}
+
+	if (parseResult.testgRPC)
+	{
+#ifdef TV_COMM_ENABLE_GRPC
+		RunTest<TVRemoteScreenSDKCommunication::gRPCTransport>(parseResult);
+#else
+		std::cerr << "gRPC is not supported" << std::endl;
+		return EXIT_FAILURE;
+#endif
+	}
+	else if (parseResult.testSocketIO)
+	{
+#ifdef TV_COMM_ENABLE_PLAIN_SOCKET
+		RunTest<TVRemoteScreenSDKCommunication::TCPSocketTransport>(parseResult);
+#else
+		std::cerr << "SocketIO is not supported" << std::endl;
+		return EXIT_FAILURE;
+#endif
+	}
+	else
+	{
+		std::cerr << "Choose eiter gRPC or SocketIO to test" << std::endl;
+		PrintHelp();
+		return EXIT_FAILURE;
 	}
 }

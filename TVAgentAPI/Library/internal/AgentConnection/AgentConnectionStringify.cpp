@@ -40,4 +40,17 @@ const char* toCString(IAgentConnection::Status status)
 	return "";
 }
 
+const char* toCString(IAgentConnection::SetConnectionURLsResult status)
+{
+	using Code = IAgentConnection::SetConnectionURLsResult;
+	switch (status)
+	{
+		case Code::Success:                       return "Success";
+		case Code::CharacterLimitForPathExceeded: return "CharacterLimitForPathExceeded";
+		case Code::SchemaNotValid:                return "SchemaNotValid";
+		case Code::ConnectionIsInUse:             return "ConnectionIsInUse";
+	}
+	return "";
+}
+
 } // namespace tvagentapi

@@ -23,9 +23,83 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataSessionControl.h"
+
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
+#include <TVRemoteScreenSDKCommunication/SessionControlService/ISessionControlServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/SessionControlService/ServiceFactory.h>
+
+#include <iostream>
+
 namespace TestSessionControlService
 {
 
-int TestSessionControlServiceClient(int argc, char** argv);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestSessionControlServiceClient(int /*argc*/, char** /*argv*/)
+{
+	using namespace TVRemoteScreenSDKCommunication::SessionControlService;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[SessionControlService][Client][fw=" + std::to_string(Framework) + "] ";
+
+	const std::shared_ptr<ISessionControlServiceClient> client = ServiceFactory::CreateClient<Framework>();
+
+	if (client->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::SessionControl)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	client->StartClient(TestData::Socket);
+	if (client->GetDestination() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	TVRemoteScreenSDKCommunication::CallStatus response = client->ChangeControlMode(TestData::ComId, TestData::Mode);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "ChangeControlMode successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "ChangeControlMode Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->CloseRc(TestData::ComId);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "CloseRc successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "CloseRc Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	ISessionControlServiceClient::TVSessionsResult tvsessionsResponse
+		= client->GetRunningTVSessions(TestData::ComId);
+
+	std::vector<int32_t> testSessions{TestData::RunningTVSessions()};
+	if (tvsessionsResponse.IsOk() && tvsessionsResponse.tvSessionIDs == testSessions)
+	{
+		std::cout << LogPrefix << "GetRunningTVSessions successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "GetRunningTVSessions Error: " << response.errorMessage << std::endl;
+		std::cerr << "received sessionIDs: {";
+		for (const auto entry : tvsessionsResponse.tvSessionIDs)
+		{
+			std::cerr << ' ' << entry;
+		}
+		std::cerr << " }" <<std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestSessionControlService

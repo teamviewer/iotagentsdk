@@ -23,12 +23,62 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataConnectivity.h"
+
 #include <TVRemoteScreenSDKCommunication/ConnectivityService/IConnectivityServiceServer.h>
-#include <memory>
+#include <TVRemoteScreenSDKCommunication/ConnectivityService/ServiceFactory.h>
+
+#include <iostream>
 
 namespace TestConnectivityService
 {
 
-std::shared_ptr<TVRemoteScreenSDKCommunication::ConnectivityService::IConnectivityServiceServer> TestConnectivityService();
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+std::shared_ptr<TVRemoteScreenSDKCommunication::ConnectivityService::IConnectivityServiceServer> TestConnectivityService()
+{
+	using TVRemoteScreenSDKCommunication::CallStatus;
+	using TVRemoteScreenSDKCommunication::CallState;
+	using namespace TVRemoteScreenSDKCommunication::ConnectivityService;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[ConnectivityService][Server][fw=" + std::to_string(Framework) + "] ";
+
+	const std::shared_ptr<IConnectivityServiceServer> server = ServiceFactory::CreateServer<Framework>();
+	if (server->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::Connectivity)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	const auto isAvailableRequest = [LogPrefix](const std::string& comId, const IConnectivityServiceServer::IsAvailableResponseCallback& response)
+	{
+		std::cout << LogPrefix << "Received IsAvailable with " << comId << "(comId)" << std::endl;
+		if (comId != TestData::ComId)
+		{
+			exit(EXIT_FAILURE);
+		}
+		response(CallStatus::Ok);
+	};
+	server->SetIsAvailableCallback(isAvailableRequest);
+
+	const auto disconnectRequest = [LogPrefix](const std::string& comId, const IConnectivityServiceServer::DisconnectResponseCallback& response)
+	{
+		std::cout << LogPrefix << "Received DisconnectRequest with " << comId << "(comId)" << std::endl;
+		if (comId != TestData::ComId)
+		{
+			exit(EXIT_FAILURE);
+		}
+		response(CallStatus::Ok);
+	};
+	server->SetDisconnectCallback(disconnectRequest);
+
+	server->StartServer(TestData::Socket);
+	if (server->GetLocation() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	return server;
+}
 
 } // namespace TestConnectivityService

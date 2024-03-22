@@ -45,6 +45,21 @@ namespace
 {
 
 // Methods
+PyObject* PyAgentConnection_setConnectionURLs(PyAgentConnection* self, PyObject* args)
+{
+	const char* baseSdkURL{};
+	const char* agentAPIURL{};
+
+	if (!PyArg_ParseTuple(args, "ss", &baseSdkURL, &agentAPIURL))
+	{
+		return nullptr;
+	}
+
+	const auto result = self->m_connection->setConnectionURLs(baseSdkURL, agentAPIURL);
+
+	return PyEnumValue(GetPyTypeAgentConnection_SetConnectionURLsResult(), tvagentapi::toCString(result));
+}
+
 PyObject* PyAgentConnection_start(PyAgentConnection* self, PyObject* args)
 {
 	(void)args;
@@ -59,6 +74,15 @@ PyObject* PyAgentConnection_stop(PyAgentConnection* self, PyObject* args)
 	self->m_connection->stop();
 
 	Py_RETURN_NONE;
+}
+
+PyObject* PyAgentConnection_getStatus(PyAgentConnection* self, PyObject* args)
+{
+	(void)args;
+
+	const auto result = self->m_connection->getStatus();
+
+	return PyEnumValue(GetPyTypeAgentConnection_Status(), tvagentapi::toCString(result));
 }
 
 PyObject* PyAgentConnection_processEvents(PyAgentConnection* self, PyObject* args, PyObject* kwargs)
@@ -170,7 +194,7 @@ PyObject* PyAgentConnection_setCallbacks(
 
 	auto statusChangedCallback = [](
 		tvagentapi::IAgentConnection::Status status,
-		void* userdata)
+		void* userdata) noexcept
 	{
 		auto pyStatusChangedPyCallback = static_cast<PyObject*>(userdata);
 
@@ -201,6 +225,30 @@ PyObject* PyAgentConnection_setCallbacks(
 namespace DocStrings
 {
 
+PyDoc_STRVAR(setConnectionURLs,
+R"__(setConnectionURLs($self, baseSdkUrl, agentApiUrl)
+--
+
+Sets a custom base URL where the plugin will host its server sockets
+and agent URL which locates the IoT Agent API entry point.
+If never called, by default :p baseSdkUrl is :c unix:///tmp or :c tcp+tv://127.0.0.1
+and :p agentApiUrl is :c unix:///tmp/teamviewer-iot-agent-services/remoteScreen/registrationService or :c tcp+tv://127.0.0.1:9221
+depending on which flags the SDK has been built with.
+Check TV_COMM_ENABLE_GRPC and TV_COMM_ENABLE_PLAIN_SOCKET CMake options.
+When compiled with both options enabled (standard), the gRPC method is preferred by default.
+If you call this method, you should do so once early on after the plugin has been loaded,
+before any [register*] methods.
+Affects all subsequently initiated communication sessions.
+This function checks whether any sockets located at the base URL exceed the length limit for socket names.
+If the limit is exceeded, the function will return an error code and the SDK will not use the provided path.
+In that case, please provide a shorter path to this function.
+It also checks the consistency and validity of the provided URLs (e.g., both URLs must use the same scheme).
+
+:param str baseSdkUrl: the new base URL
+:param str agentApiUrl: path to agent API entry point
+:return result of URLs' change as enum value, see :p SetConnectionURLsResult
+)__");
+
 PyDoc_STRVAR(start,
 R"__(start($self)
 --
@@ -215,6 +263,13 @@ R"__(stop($self)
 --
 
 Shuts down all communication with the TeamViewer IoT Agent and changes state afterwards to Disconnected.
+)__");
+
+PyDoc_STRVAR(getStatus,
+R"__(getStatus($self)
+--
+
+Returns the current status of the connection.
 )__");
 
 PyDoc_STRVAR(processEvents,
@@ -257,6 +312,12 @@ Sets callback to handle changes in connection status.
 PyMethodDef PyAgentConnection_methods[] =
 {
 	{
+		"setConnectionURLs",
+		PyCFunctionCast(PyAgentConnection_setConnectionURLs),
+		METH_VARARGS,
+		DocStrings::setConnectionURLs
+	},
+	{
 		"start",
 		PyCFunctionCast(PyAgentConnection_start),
 		METH_NOARGS,
@@ -267,6 +328,12 @@ PyMethodDef PyAgentConnection_methods[] =
 		PyCFunctionCast(PyAgentConnection_stop),
 		METH_NOARGS,
 		DocStrings::stop
+	},
+	{
+		"getStatus",
+		PyCFunctionCast(PyAgentConnection_getStatus),
+		METH_NOARGS,
+		DocStrings::getStatus
 	},
 	{
 		"processEvents",
@@ -296,7 +363,7 @@ namespace tvagentapipy
 {
 
 PyAgentConnection::PyAgentConnection(PyTVAgentAPI* pyAgentAPI, PyLogging* pyLogging)
-	: m_modules{std::make_unique<std::map<tvagentapi::IModule*, PyObject*>>()}
+	: m_modules{new std::map<tvagentapi::IModule*, PyObject*>()}
 	, m_pyAgentAPI{pyAgentAPI}
 	, m_pyLogging{pyLogging}
 {
@@ -350,6 +417,10 @@ PyTypeObject* GetPyTypeAgentConnection()
 			result.tp_dict,
 			"Status",
 			reinterpret_cast<PyObject*>(GetPyTypeAgentConnection_Status()));
+		PyDict_SetItemString(
+			result.tp_dict,
+			"SetConnectionURLsResult",
+			reinterpret_cast<PyObject*>(GetPyTypeAgentConnection_SetConnectionURLsResult()));
 
 		if (PyType_Ready(&result) < 0)
 		{
@@ -376,6 +447,26 @@ PyTypeObject* GetPyTypeAgentConnection_Status()
 				 {toCString(Status::Connecting), static_cast<long>(Status::Connecting)},
 				 {toCString(Status::Connected), static_cast<long>(Status::Connected)},
 				 {toCString(Status::ConnectionLost), static_cast<long>(Status::ConnectionLost)}});
+
+		return result;
+	}();
+	return pyTypeAgentConnection_Status;
+}
+
+PyTypeObject* GetPyTypeAgentConnection_SetConnectionURLsResult()
+{
+	static PyTypeObject* pyTypeAgentConnection_Status = []() -> PyTypeObject*
+	{
+		using Code = tvagentapi::IAgentConnection::SetConnectionURLsResult;
+		using tvagentapi::toCString;
+
+		PyTypeObject* result =
+			CreateEnumType(
+				"tvagentapi.AgentConnection.SetConnectionURLsResult",
+				{{toCString(Code::Success), static_cast<long>(Code::Success)},
+				 {toCString(Code::CharacterLimitForPathExceeded), static_cast<long>(Code::CharacterLimitForPathExceeded)},
+				 {toCString(Code::SchemaNotValid), static_cast<long>(Code::SchemaNotValid)},
+				 {toCString(Code::ConnectionIsInUse), static_cast<long>(Code::ConnectionIsInUse)}});
 
 		return result;
 	}();

@@ -21,24 +21,4 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  #
 # SOFTWARE.                                                                      #
 #********************************************************************************#
-project(example_Qt)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
-
-find_package(Qt5 COMPONENTS Core Widgets Quick REQUIRED)
-
-add_executable(qt_simulate "main.cpp" "AppModel.h" "AppModel.cpp" "qml.qrc" "WidgetsDemoWindow.ui")
-target_link_libraries(qt_simulate Qt5::Core Qt5::Widgets Qt5::Quick)
-
-if(BUILD_SHARED_LIBS)
-	target_link_libraries(qt_simulate TVQtRC.interface)
-	add_dependencies(qt_simulate TVQtRC)
-	add_custom_command(TARGET qt_simulate POST_BUILD
-		COMMAND ln -s $<TARGET_FILE:TVQtRC> $<TARGET_FILE_NAME:TVQtRC>
-		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-else()
-	target_link_libraries(qt_simulate TVQtRC)
-endif()
+add_subdirectory(qtsimulate)

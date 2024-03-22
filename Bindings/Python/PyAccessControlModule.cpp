@@ -409,7 +409,8 @@ PyTypeObject* GetPyTypeAccessControlModule_Feature()
 				"tvagentapi.AccessControlModule.Feature",
 				{{toCString(Feature::FileTransfer), static_cast<long>(Feature::FileTransfer)},
 				 {toCString(Feature::RemoteView), static_cast<long>(Feature::RemoteView)},
-				 {toCString(Feature::RemoteControl), static_cast<long>(Feature::RemoteControl)}});
+				 {toCString(Feature::RemoteControl), static_cast<long>(Feature::RemoteControl)},
+				 {toCString(Feature::ScreenRecording), static_cast<long>(Feature::ScreenRecording)}});
 
 		return result;
 	}();

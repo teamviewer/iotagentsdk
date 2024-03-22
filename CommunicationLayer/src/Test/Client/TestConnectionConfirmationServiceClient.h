@@ -23,10 +23,99 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataConnectionConfirmation.h"
+
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
+#include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/IConnectionConfirmationRequestServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/IConnectionConfirmationResponseServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/RequestServiceFactory.h>
+#include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/ResponseServiceFactory.h>
+
 namespace TestConnectionConfirmationService
 {
 
-int TestConnectionConfirmationRequestServiceClient(int argc, char** argv);
-int TestConnectionConfirmationResponseServiceClient(int argc, char** argv);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestConnectionConfirmationRequestServiceClient(int /*argc*/, char** /*argv*/)
+{
+	using namespace TVRemoteScreenSDKCommunication::ConnectionConfirmationService;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[ConnectionConfirmationRequestService][Client][fw=" + std::to_string(Framework) + "] ";
+
+	TVRemoteScreenSDKCommunication::CallStatus response{};
+	const std::shared_ptr<IConnectionConfirmationRequestServiceClient> client =
+		RequestServiceFactory::CreateClient<Framework>();
+
+	if (client->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::ConnectionConfirmationRequest)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	client->StartClient(TestData::Socket);
+
+	if (client->GetDestination() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	response = client->RequestConnectionConfirmation(TestData::ComId, TestData::ConnectionTypeInstantSupport);
+
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "RequestConnectionConfirmation successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "RequestConnectionConfirmation Failed" << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
+
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestConnectionConfirmationResponseServiceClient(int /*argc*/, char** /*argv*/)
+{
+	using namespace TVRemoteScreenSDKCommunication::ConnectionConfirmationService;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[ConnectionConfirmationResponseService][Client][fw=" + std::to_string(Framework) + "] ";
+
+	TVRemoteScreenSDKCommunication::CallStatus response{};
+	const std::shared_ptr<IConnectionConfirmationResponseServiceClient> client =
+		ResponseServiceFactory::CreateClient<Framework>();
+
+	if (client->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::ConnectionConfirmationResponse)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	client->StartClient(TestData::Socket);
+
+	if (client->GetDestination() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	response = client->ConfirmConnectionRequest(
+		TestData::ComId,
+		TestData::ConnectionTypeInstantSupport,
+		TestData::Accepted);
+
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "ResponseConnectionConfirmation successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "ResponseConnectionConfirmation Failed" << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestConnectionConfirmationService

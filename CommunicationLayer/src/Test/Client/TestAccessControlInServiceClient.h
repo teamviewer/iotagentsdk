@@ -23,9 +23,72 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataAccessControlIn.h"
+
+#include <TVRemoteScreenSDKCommunication/AccessControlService/IAccessControlInServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/AccessControlService/InServiceFactory.h>
+
+#include <iostream>
+
 namespace TestAccessControlInService
 {
 
-int TestAccessControlInServiceClient(int argc, char** argv);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestAccessControlInServiceClient(int /*argc*/, char** /*argv*/)
+{
+	using namespace TVRemoteScreenSDKCommunication::AccessControlService;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[AccessControlInService][Client][fw=" + std::to_string(Framework) + "] ";
+
+	const std::shared_ptr<IAccessControlInServiceClient> client = InServiceFactory::CreateClient<Framework>();
+
+	if (client->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::AccessControlIn)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	client->StartClient(TestData::Socket);
+	if (client->GetDestination() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	TVRemoteScreenSDKCommunication::CallStatus confirmationReplyResponse = client->ConfirmationReply(TestData::ComId, TestData::feature, TestData::confirmed);
+	if (confirmationReplyResponse.IsOk())
+	{
+		std::cout << LogPrefix << "ConfirmationReply successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "ConfirmationReply Error: " << confirmationReplyResponse.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	IAccessControlInServiceClient::GetAccessResponse getAccessResponse = client->GetAccess(TestData::ComId, TestData::feature);
+	if (getAccessResponse.IsOk() && getAccessResponse.access == TestData::access)
+	{
+		std::cout << LogPrefix << "GetAccess successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "GetAccess Error: " << getAccessResponse.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	TVRemoteScreenSDKCommunication::CallStatus setAccessResponse = client->SetAccess(TestData::ComId, TestData::feature, TestData::access);
+	if (setAccessResponse.IsOk())
+	{
+		std::cout << LogPrefix << "SetAccess successful" << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "SetAccess Error: " << setAccessResponse.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestAccessControlInService

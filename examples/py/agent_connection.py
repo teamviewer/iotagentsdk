@@ -24,6 +24,8 @@ SOFTWARE
 """
 __license__ = "MIT License"
 
+import os
+
 import tvagentapi
 
 
@@ -32,7 +34,9 @@ def connectionStatusChanged(status):
 
 
 api = tvagentapi.TVAgentAPI()
-connection = api.createAgentConnectionLocal()
+connection = api.createAgentConnection()
+if 'TV_BASE_SDK_URL' in os.environ and 'TV_AGENT_API_URL' in os.environ:
+    connection.setConnectionURLs(os.environ['TV_BASE_SDK_URL'], os.environ['TV_AGENT_API_URL'])
 connection.setCallbacks(statusChanged=connectionStatusChanged)
 
 print("Connecting to IoT Agent...")

@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  #
 # SOFTWARE.                                                                      #
 #********************************************************************************#
-project(ObserverTest)
+project(TVAgentAPIPrivate_ObserverTest)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 

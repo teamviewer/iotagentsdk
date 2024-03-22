@@ -37,7 +37,7 @@ constexpr const char* LogPrefixInfo  = "[info] ";
 
 void Logging::startLogging(const QString& logFolderPath)
 {
-	std::unique_ptr<QFile> file = std::make_unique<QFile>(logFolderPath + "/" + LogFileName);
+	std::unique_ptr<QFile> file(new QFile(logFolderPath + "/" + LogFileName));
 	if (!file->open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append))
 	{
 		return;
@@ -51,7 +51,7 @@ void Logging::startLogging(const QString& logFolderPath)
 
 	std::lock_guard<std::mutex> lock(m_logMutex);
 	m_file = std::move(file);
-	m_stream = std::make_unique<QTextStream>(m_file.get());
+	m_stream.reset(new QTextStream(m_file.get()));
 }
 
 void Logging::stopLogging()

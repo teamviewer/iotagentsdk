@@ -23,12 +23,125 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataSessionStatus.h"
+
 #include <TVRemoteScreenSDKCommunication/SessionStatusService/ISessionStatusServiceServer.h>
+#include <TVRemoteScreenSDKCommunication/SessionStatusService/ServiceFactory.h>
+
+#include <iostream>
 #include <memory>
 
 namespace TestSessionStatusService
 {
 
-std::shared_ptr<TVRemoteScreenSDKCommunication::SessionStatusService::ISessionStatusServiceServer> TestSessionStatusService();
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+std::shared_ptr<TVRemoteScreenSDKCommunication::SessionStatusService::ISessionStatusServiceServer> TestSessionStatusService()
+{
+	using namespace TVRemoteScreenSDKCommunication::SessionStatusService;
+	using TVRemoteScreenSDKCommunication::CallStatus;
+	using TVRemoteScreenSDKCommunication::CallState;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[SessionStatusService][Server][fw=" + std::to_string(Framework) + "] ";
+	const std::shared_ptr<ISessionStatusServiceServer> server = ServiceFactory::CreateServer<Framework>();
+	if (server->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::SessionStatus)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	const auto rcStarted = [LogPrefix](
+		const std::string& comId,
+		const TVRemoteScreenSDKCommunication::SessionStatusService::GrabStrategy strategy,
+		const ISessionStatusServiceServer::RemoteControlStartedResponseCallback& response)
+	{
+		std::cout << LogPrefix << "Received RemoteControlStarted with: " << comId << std::endl;
+		if (comId == TestData::ComId && strategy == TestData::GrabStrategy)
+		{
+			response(CallStatus::Ok);
+		}
+		else
+		{
+			std::cerr << LogPrefix << "Corrupted Data" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+	};
+
+	server->SetRemoteControlStartedCallback(rcStarted);
+
+	const auto rcEnded = [LogPrefix](
+		const std::string& comId,
+		const ISessionStatusServiceServer::RemoteControlStoppedResponseCallback& response)
+	{
+		std::cout << LogPrefix << "Received RemoteControlStopped with: " << comId << std::endl;
+		if (comId == TestData::ComId)
+		{
+			response(CallStatus::Ok);
+		}
+		else
+		{
+			std::cerr << LogPrefix << "Corrupted Data" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+	};
+
+	server->SetRemoteControlStoppedCallback(rcEnded);
+
+	const auto tvSessionStarted = [LogPrefix](
+		const std::string& comId,
+		int32_t tvSessionID,
+		int32_t tvSessionsCount,
+		const ISessionStatusServiceServer::RemoteControlStoppedResponseCallback& response)
+	{
+		std::cout << LogPrefix << "Received TVSessionStarted with: " << comId
+			<< " { id: " << tvSessionID << ", count: " << tvSessionsCount << " }" << std::endl;
+
+		if (comId == TestData::ComId &&
+			tvSessionID == TestData::DummyTVSessionID &&
+			tvSessionsCount == TestData::SessionCountStarted)
+		{
+			response(CallStatus::Ok);
+		}
+		else
+		{
+			std::cerr << LogPrefix << "Corrupted Data" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+	};
+
+	server->SetTVSessionStartedCallback(tvSessionStarted);
+
+	const auto tvSessionStopped = [LogPrefix](
+		const std::string& comId,
+		int32_t tvSessionID,
+		int32_t tvSessionsCount,
+		const ISessionStatusServiceServer::RemoteControlStoppedResponseCallback& response)
+	{
+		std::cout << LogPrefix << "Received TVSessionStopped with: " << comId
+			<< " { id: " << tvSessionID << ", count: " << tvSessionsCount << " }" << std::endl;
+
+		if (comId == TestData::ComId &&
+			tvSessionID == TestData::DummyTVSessionID &&
+			tvSessionsCount == TestData::SessionCountStopped)
+		{
+			response(CallStatus::Ok);
+		}
+		else
+		{
+			std::cerr << LogPrefix << "Corrupted Data" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+	};
+
+	server->SetTVSessionStoppedCallback(tvSessionStopped);
+
+	server->StartServer(TestData::Socket);
+	if (server->GetLocation() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	return server;
+}
 
 } // namespace TestSessionStatusService

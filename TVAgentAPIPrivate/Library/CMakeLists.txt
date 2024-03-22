@@ -30,30 +30,27 @@ set(SOURCES_EXPORT
 	export/TVAgentAPIPrivate/Observer.h
 )
 
+set(SOURCES_INTERNAL
+	internal/ServicesMediator.cpp
+	internal/ServicesMediator.h
+)
+
 add_library(${PROJECT_NAME} STATIC
 	${SOURCES_EXPORT}
+	${SOURCES_INTERNAL}
 )
 add_library(${TV_NAMESPACE}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME}
 	SYSTEM PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/export>
+	PRIVATE
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
 target_link_libraries(${PROJECT_NAME}
 	PRIVATE
-		AccessControlService
-		ChatService
-		ConnectionConfirmationService
-		ConnectivityService
-		ImageNotificationService
-		ImageService
-		InputService
-		InstantSupportService
-		RegistrationService
-		SessionControlService
-		SessionStatusService
-		ViewGeometryService
+		Services
 )
 
 if(NOT BUILD_SHARED_LIBS)

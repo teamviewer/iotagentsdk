@@ -75,12 +75,15 @@ public:
 	static std::shared_ptr<CommunicationAdapter> Create(
 		const std::shared_ptr<tvqtsdk::ILogging>& logging,
 		const std::shared_ptr<tvagentapi::ILoggingPrivate>& loggingPvt,
-		const std::string& registrationServiceLocation,
 		QObject* parent = nullptr);
-	~CommunicationAdapter() = default;
+	~CommunicationAdapter() override = default;
 
 	void setRemoteScreenSdkBaseUrl(QUrl remoteScreenSdkBaseUrl);
 	BaseUrlParseResultCode setRemoteScreenSdkBaseUrlChecked(QUrl remoteScreenSdkBaseUrl);
+
+	BaseUrlParseResultCode setRemoteScreenSdkUrls(
+		QUrl baseServerUrl,
+		QUrl agentRegistrationServiceUrl);
 
 public Q_SLOTS:
 	void startup();
@@ -152,7 +155,6 @@ private:
 	CommunicationAdapter(
 		const std::shared_ptr<tvqtsdk::ILogging>& logging,
 		const std::shared_ptr<tvagentapi::ILoggingPrivate>& loggingPvt,
-		const std::string& registrationServiceLocation,
 		QObject* parent = nullptr);
 	void setup();
 

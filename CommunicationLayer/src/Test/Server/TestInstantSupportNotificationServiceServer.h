@@ -23,15 +23,89 @@
 //********************************************************************************//
 #pragma once
 
-#include <TVRemoteScreenSDKCommunication/InstantSupportService/IInstantSupportNotificationServiceServer.h>
+#include "TestData/TestDataInstantSupport.h"
 
-#include <memory>
+#include <TVRemoteScreenSDKCommunication/InstantSupportService/IInstantSupportNotificationServiceServer.h>
+#include <TVRemoteScreenSDKCommunication/InstantSupportService/ServiceFactory.h>
+
+#include <iostream>
 
 namespace TestInstantSupportNotificationService
 {
 
-using namespace TVRemoteScreenSDKCommunication::InstantSupportService;
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+std::shared_ptr<TVRemoteScreenSDKCommunication::InstantSupportService::IInstantSupportNotificationServiceServer>
+	TestInstantSupportNotificationServiceServer()
+{
+	using namespace TVRemoteScreenSDKCommunication::InstantSupportService;
+	using TVRemoteScreenSDKCommunication::CallStatus;
+	using TVRemoteScreenSDKCommunication::CallState;
+	using TestData = TestInstantSupportService::TestData<Framework>;
+	const std::string LogPrefix = "[InstantSupportNotificationService][Server][fw=" + std::to_string(Framework) + "] ";
 
-std::shared_ptr<IInstantSupportNotificationServiceServer> TestInstantSupportNotificationServiceServer();
+	const std::shared_ptr<IInstantSupportNotificationServiceServer> server =
+		NotificationServiceFactory::CreateServer<Framework>();
+
+	if (server->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::InstantSupportNotification)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	auto errorNotificationProcessing = [LogPrefix](
+		const std::string& comId,
+		InstantSupportError errorCode,
+		const IInstantSupportNotificationServiceServer::NotifyInstantSupportErrorResponseCallback& response)
+	{
+		std::cout << LogPrefix << "Received error notification about instant support with: " << comId << "(comId), " << std::endl;
+
+		if (comId == TestData::ComId
+			&& errorCode == TestData::InvalidToken)
+		{
+			response(CallStatus::Ok);
+		}
+		else
+		{
+			std::cerr << LogPrefix << "Corrupted Data" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+	};
+
+	server->SetNotifyInstantSupportErrorCallback(errorNotificationProcessing);
+
+	auto modifiedNotificationPrcessing = [LogPrefix](
+		const std::string& comId,
+		InstantSupportData data,
+		const IInstantSupportNotificationServiceServer::NotifyInstantSupportModifiedResponseCallback& response)
+	{
+		std::cout << LogPrefix << "Received notification that instant support modified, with: " << comId << "(comId), " << std::endl;
+
+		if (comId == TestData::ComId
+			&& data.sessionCode == TestData::Data().sessionCode
+			&& data.name == TestData::Data().name
+			&& data.description == TestData::Data().description
+			&& data.state == TestData::Data().state)
+		{
+			response(CallStatus::Ok);
+		}
+		else
+		{
+			std::cerr << LogPrefix << "Corrupted Data" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+	};
+
+	server->SetNotifyInstantSupportModifiedCallback(modifiedNotificationPrcessing);
+
+	server->StartServer(TestData::Socket);
+
+	if (server->GetLocation() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	return server;
+}
 
 } // namespace TestInstantSupportNotificationService

@@ -31,14 +31,14 @@ from tvagentapi_test.tv_session_management import test_tv_session_management
 
 # Test cases
 test_cases = {
-    'test_request_no_connections': lambda: test_tv_session_management(
+    'test_request_no_connections': test_tv_session_management(
         expected_session_counts=[0],
     ),
     # Tests requiring TV client interaction
-    'test_request_connect_disconnect': lambda: test_tv_session_management(
+    'test_request_connect_disconnect': test_tv_session_management(
         expected_session_counts=[0, 1, 0],
     ),
-    'test_request_connect_terminate': lambda: test_tv_session_management(
+    'test_request_connect_terminate': test_tv_session_management(
         expected_session_counts=[0, 1],
         terminate_sessions_after=5
     ),

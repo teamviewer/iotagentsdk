@@ -23,9 +23,53 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataInstantSupport.h"
+
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
+#include <TVRemoteScreenSDKCommunication/InstantSupportService/IInstantSupportServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/InstantSupportService/ServiceFactory.h>
+
 namespace TestInstantSupportService
 {
 
-int TestInstantSupportServiceClient(int argc, char** argv);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestInstantSupportServiceClient(int /*argc*/, char** /*argv*/)
+{
+	using namespace TVRemoteScreenSDKCommunication::InstantSupportService;
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[InstantSupportService][Client][fw=" + std::to_string(Framework) + "] ";
+
+	TVRemoteScreenSDKCommunication::CallStatus response{};
+	const std::shared_ptr<IInstantSupportServiceClient> client = ServiceFactory::CreateClient<Framework>();
+
+	if (client->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::InstantSupport)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	client->StartClient(TestData::Socket);
+
+	if (client->GetDestination() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	response = client->RequestInstantSupport(TestData::ComId, TestData::AccessToken, TestData::Name, TestData::Group, TestData::Description, TestData::SessionCode, TestData::Email);
+
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "RequestInstantSupport successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "RequestInstantSupport Failed" << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestInstantSupportService

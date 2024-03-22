@@ -43,7 +43,7 @@
 
 #include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/IConnectionConfirmationRequestServiceServer.h>
 #include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/IConnectionConfirmationResponseServiceClient.h>
-#include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/ServiceFactory.h>
+#include <TVRemoteScreenSDKCommunication/ConnectionConfirmationService/RequestServiceFactory.h>
 
 #include <TVRemoteScreenSDKCommunication/ConnectivityService/IConnectivityServiceServer.h>
 #include <TVRemoteScreenSDKCommunication/ConnectivityService/IConnectivityServiceClient.h>
@@ -73,7 +73,6 @@
 
 #include <TVRemoteScreenSDKCommunication/ViewGeometryService/IViewGeometryServiceClient.h>
 #include <TVRemoteScreenSDKCommunication/ViewGeometryService/ServiceFactory.h>
-
 
 namespace tvqtsdk
 {
@@ -139,11 +138,14 @@ bool getSdkCommunicationAccessControl(AccessControl feature, TVRemoteScreenSDKCo
 		case AccessControl::FileTransfer:
 			accessControl = TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::FileTransfer;
 			return true;
-		case AccessControl::AllowPartnerViewDesktop:
-			accessControl = TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::AllowPartnerViewDesktop;
+		case AccessControl::RemoteView:
+			accessControl = TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::RemoteView;
 			return true;
 		case AccessControl::RemoteControl:
 			accessControl = TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::RemoteControl;
+			return true;
+		case AccessControl::ScreenRecording:
+			accessControl = TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::ScreenRecording;
 			return true;
 	}
 	return false;
@@ -238,6 +240,8 @@ bool ConvertFromInternalBaseUrlParseResultCode(
 		case tvagentapi::BaseUrlParseResultCode::SchemaNotValid:
 			result = BaseUrlParseResultCode::SchemaNotValid;
 			return true;
+		case tvagentapi::BaseUrlParseResultCode::ConnectionIsInUse:
+			result = BaseUrlParseResultCode::ConnectionIsInUse;
 	}
 	return false;
 }
@@ -280,7 +284,7 @@ void getSdkObtainChatsResult(const std::vector<TVRemoteScreenSDKCommunication::C
 		if (ConvertFromSdkChatType(chatItr.chatType, chatType) && ConvertFromSdkChatState(chatItr.chatState, chatState))
 		{
 			sdkChats.push_back({
-				QUuid(QString::fromStdString(chatItr.chatId)),
+				QUuid(chatItr.chatId.c_str()),
 				QString::fromStdString(chatItr.title),
 				chatType,
 				chatItr.chatTypeId,
@@ -293,7 +297,7 @@ void getSdkChatIds(const std::vector<std::string>& chats, QVector<QUuid>& sdkCha
 {
 	for (const auto& chatItr: chats)
 	{
-		sdkChatIds.push_back(QUuid(QString::fromStdString(chatItr)));
+		sdkChatIds.push_back(QUuid(chatItr.c_str()));
 	}
 }
 
@@ -301,9 +305,9 @@ void getSdkReceivedMessages(std::vector<TVRemoteScreenSDKCommunication::ChatServ
 {
 	for (const auto& msg: messages)
 	{
-		sdkMessages.push_back({
-			QString::fromStdString(msg.chatId),
-			QString::fromStdString(msg.messageId),
+		sdkMessages.push_back(ReceivedMessage{
+			QUuid(msg.chatId.c_str()),
+			QUuid(msg.messageId.c_str()),
 			QString::fromStdString(msg.content),
 			QDateTime::fromMSecsSinceEpoch(msg.timeStamp),
 			QString::fromStdString(msg.sender)});
@@ -334,11 +338,14 @@ bool getQtSdkAccessControl(TVRemoteScreenSDKCommunication::AccessControlService:
 		case TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::FileTransfer:
 			sdkFeature = AccessControl::FileTransfer;
 			return true;
-		case TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::AllowPartnerViewDesktop:
-			sdkFeature = AccessControl::AllowPartnerViewDesktop;
+		case TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::RemoteView:
+			sdkFeature = AccessControl::RemoteView;
 			return true;
 		case TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::RemoteControl:
 			sdkFeature = AccessControl::RemoteControl;
+			return true;
+		case TVRemoteScreenSDKCommunication::AccessControlService::AccessControl::ScreenRecording:
+			sdkFeature = AccessControl::ScreenRecording;
 			return true;
 	}
 	return false;
@@ -416,7 +423,6 @@ std::string QUuidToString(const QUuid& quuid)
 std::shared_ptr<CommunicationAdapter> CommunicationAdapter::Create(
 	const std::shared_ptr<tvqtsdk::ILogging>& logging,
 	const std::shared_ptr<tvagentapi::ILoggingPrivate>& loggingPvt,
-	const std::string& registrationServiceLocation,
 	QObject* parent /*= nullptr*/)
 {
 	if (!logging || !loggingPvt)
@@ -425,11 +431,7 @@ std::shared_ptr<CommunicationAdapter> CommunicationAdapter::Create(
 	}
 
 	const std::shared_ptr<CommunicationAdapter> communicationAdapter(
-		new CommunicationAdapter(
-			logging,
-			loggingPvt,
-			registrationServiceLocation,
-			parent));
+		new CommunicationAdapter(logging, loggingPvt, parent));
 
 	communicationAdapter->m_weakThis = communicationAdapter;
 
@@ -441,13 +443,10 @@ std::shared_ptr<CommunicationAdapter> CommunicationAdapter::Create(
 CommunicationAdapter::CommunicationAdapter(
 	const std::shared_ptr<tvqtsdk::ILogging>& logging,
 	const std::shared_ptr<tvagentapi::ILoggingPrivate>& loggingPvt,
-	const std::string& registrationServiceLocation,
 	QObject* parent /*= nullptr*/)
-		: QObject(parent)
-		, m_logging(logging)
-		, m_communicationChannel(tvagentapi::CommunicationChannel::Create(
-			loggingPvt,
-			registrationServiceLocation))
+	: QObject(parent)
+	, m_logging(logging)
+	, m_communicationChannel(tvagentapi::CommunicationChannel::Create(loggingPvt))
 {
 }
 
@@ -455,8 +454,9 @@ void CommunicationAdapter::setup()
 {
 	m_observerConnections.clear();
 
+	const auto weakThis = m_weakThis;
 	m_observerConnections.push_back(m_communicationChannel->accessConfirmationRequested().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			TVRemoteScreenSDKCommunication::AccessControlService::AccessControl feature,
 			uint32_t timeout)
 		{
@@ -471,7 +471,7 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->accessModeChangeNotified().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			TVRemoteScreenSDKCommunication::AccessControlService::AccessControl feature,
 			TVRemoteScreenSDKCommunication::AccessControlService::Access accessMode)
 		{
@@ -487,7 +487,7 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->agentCommunicationEstablished().registerCallback(
-		[weakThis = m_weakThis]()
+		[weakThis]()
 		{
 			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
 			{
@@ -496,7 +496,7 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->agentCommunicationLost().registerCallback(
-		[weakThis = m_weakThis]()
+		[weakThis]()
 		{
 			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
 			{
@@ -505,7 +505,7 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->instantSupportErrorNotification().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError responseError)
 		{
 			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
@@ -516,7 +516,7 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->instantSupportModifiedNotification().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportData data)
 		{
 			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
@@ -527,7 +527,7 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->instantSupportConnectionConfirmationRequested().registerCallback(
-		[weakThis = m_weakThis]()
+		[weakThis]()
 		{
 			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
 			{
@@ -536,7 +536,7 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->rcSessionStarted().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			TVRemoteScreenSDKCommunication::SessionStatusService::GrabStrategy strategy)
 		{
 			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
@@ -546,7 +546,7 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->rcSessionStopped().registerCallback(
-		[weakThis = m_weakThis]()
+		[weakThis]()
 		{
 			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
 			{
@@ -555,7 +555,7 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->simulateKeyInputRequested().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			TVRemoteScreenSDKCommunication::InputService::KeyState keyState,
 			uint32_t xkbSymbol,
 			uint32_t unicodeCharacter,
@@ -587,7 +587,7 @@ void CommunicationAdapter::setup()
 	// NB: 3 different mouse callbacks emit same Qt signal
 
 	m_observerConnections.push_back(m_communicationChannel->simulateMouseMoveRequested().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			int32_t posX,
 			int32_t posY)
 		{
@@ -601,8 +601,8 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->simulateMousePressReleaseRequested().registerCallback(
-		[weakThis = m_weakThis](
-			TVRemoteScreenSDKCommunication::InputService::KeyState keyState,
+		[weakThis](
+			TVRemoteScreenSDKCommunication::InputService::MouseButtonState buttonState,
 			int32_t posX,
 			int32_t posY,
 			TVRemoteScreenSDKCommunication::InputService::MouseButton button)
@@ -615,15 +615,15 @@ void CommunicationAdapter::setup()
 
 				if (mouseButton != MouseButton::Unknown)
 				{
-					switch (keyState)
+					switch (buttonState)
 					{
-					case TVRemoteScreenSDKCommunication::InputService::KeyState::Down:
+					case TVRemoteScreenSDKCommunication::InputService::MouseButtonState::Pressed:
 						command = std::make_shared<tvqtsdk::SimulateMouseCommand>(MouseButtonState::Pressed, MouseAction::PressOrRelease, posX, posY, mouseButton, 0);
 						break;
-					case TVRemoteScreenSDKCommunication::InputService::KeyState::Up:
+					case TVRemoteScreenSDKCommunication::InputService::MouseButtonState::Released:
 						command = std::make_shared<tvqtsdk::SimulateMouseCommand>(MouseButtonState::Released, MouseAction::PressOrRelease, posX, posY, mouseButton, 0);
 						break;
-					case TVRemoteScreenSDKCommunication::InputService::KeyState::Unknown:
+					case TVRemoteScreenSDKCommunication::InputService::MouseButtonState::Unknown:
 						break;
 					}
 				}
@@ -636,7 +636,7 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->simulateMouseWheelRequested().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			int32_t posX,
 			int32_t posY,
 			int32_t angle)
@@ -651,7 +651,7 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->chatCreated().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			std::string chatId,
 			std::string title,
 			TVRemoteScreenSDKCommunication::ChatService::ChatType sdkchatType,
@@ -663,13 +663,13 @@ void CommunicationAdapter::setup()
 
 				if (ConvertFromSdkChatType(sdkchatType, chatType))
 				{
-					Q_EMIT sharedThis->chatCreated(QString::fromStdString(chatId), QString::fromStdString(title), chatType, chatTypeId);
+					Q_EMIT sharedThis->chatCreated(QUuid(chatId.c_str()), QString::fromStdString(title), chatType, chatTypeId);
 				}
 			}
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->chatsRemoved().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			std::vector<std::string> chatIds)
 		{
 			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
@@ -683,7 +683,7 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->receivedMessages().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			std::vector<TVRemoteScreenSDKCommunication::ChatService::ReceivedMessage> messages)
 		{
 			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
@@ -697,19 +697,19 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->messageSent().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			uint32_t localId,
 			std::string messageId,
 			uint64_t timeStamp)
 		{
 			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
 			{
-				Q_EMIT sharedThis->messageSent(localId, QUuid(QString::fromStdString(messageId)), QDateTime::fromMSecsSinceEpoch(timeStamp));
+				Q_EMIT sharedThis->messageSent(localId, QUuid(messageId.c_str()), QDateTime::fromMSecsSinceEpoch(timeStamp));
 			}
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->messageNotSent().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			uint32_t localId)
 		{
 			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
@@ -719,7 +719,7 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->loadedMessages().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			std::vector<TVRemoteScreenSDKCommunication::ChatService::ReceivedMessage> messages,
 			bool hasMore)
 		{
@@ -734,22 +734,22 @@ void CommunicationAdapter::setup()
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->deletedHistory().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			std::string chatId)
 		{
 			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
 			{
-				Q_EMIT sharedThis->deletedHistory(QString::fromStdString(chatId));
+				Q_EMIT sharedThis->deletedHistory(QUuid(chatId.c_str()));
 			}
 		}));
 
 	m_observerConnections.push_back(m_communicationChannel->closedChat().registerCallback(
-		[weakThis = m_weakThis](
+		[weakThis](
 			std::string chatId)
 		{
 			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
 			{
-				Q_EMIT sharedThis->closedChat(QString::fromStdString(chatId));
+				Q_EMIT sharedThis->closedChat(QUuid(chatId.c_str()));
 			}
 		}));
 }
@@ -777,6 +777,40 @@ BaseUrlParseResultCode CommunicationAdapter::setRemoteScreenSdkBaseUrlChecked(QU
 	if (!ConvertFromInternalBaseUrlParseResultCode(resultInternal, result))
 	{
 		m_logging->logError("[CommunicationAdapter] BaseUrlParseResultCode conversion falied");
+		return BaseUrlParseResultCode::SchemaNotValid;
+	}
+	return result;
+}
+
+BaseUrlParseResultCode CommunicationAdapter::setRemoteScreenSdkUrls(
+	QUrl baseServerUrl,
+	QUrl agentRegistrationServiceUrl)
+{
+	Q_ASSERT(baseServerUrl.isValid());
+	Q_ASSERT(agentRegistrationServiceUrl.isValid());
+
+	if (!baseServerUrl.isValid())
+	{
+		m_logging->logError(QStringLiteral("[CommunicationAdapter] setRemoteScreenSdkUrlsChecked(): invalid value \"%1\".")
+			.arg(baseServerUrl.toString()));
+		return BaseUrlParseResultCode::SchemaNotValid;
+	}
+
+	if (!agentRegistrationServiceUrl.isValid())
+	{
+		m_logging->logError(QStringLiteral("[CommunicationAdapter] setRemoteScreenSdkUrlsChecked(): invalid value \"%1\".")
+			.arg(agentRegistrationServiceUrl.toString()));
+		return BaseUrlParseResultCode::SchemaNotValid;
+	}
+
+	tvagentapi::BaseUrlParseResultCode resultInternal = m_communicationChannel->setUrls(
+		baseServerUrl.toString().toStdString(),
+		agentRegistrationServiceUrl.toString().toStdString());
+
+	BaseUrlParseResultCode result;
+	if (!ConvertFromInternalBaseUrlParseResultCode(resultInternal, result))
+	{
+		m_logging->logError("[CommunicationAdapter] BaseUrlParseResultCode conversion failed");
 		return BaseUrlParseResultCode::SchemaNotValid;
 	}
 	return result;
@@ -893,7 +927,7 @@ void CommunicationAdapter::sendScreenGrabResult(const tvqtsdk::ScreenGrabResult&
 	const int height = result.getDirtyRect().height();
 
 	const QImage image = result.getImage();
-	const std::string pictureData(
+	std::string pictureData(
 		reinterpret_cast<const char*>(image.constBits()),
 		static_cast<std::size_t>(image.bytesPerLine()) * static_cast<std::size_t>(image.height()));
 
@@ -902,7 +936,7 @@ void CommunicationAdapter::sendScreenGrabResult(const tvqtsdk::ScreenGrabResult&
 		y,
 		width,
 		height,
-		pictureData);
+		std::move(pictureData));
 }
 
 void CommunicationAdapter::sendImageDefinitionForGrabResult(

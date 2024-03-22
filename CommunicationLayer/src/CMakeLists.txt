@@ -25,8 +25,28 @@ cmake_minimum_required(VERSION 3.3)
 
 project(TVRemoteScreenSDKCommunication)
 
+option(TV_COMM_ENABLE_GRPC "Enable gRPC for communication" ON)
+option(TV_COMM_ENABLE_PLAIN_SOCKET "Enable plain C sockets for communication" ON)
+option(ENABLE_TESTS "Enable Tests" ON)
+
+message(STATUS "CommunicationLayer configured transports:")
+message(STATUS "  gRPC: ${TV_COMM_ENABLE_GRPC}")
+message(STATUS "  plain socket: ${TV_COMM_ENABLE_PLAIN_SOCKET}")
+
+if(NOT TV_COMM_ENABLE_GRPC AND NOT TV_COMM_ENABLE_PLAIN_SOCKET)
+	message(FATAL_ERROR "Neither TV_COMM_ENABLE_GRPC nor TV_COMM_ENABLE_PLAIN_SOCKET option is enabled.")
+endif()
+
 set(TV_PACKAGE_NAME ${PROJECT_NAME})
 set(TV_NAMESPACE ${TV_PACKAGE_NAME})
+
+if(TV_COMM_ENABLE_GRPC)
+	add_definitions(-DTV_COMM_ENABLE_GRPC)
+endif()
+
+if(TV_COMM_ENABLE_PLAIN_SOCKET)
+	add_definitions(-DTV_COMM_ENABLE_PLAIN_SOCKET)
+endif()
 
 if(NOT (DEFINED ${TV_PACKAGE_NAME}_VERSION))
 	set(${TV_PACKAGE_NAME}_VERSION 1.0)
@@ -60,21 +80,12 @@ add_compile_options(-Wall -Wextra -Wpedantic -Wshadow)
 add_subdirectory(CommunicationLayerBase)
 add_subdirectory(ServiceBase)
 
-add_subdirectory(AccessControlService)
-add_subdirectory(ChatService)
-add_subdirectory(ConnectionConfirmationService)
-add_subdirectory(ConnectivityService)
-add_subdirectory(ImageService)
-add_subdirectory(ImageNotificationService)
-add_subdirectory(InputService)
-add_subdirectory(InstantSupportService)
-add_subdirectory(RegistrationService)
-add_subdirectory(SessionControlService)
-add_subdirectory(SessionStatusService)
-add_subdirectory(ViewGeometryService)
+add_subdirectory(Services)
 
-enable_testing()
-add_subdirectory(Test)
+if(ENABLE_TESTS)
+	enable_testing()
+	add_subdirectory(Test)
+endif()
 
 include(CMakePackageConfigHelpers)
 

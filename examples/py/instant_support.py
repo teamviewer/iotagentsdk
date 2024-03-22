@@ -78,7 +78,9 @@ Pick an option (a/r/T): """)
 
 
 api = tvagentapi.TVAgentAPI()
-connection = api.createAgentConnectionLocal()
+connection = api.createAgentConnection()
+if 'TV_BASE_SDK_URL' in os.environ and 'TV_AGENT_API_URL' in os.environ:
+    connection.setConnectionURLs(os.environ['TV_BASE_SDK_URL'], os.environ['TV_AGENT_API_URL'])
 
 instant_support_module = connection.getModule(tvagentapi.ModuleType.InstantSupport)
 assert instant_support_module.isSupported(), "Instant Support Module not supported"

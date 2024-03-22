@@ -32,14 +32,21 @@ namespace tvagentapi
 template <typename T>
 struct Callback
 {
-	T* callback = nullptr;
-	void* userdata = nullptr;
+	Callback() = default;
+
+	Callback(T* _callback, void* _userdata)
+	: callback(_callback)
+	, userdata(_userdata)
+	{}
 
 	void reset() noexcept
 	{
 		callback = nullptr;
 		userdata = nullptr;
 	}
+
+	T* callback = nullptr;
+	void* userdata = nullptr;
 };
 
 template <typename T>

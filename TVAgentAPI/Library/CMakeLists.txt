@@ -100,18 +100,7 @@ endif()
 target_link_libraries(${PROJECT_NAME}
 	PRIVATE
 		TVAgentAPIPrivate
-		AccessControlService
-		ChatService
-		ConnectionConfirmationService
-		ConnectivityService
-		ImageNotificationService
-		ImageService
-		InputService
-		InstantSupportService
-		RegistrationService
-		SessionControlService
-		SessionStatusService
-		ViewGeometryService
+		Services
 )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

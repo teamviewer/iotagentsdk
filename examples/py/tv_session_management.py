@@ -24,6 +24,7 @@ SOFTWARE
 """
 __license__ = "MIT License"
 
+import os
 import tvagentapi
 
 
@@ -45,7 +46,9 @@ def session_state_changed(tvsm_module, started, session_id, sessions_count):
 
 
 api = tvagentapi.TVAgentAPI()
-connection = api.createAgentConnectionLocal()
+connection = api.createAgentConnection()
+if 'TV_BASE_SDK_URL' in os.environ and 'TV_AGENT_API_URL' in os.environ:
+    connection.setConnectionURLs(os.environ['TV_BASE_SDK_URL'], os.environ['TV_AGENT_API_URL'])
 
 tv_session_management = connection.getModule(tvagentapi.ModuleType.TVSessionManagement)
 assert tv_session_management.isSupported(), "TV Session Management Module not supported"

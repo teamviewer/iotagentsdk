@@ -23,37 +23,86 @@
 //********************************************************************************//
 #pragma once
 
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
 #include <TVRemoteScreenSDKCommunication/ViewGeometryService/VirtualDesktop.h>
 
 namespace TestViewGeometryService
 {
-namespace TestData
-{
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+struct TestData;
 
-constexpr const char* Socket = "unix:///tmp/viewGeometry";
-constexpr const char* ComId = "token";
-
-const TVRemoteScreenSDKCommunication::ViewGeometryService::VirtualDesktop virtualDesktop
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::gRPCTransport>
 {
-	2704,
-	1050,
-	std::vector<TVRemoteScreenSDKCommunication::ViewGeometryService::Screen>
+	static constexpr const char* Socket = "unix:///tmp/viewGeometry";
+	static constexpr const char* ComId = "tokengRPC";
+
+	static const TVRemoteScreenSDKCommunication::ViewGeometryService::VirtualDesktop& virtualDesktop()
 	{
-		{
-			"VGA-1",
-			TVRemoteScreenSDKCommunication::ViewGeometryService::Rect{0, 0, 1680, 1050}
-		},
-		{
-			"VGA-2",
-			TVRemoteScreenSDKCommunication::ViewGeometryService::Rect{1680, 0, 1024, 768}
-		}
+		static TVRemoteScreenSDKCommunication::ViewGeometryService::VirtualDesktop vd
+			{
+				2704,
+				1050,
+				std::vector<TVRemoteScreenSDKCommunication::ViewGeometryService::Screen>
+				{
+					{
+						"VGA-1",
+						TVRemoteScreenSDKCommunication::ViewGeometryService::Rect{0, 0, 1680, 1050}
+					},
+					{
+						"VGA-2",
+						TVRemoteScreenSDKCommunication::ViewGeometryService::Rect{1680, 0, 1024, 768}
+					}
+				}
+			};
+		return vd;
+	}
+
+	static const TVRemoteScreenSDKCommunication::ViewGeometryService::Rect& areaOfInterest()
+	{
+		static TVRemoteScreenSDKCommunication::ViewGeometryService::Rect aoi
+			{
+				1680, 0, 1024, 768
+			};
+		return aoi;
 	}
 };
 
-const TVRemoteScreenSDKCommunication::ViewGeometryService::Rect areaOfInterest
+template<>
+struct TestData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
 {
-	1680, 0, 1024, 768
-};
+	static constexpr const char* Socket = "tv+tcp://127.0.0.1:9003";
+	static constexpr const char* ComId = "tokenSocketIO";
 
-} // namespace TestData
+	static const TVRemoteScreenSDKCommunication::ViewGeometryService::VirtualDesktop& virtualDesktop()
+	{
+		static TVRemoteScreenSDKCommunication::ViewGeometryService::VirtualDesktop vd
+			{
+				2704,
+				1050,
+				std::vector<TVRemoteScreenSDKCommunication::ViewGeometryService::Screen>
+					{
+						{
+							"VGA-1",
+							TVRemoteScreenSDKCommunication::ViewGeometryService::Rect{0, 0, 1680, 1050}
+						},
+						{
+							"VGA-2",
+							TVRemoteScreenSDKCommunication::ViewGeometryService::Rect{1680, 0, 1024, 768}
+						}
+					}
+			};
+		return vd;
+	}
+
+	static const TVRemoteScreenSDKCommunication::ViewGeometryService::Rect& areaOfInterest()
+	{
+		static TVRemoteScreenSDKCommunication::ViewGeometryService::Rect aoi
+			{
+				1680, 0, 1024, 768
+			};
+		return aoi;
+	}
+};
 } // namespace TestViewGeometryService

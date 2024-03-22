@@ -29,20 +29,20 @@ from tvagentapi_test.agent_connection import test_agent_connection
 # Test cases
 test_cases = {
     'test_agent_connection_while_agent_running': test_agent_connection,
-    'test_agent_connection_while_agent_running_processEvents_busy_loop': lambda: test_agent_connection(wait_for_more_events=False),
-    'test_agent_connection_while_agent_running_processEvents_wrong_argument_1': lambda: test_agent_connection(
+    'test_agent_connection_while_agent_running_processEvents_busy_loop': test_agent_connection(wait_for_more_events=False),
+    'test_agent_connection_while_agent_running_processEvents_wrong_argument_1': test_agent_connection(
         wait_for_more_events=False,
         more_events_timeout_ms=-10,
         process_events_expect_error=True),
-    'test_agent_connection_while_agent_running_processEvents_wrong_argument_2': lambda: test_agent_connection(
+    'test_agent_connection_while_agent_running_processEvents_wrong_argument_2': test_agent_connection(
         wait_for_more_events=False,
         more_events_timeout_ms="wrong type",
         process_events_expect_error=True),
-    'test_agent_connection_while_agent_running_processEvents_wrong_argument_3': lambda: test_agent_connection(
+    'test_agent_connection_while_agent_running_processEvents_wrong_argument_3': test_agent_connection(
         wait_for_more_events="wrong type",
         more_events_timeout_ms="wrong type",
         process_events_expect_error=True),
-    'test_agent_connection_while_agent_running_processEvents_wrong_argument_4': lambda: test_agent_connection(
+    'test_agent_connection_while_agent_running_processEvents_wrong_argument_4': test_agent_connection(
         wait_for_more_events=True,
         more_events_timeout_ms=8000000000000,
         process_events_expect_error=True)

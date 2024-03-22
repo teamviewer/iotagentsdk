@@ -23,9 +23,135 @@
 //********************************************************************************//
 #pragma once
 
+#include "TestData/TestDataChatOut.h"
+
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h>
+
+#include <TVRemoteScreenSDKCommunication/ChatService/IChatOutServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/ChatService/OutServiceFactory.h>
+
+#include <iostream>
+
 namespace TestChatOutService
 {
 
-int TestChatOutServiceClient(int argc, char** argv);
+template<TVRemoteScreenSDKCommunication::TransportFramework Framework>
+int TestChatOutServiceClient(int /*argc*/, char** /*argv*/)
+{
+	using namespace TVRemoteScreenSDKCommunication::ChatService;
+
+	TVRemoteScreenSDKCommunication::CallStatus response;
+	const std::shared_ptr<IChatOutServiceClient> client = OutServiceFactory::CreateClient<Framework>();
+	using TestData = TestData<Framework>;
+	const std::string LogPrefix = "[ChatOutService][Client][fw=" + std::to_string(Framework) + "] ";
+
+	if (client->GetServiceType() != TVRemoteScreenSDKCommunication::ServiceType::ChatOut)
+	{
+		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	client->StartClient(TestData::Socket);
+	if (client->GetDestination() != TestData::Socket)
+	{
+		std::cerr << LogPrefix << "Unexpected location" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	response = client->ChatCreated(TestData::ComId, TestData::ChatId, TestData::ChatTitle, TestData::ChatType, TestData::ChatTypeId);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "ChatCreated successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "ChatCreated Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	std::vector<std::string> chatIds{TestData::ChatId};
+	response = client->ChatsRemoved(TestData::ComId, chatIds);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "ChatRemoved successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "ChatRemoved Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	std::vector<TVRemoteScreenSDKCommunication::ChatService::ReceivedMessage> receivedMessages{
+		TVRemoteScreenSDKCommunication::ChatService::ReceivedMessage{
+			TestData::ChatId, TestData::MessageId, TestData::Content, TestData::TimeStamp, TestData::Sender}};
+
+	response = client->ReceivedMessages(TestData::ComId, receivedMessages);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "ReceivedMessage successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "ReceivedMessage Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->MessageSent(TestData::ComId, TestData::LocalId, TestData::MessageId, TestData::TimeStamp);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "MessageSent successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "MessageSent Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->MessageNotSent(TestData::ComId, TestData::LocalId);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "MessageNotSent successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "MessageNotSent Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->LoadedMessages(TestData::ComId, receivedMessages, false);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "LoadedMessages successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "LoadedMessages Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->DeletedHistory(TestData::ComId, TestData::ChatId);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "DeletedHistory successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "DeletedHistory Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	response = client->ClosedChat(TestData::ComId, TestData::ChatId);
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "ClosedChat successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "ClosedChat Error: " << response.errorMessage << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
 
 } // namespace TestChatOutService

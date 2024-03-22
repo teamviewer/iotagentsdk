@@ -22,6 +22,13 @@ This example shows the steps for creating and maintaining a connection to the Te
 
 See source: [agent_connection.py](agent_connection.py)
 
+👉 **Important**: There are two connection types possible between SDK and Agent: Unix sockets (gRPC), or TCP sockets.
+Which one will be used is up to the developer, see `tvagentapi.AgentConnection.setConnectionURLs` documentation.
+In case of the examples, the parameters for `setConnectionURLs` are injected via 2 environment variables:
+**TV_BASE_SDK_URL** and **TV_AGENT_API_URL**. Setting them is optional but required if you use
+a non-standard configuration (e.g. the IoT Agent is located on a different device reachable over TCP).
+The same environment variables are used for running the Python tests.
+
 ## Step 1: Get the API object
 
 ```python

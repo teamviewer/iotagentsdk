@@ -26,7 +26,12 @@ project(TVQtRC)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 5.3 COMPONENTS Core Gui Quick REQUIRED)
+find_package(Qt${QT_MAJOR_VERSION} ${QT${QT_MAJOR_VERSION}_VERSION} COMPONENTS Core Gui Quick Widgets REQUIRED)
+option(WIDGETS_EVENT_DRIVEN_GRABBING "Enable event-driven grabbing to reduce CPU consumption. \
+	Works only with the Qt widget-based windows, requires the private QtWidgets headers" OFF)
+if(WIDGETS_EVENT_DRIVEN_GRABBING)
+	find_package(Qt${QT_MAJOR_VERSION} ${QT${QT_MAJOR_VERSION}_VERSION} COMPONENTS Widgets REQUIRED)
+endif()
 
 set(TVQTRC_INTERFACE
 	export/TVQtRC/AbstractChat.h
@@ -83,6 +88,8 @@ set(TVQTRC_SOURCES
 	internal/TVQtRCPlugin.h
 )
 
+set_property(SOURCE internal/TVQtRCPlugin.cpp APPEND PROPERTY COMPILE_DEFINITIONS "TV_VERSION=\"${TVAgentSDK_VERSION}\"")
+
 add_library(${PROJECT_NAME}.interface INTERFACE)
 target_include_directories(${PROJECT_NAME}.interface INTERFACE
 	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/export>
@@ -92,7 +99,7 @@ option(BUILD_SHARED_LIBS "Build the plugin as a shared lib" ON)
 
 add_library(${PROJECT_NAME} ${TVQTRC_INTERFACE} ${TVQTRC_SOURCES})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}.interface)
-target_link_libraries(${PROJECT_NAME} PUBLIC Qt5::Core Qt5::Gui Qt5::Quick)
+target_link_libraries(${PROJECT_NAME} PUBLIC Qt${QT_MAJOR_VERSION}::Core Qt${QT_MAJOR_VERSION}::Gui Qt${QT_MAJOR_VERSION}::Quick)
 target_link_libraries(${PROJECT_NAME} PRIVATE TVAgentAPIPrivate)
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Wshadow)
 
@@ -110,21 +117,16 @@ else()
 	message(STATUS "Configuring ${PROJECT_NAME} to be static")
 endif()
 
+if(WIDGETS_EVENT_DRIVEN_GRABBING)
+	message(STATUS "Configuring ${PROJECT_NAME} for QtWidgets event-driven grabbing")
+	target_link_libraries(${PROJECT_NAME} PUBLIC Qt${QT_MAJOR_VERSION}::Widgets Qt${QT_MAJOR_VERSION}::WidgetsPrivate)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE WIDGETS_EVENT_DRIVEN_GRABBING)
+endif()
+
 target_link_libraries(${PROJECT_NAME}
 	PRIVATE
 	TVAgentAPIPrivate
-	AccessControlService
-	ChatService
-	ConnectionConfirmationService
-	ConnectivityService
-	ImageNotificationService
-	ImageService
-	InputService
-	InstantSupportService
-	RegistrationService
-	SessionControlService
-	SessionStatusService
-	ViewGeometryService
+	Services
 )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

@@ -34,7 +34,7 @@ Designed for direct integration into Qt apps running on the device. You can pass
 
 * Source: [TVQtRC/](TVQtRC/)
 * Build artifact: `libTVQtRC.so`
-* A fully featured Qt example application: [examples/Qt/](examples/Qt/)
+* A fully featured Qt example application: [examples/Qt/qtsimulate](examples/Qt/qtsimulate)
 
 ### **C++ API**
 

@@ -22,3 +22,4 @@
 # SOFTWARE.                                                                      #
 #********************************************************************************#
 add_subdirectory(qtsimulate)
+add_subdirectory(CompositorQml)

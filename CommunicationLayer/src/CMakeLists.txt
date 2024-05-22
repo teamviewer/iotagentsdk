@@ -42,6 +42,7 @@ set(TV_NAMESPACE ${TV_PACKAGE_NAME})
 
 if(TV_COMM_ENABLE_GRPC)
 	add_definitions(-DTV_COMM_ENABLE_GRPC)
+	include("CMake/grpc_utils.cmake")
 endif()
 
 if(TV_COMM_ENABLE_PLAIN_SOCKET)

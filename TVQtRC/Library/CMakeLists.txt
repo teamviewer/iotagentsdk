@@ -75,6 +75,7 @@ set(TVQTRC_SOURCES
 	internal/InputSimulation/InputSimulator.h
 	internal/InputSimulation/XKBMap.cpp
 	internal/InputSimulation/XKBMap.h
+	internal/InputSimulation/xkbcommon/xkbcommon-keysyms.h
 
 	internal/Logging/ILogging.h
 	internal/Logging/Logging.cpp

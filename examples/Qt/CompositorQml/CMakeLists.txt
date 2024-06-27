@@ -1,5 +1,5 @@
-// Forked from https://code.qt.io/cgit/qt/qtwayland.git/tree/examples/wayland/minimal-qml?h=6.2 
-// addjustment happend only for the integration of the TVQTRC Plugin
+# Forked from https://code.qt.io/cgit/qt/qtwayland.git/tree/examples/wayland/minimal-qml?h=6.2 
+# addjustment happend only for the integration of the TVQTRC Plugin
 
 project(example_Qt6_CompositorQml LANGUAGES CXX)
 

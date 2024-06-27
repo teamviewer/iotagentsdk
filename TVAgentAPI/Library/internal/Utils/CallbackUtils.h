@@ -35,7 +35,7 @@ template <typename Func, typename... Args>
 void safeCall(Callback<Func> cb, Args&&... args) noexcept
 {
 #if __cplusplus >= 201703L
-	static_assert(noexcept(callback(std::forward<Args>(args)..., userdata)), "Callback type must be noexcept");
+	static_assert(noexcept(cb.callback(std::forward<Args>(args)..., cb.userdata)), "Callback type must be noexcept");
 #endif
 	if (cb.callback)
 	{

@@ -99,24 +99,24 @@ public:
 			/// - Machine chat has its TeamViewer ID
 			/// - Instant Support case has its instant support ID
 			uint64_t chatEndpointID,
-			void* userData)>;
+			void* userData) noexcept>;
 
 	using ChatsRemovedCallback =
 		Callback<void(
 			const char** chatIDs,
 			size_t chatIDsCount,
-			void* userData)>;
+			void* userData) noexcept>;
 
 	using ChatClosedCallback =
 		Callback<void(
 			const char* chatID,
-			void* userData)>;
+			void* userData) noexcept>;
 
 	using ReceivedMessagesCallback =
 		Callback<void(
 			const ChatMessage* messages,
 			size_t messagesCount,
-			void* userData)>;
+			void* userData) noexcept>;
 
 	using SendMessageFinishedCallback =
 		Callback<void(
@@ -124,19 +124,19 @@ public:
 			SendMessageResult result,
 			const char* messageID,
 			TimeStamp timeStamp,
-			void* userData)>;
+			void* userData) noexcept>;
 
 	using MessagesLoadedCallback =
 		Callback<void(
 			const ChatMessage* messages,
 			size_t messagesCount,
 			bool hasMore,
-			void* userData)>;
+			void* userData) noexcept>;
 
 	using HistoryDeletedCallback =
 		Callback<void(
 			const char* chatID,
-			void* userData)>;
+			void* userData) noexcept>;
 
 	struct Callbacks
 	{

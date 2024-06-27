@@ -48,7 +48,7 @@ void printRunningSessions(void* userdata)
 	std::vector<tvagentapi::ITVSessionManagementModule::TVSessionID> tvSessionIDs;
 
 	tvSessionManagementModule->enumerateRunningSessions(tvagentapi::ITVSessionManagementModule::SessionEnumerator{
-		[](tvagentapi::ITVSessionManagementModule::TVSessionID tvSessionID, void* userdata) -> bool
+		[](tvagentapi::ITVSessionManagementModule::TVSessionID tvSessionID, void* userdata) noexcept -> bool
 		{
 			auto outVec = static_cast<std::vector<tvagentapi::ITVSessionManagementModule::TVSessionID>*>(userdata);
 			outVec->push_back(tvSessionID);
@@ -73,7 +73,7 @@ void printRunningSessions(void* userdata)
 	}
 }
 
-void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* userdata)
+void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* userdata) noexcept
 {
 	printf("[IAgentConnection] Status: %s\n", tvagentapi::toCString(status));
 	if (status == tvagentapi::IAgentConnection::Status::Connected)
@@ -82,14 +82,14 @@ void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* 
 	}
 }
 
-void sessionStartedCallback(tvagentapi::ITVSessionManagementModule::TVSessionID tvSessionID, int32_t tvSessionCount, void* userdata)
+void sessionStartedCallback(tvagentapi::ITVSessionManagementModule::TVSessionID tvSessionID, int32_t tvSessionCount, void* userdata) noexcept
 {
 	printf("[TVSessionManagementModule] Session Started: id %d (session count %d)\n",
 		tvSessionID, tvSessionCount);
 	printRunningSessions(userdata);
 }
 
-void sessionStoppedCallback(tvagentapi::ITVSessionManagementModule::TVSessionID tvSessionID, int32_t tvSessionCount, void* userdata)
+void sessionStoppedCallback(tvagentapi::ITVSessionManagementModule::TVSessionID tvSessionID, int32_t tvSessionCount, void* userdata) noexcept
 {
 	printf("[TVSessionManagementModule] Session Stopped: id %d (session count %d)\n",
 		tvSessionID, tvSessionCount);

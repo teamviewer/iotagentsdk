@@ -24,6 +24,7 @@
 project(examples_cpp)
 add_subdirectory(AccessControl)
 add_subdirectory(AgentConnection)
+add_subdirectory(AugmentRCSession)
 add_subdirectory(Chat)
 add_subdirectory(InstantSupport)
 add_subdirectory(SessionManagement)

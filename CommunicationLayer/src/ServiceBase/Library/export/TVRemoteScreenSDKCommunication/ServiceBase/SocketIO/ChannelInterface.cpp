@@ -234,12 +234,13 @@ Status ChannelInterface::Connect()
 		int connectResult = ::connect(m_clientSocket, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress));
 		if (connectResult < 0)
 		{
+			const int lastError = GetLastSocketError();
 			CloseSocket(m_clientSocket);
 			m_clientSocket = InvalidSocket;
 			return {
 				StatusCode::CONNECT_ERROR,
 				"ChannelInterface::Connect: connect() failed; location: " + m_location +
-				"; last error " + std::to_string(GetLastSocketError())};
+				"; last error " + std::to_string(lastError)};
 		}
 
 		timeval timeout{};
@@ -248,12 +249,13 @@ Status ChannelInterface::Connect()
 		if (::setsockopt(m_clientSocket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) != 0 ||
 			::setsockopt(m_clientSocket, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) != 0)
 		{
+			const int lastError = GetLastSocketError();
 			CloseSocket(m_clientSocket);
 			m_clientSocket = InvalidSocket;
 			return {
 				StatusCode::CONNECT_ERROR,
 				"ChannelInterface::Connect: setsockopt() failed; location: " + m_location +
-				"; last error " + std::to_string(GetLastSocketError())};
+				"; last error " + std::to_string(lastError)};
 		}
 	}
 	else

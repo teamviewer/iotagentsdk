@@ -215,6 +215,12 @@ void RegistrationServicegRPCServer::SetRegisterCallback(const ProcessRegisterReq
 					case ServiceType::ConnectionConfirmationResponse:
 						serviceTypeProtoValue = ::tvregistrationservice::ServiceType::ConnectionConfirmationResponse;
 						break;
+					case ServiceType::AugmentRCSessionControl:
+						serviceTypeProtoValue = ::tvregistrationservice::ServiceType::AugmentRCSessionControl;
+						break;
+					case ServiceType::AugmentRCSessionConsumer:
+						serviceTypeProtoValue = ::tvregistrationservice::ServiceType::AugmentRCSessionConsumer;
+						break;
 					default:
 
 						break;
@@ -335,6 +341,12 @@ void RegistrationServicegRPCServer::SetRegisterCallback(const ProcessRegisterReq
 			break;
 		case ::tvregistrationservice::ServiceType::ConnectionConfirmationResponse:
 			typeEnumValue = ServiceType::ConnectionConfirmationResponse;
+			break;
+		case ::tvregistrationservice::ServiceType::AugmentRCSessionControl:
+			typeEnumValue = ServiceType::AugmentRCSessionControl;
+			break;
+		case ::tvregistrationservice::ServiceType::AugmentRCSessionConsumer:
+			typeEnumValue = ServiceType::AugmentRCSessionConsumer;
 			break;
 		default:
 

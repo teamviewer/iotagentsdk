@@ -87,13 +87,13 @@
 #include <TVRemoteScreenSDKCommunication/ViewGeometryService/IViewGeometryServiceServer.h>
 #include <TVRemoteScreenSDKCommunication/ViewGeometryService/ServiceFactory.h>
 
-#include <TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/IAugmentRCSessionInvitationControlServiceClient.h>
-#include <TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/IAugmentRCSessionInvitationControlServiceServer.h>
-#include <TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/ControlServiceFactory.h>
+#include <TVRemoteScreenSDKCommunication/AugmentRCSessionService/IAugmentRCSessionControlServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/AugmentRCSessionService/IAugmentRCSessionControlServiceServer.h>
+#include <TVRemoteScreenSDKCommunication/AugmentRCSessionService/ControlServiceFactory.h>
 
-#include <TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/IAugmentRCSessionInvitationConsumerServiceClient.h>
-#include <TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/IAugmentRCSessionInvitationConsumerServiceServer.h>
-#include <TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/ConsumerServiceFactory.h>
+#include <TVRemoteScreenSDKCommunication/AugmentRCSessionService/IAugmentRCSessionConsumerServiceClient.h>
+#include <TVRemoteScreenSDKCommunication/AugmentRCSessionService/IAugmentRCSessionConsumerServiceServer.h>
+#include <TVRemoteScreenSDKCommunication/AugmentRCSessionService/ConsumerServiceFactory.h>
 
 #include <algorithm>
 #include <mutex>
@@ -117,13 +117,13 @@ template<> struct FactoryMeta<TVRemoteScreenSDKCommunication::ServiceType::Acces
 {
 	using Factory = TVRemoteScreenSDKCommunication::AccessControlService::OutServiceFactory;
 };
-template<> struct FactoryMeta<TVRemoteScreenSDKCommunication::ServiceType::AugmentRCSessionInvitationConsumer>
+template<> struct FactoryMeta<TVRemoteScreenSDKCommunication::ServiceType::AugmentRCSessionConsumer>
 {
-	using Factory = TVRemoteScreenSDKCommunication::AugmentRCSessionInvitationService::ConsumerServiceFactory;
+	using Factory = TVRemoteScreenSDKCommunication::AugmentRCSessionService::ConsumerServiceFactory;
 };
-template<> struct FactoryMeta<TVRemoteScreenSDKCommunication::ServiceType::AugmentRCSessionInvitationControl>
+template<> struct FactoryMeta<TVRemoteScreenSDKCommunication::ServiceType::AugmentRCSessionControl>
 {
-	using Factory = TVRemoteScreenSDKCommunication::AugmentRCSessionInvitationService::ControlServiceFactory;
+	using Factory = TVRemoteScreenSDKCommunication::AugmentRCSessionService::ControlServiceFactory;
 };
 template<> struct FactoryMeta<TVRemoteScreenSDKCommunication::ServiceType::ChatIn>
 {
@@ -404,6 +404,31 @@ public:
 			safeServer->StopServer();
 			safeServer.target.reset();
 		}
+	}
+
+	uint64_t GetRunningServicesBitmask();
+
+private:
+	template <Details::ST Type>
+	typename std::enable_if<Type != Details::ST::Unknown, uint64_t>::type GetRunningServiceFlagsRec()
+	{
+		constexpr auto serviceTypeValue =
+			static_cast<typename std::underlying_type<Details::ST>::type>(Type);
+		constexpr auto serviceTypeLastValue =
+			static_cast<typename std::underlying_type<Details::ST>::type>(Details::ST::LastServiceType);
+
+		static_assert(serviceTypeValue < 64, "Index exceeds bitmask size");
+		static_assert(serviceTypeValue <= serviceTypeLastValue, "Index exceeds last value");
+
+		const bool serviceActive = (!!AcquireClient<Type>().target || !!AcquireServer<Type>().target);
+		return (serviceActive ? (1ULL << serviceTypeValue) : 0)
+			| GetRunningServiceFlagsRec<static_cast<Details::ST>(serviceTypeValue - 1)>();
+	}
+
+	template <Details::ST Type>
+	typename std::enable_if<Type == Details::ST::Unknown, uint64_t>::type GetRunningServiceFlagsRec()
+	{
+		return 0;
 	}
 
 private:

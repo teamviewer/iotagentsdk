@@ -28,6 +28,7 @@
 #include <TVAgentAPI/IAgentConnection.h>
 
 #include "PyAccessControlModule.h"
+#include "PyAugmentRCSessionModule.h"
 #include "PyInstantSupportModule.h"
 #include "PyTVSessionManagementModule.h"
 #include "PyChatModule.h"
@@ -151,6 +152,9 @@ PyObject* PyAgentConnection_getModule(PyAgentConnection* self, PyObject* arg)
 				case tvagentapi::IModule::Type::Chat:
 					return reinterpret_cast<PyObject*>(
 						MakeWrapperObject<PyChatModule>(self));
+				case tvagentapi::IModule::Type::AugmentRCSession:
+					return reinterpret_cast<PyObject*>(
+						MakeWrapperObject<PyAugmentRCSessionModule>(self));
 			}
 			PyErr_BadInternalCall();
 			return nullptr;

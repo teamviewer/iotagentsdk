@@ -110,6 +110,11 @@ public:
 
 	AbstractChat* getChat() override;
 
+	bool augmentRCSessionStartListening() override;
+	bool augmentRCSessionStopListening() override;
+	QMetaObject::Connection registerAugmentRCSessionInvitationReceived(const std::function<void(QUrl url)>& slot, const QObject* context) override;
+	bool isFeatureAvailable(Feature feature) const override;
+
 private:
 	Q_SIGNAL void controlModeChanged(tvqtsdk::ControlMode controlModeValue);
 
@@ -122,6 +127,8 @@ private:
 
 	Q_SIGNAL void accessConfirmationRequested(tvqtsdk::AccessControl feature, uint32_t timeout);
 
+	Q_SIGNAL void augmentRCSessionInvitationReceived(QUrl url);
+
 	Q_SIGNAL void instantSupportErrorNotification(tvqtsdk::InstantSupportError errorCode);
 	Q_SIGNAL void instantSupportModifiedNotification(tvqtsdk::InstantSupportData data);
 
@@ -129,6 +136,7 @@ private:
 
 	Q_SLOT void reactOnAccessConfirmationRequest(const tvqtsdk::AccessControl feature, uint32_t timeout);
 	Q_SLOT void reactOnAccessModeChangeNotifier(tvqtsdk::AccessControl feature, Access access);
+	Q_SLOT void reactOnAugmentRCSessionInvitationReceived(QUrl url);
 	Q_SLOT void reactOnInstantSupportError(tvqtsdk::InstantSupportError errorCode);
 	Q_SLOT void reactOnInstantSupportModified(tvqtsdk::InstantSupportData data);
 	Q_SLOT void reactOnInstantSupportConnectionConfirmationRequest();

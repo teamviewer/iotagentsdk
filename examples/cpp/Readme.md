@@ -1,4 +1,4 @@
-# C++ API example apps
+## C++ API example apps
 
 ## **Building and running the examples**
 
@@ -438,4 +438,41 @@ obtainChats()    // get a list of available chats
 loadMessages()   // load message history
 deleteHistory()  // delete message history in a given chat
 deleteChat()     // delete a chat altogether
+```
+
+## **Module example #5: Augment Remote Control Session**
+
+See source: [AugmentRCSession/main.cpp](AugmentRCSession/main.cpp)
+
+👉 TeamViewer offers the ability to invite supportees to join an '[Assist AR](https://www.teamviewer.com/de/products/remote/solutions/remote-ar-assistance/)' augmented reality session with their phone to receive support beyond the confinements of their screen.
+
+To implement receiving these Augment RC Session Invitations first create an Augment RC Session module:
+
+```C++
+tvagentapi::IAugmentRCSessionModule* augmentRCSessionModule =
+    tvagentapi::getModule<tvagentapi::IAugmentRCSessionModule>(agentConnection);
+```
+
+As usual, it's good to do some sanity checks:
+
+```C++
+if (!augmentRCSessionModule) ...
+if (!augmentRCSessionModule->isSupported()) ...
+```
+
+Set the callback:
+
+```C++
+augmentRCSessionModule->setCallbacks({
+    {augmentRCSessionInvitationReceived, augmentRCSessionModule}
+});
+```
+
+* `augmentRCSessionInvitationReceived()` :  A remotely connected TeamViewer client has sent an invitation to join an 'Assist AR' augmented reality session with your phone. Display the invitation URL as a QR code to enable supportees to join with their phones.
+
+Announce that your application starts or stops listening for invitations. This will let the TeamViewer client know that your application supports handling of Augment RC Session invitations and enable this feature in the supporter's UI:
+
+```C++
+augmentRCSessionModule->augmentRCSessionStartListening();
+augmentRCSessionModule->augmentRCSessionStopListening();
 ```

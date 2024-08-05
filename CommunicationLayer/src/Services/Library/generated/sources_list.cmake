@@ -34,14 +34,14 @@ set(SOURCES_GENERATED
 	generated/export/TVRemoteScreenSDKCommunication/AccessControlService/InServiceFactory.h
 	generated/export/TVRemoteScreenSDKCommunication/AccessControlService/OutServiceFactory.cpp
 	generated/export/TVRemoteScreenSDKCommunication/AccessControlService/OutServiceFactory.h
-	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/ConsumerServiceFactory.cpp
-	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/ConsumerServiceFactory.h
-	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/ControlServiceFactory.cpp
-	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/ControlServiceFactory.h
-	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/IAugmentRCSessionInvitationConsumerServiceClient.h
-	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/IAugmentRCSessionInvitationConsumerServiceServer.h
-	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/IAugmentRCSessionInvitationControlServiceClient.h
-	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/IAugmentRCSessionInvitationControlServiceServer.h
+	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionService/ConsumerServiceFactory.cpp
+	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionService/ConsumerServiceFactory.h
+	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionService/ControlServiceFactory.cpp
+	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionService/ControlServiceFactory.h
+	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionService/IAugmentRCSessionConsumerServiceClient.h
+	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionService/IAugmentRCSessionConsumerServiceServer.h
+	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionService/IAugmentRCSessionControlServiceClient.h
+	generated/export/TVRemoteScreenSDKCommunication/AugmentRCSessionService/IAugmentRCSessionControlServiceServer.h
 	generated/export/TVRemoteScreenSDKCommunication/ChatService/IChatInServiceClient.h
 	generated/export/TVRemoteScreenSDKCommunication/ChatService/IChatInServiceServer.h
 	generated/export/TVRemoteScreenSDKCommunication/ChatService/IChatOutServiceClient.h
@@ -107,10 +107,10 @@ if(TV_COMM_ENABLE_GRPC)
 		generated/internal/Client/AccessControlInServicegRPCClient.h
 		generated/internal/Client/AccessControlOutServicegRPCClient.cpp
 		generated/internal/Client/AccessControlOutServicegRPCClient.h
-		generated/internal/Client/AugmentRCSessionInvitationConsumerServicegRPCClient.cpp
-		generated/internal/Client/AugmentRCSessionInvitationConsumerServicegRPCClient.h
-		generated/internal/Client/AugmentRCSessionInvitationControlServicegRPCClient.cpp
-		generated/internal/Client/AugmentRCSessionInvitationControlServicegRPCClient.h
+		generated/internal/Client/AugmentRCSessionConsumerServicegRPCClient.cpp
+		generated/internal/Client/AugmentRCSessionConsumerServicegRPCClient.h
+		generated/internal/Client/AugmentRCSessionControlServicegRPCClient.cpp
+		generated/internal/Client/AugmentRCSessionControlServicegRPCClient.h
 		generated/internal/Client/ChatInServicegRPCClient.cpp
 		generated/internal/Client/ChatInServicegRPCClient.h
 		generated/internal/Client/ChatOutServicegRPCClient.cpp
@@ -143,10 +143,10 @@ if(TV_COMM_ENABLE_GRPC)
 		generated/internal/Server/AccessControlInServicegRPCServer.h
 		generated/internal/Server/AccessControlOutServicegRPCServer.cpp
 		generated/internal/Server/AccessControlOutServicegRPCServer.h
-		generated/internal/Server/AugmentRCSessionInvitationConsumerServicegRPCServer.cpp
-		generated/internal/Server/AugmentRCSessionInvitationConsumerServicegRPCServer.h
-		generated/internal/Server/AugmentRCSessionInvitationControlServicegRPCServer.cpp
-		generated/internal/Server/AugmentRCSessionInvitationControlServicegRPCServer.h
+		generated/internal/Server/AugmentRCSessionConsumerServicegRPCServer.cpp
+		generated/internal/Server/AugmentRCSessionConsumerServicegRPCServer.h
+		generated/internal/Server/AugmentRCSessionControlServicegRPCServer.cpp
+		generated/internal/Server/AugmentRCSessionControlServicegRPCServer.h
 		generated/internal/Server/ChatInServicegRPCServer.cpp
 		generated/internal/Server/ChatInServicegRPCServer.h
 		generated/internal/Server/ChatOutServicegRPCServer.cpp
@@ -183,18 +183,18 @@ if(TV_COMM_ENABLE_PLAIN_SOCKET)
 	list(APPEND SOURCES_GENERATED
 		generated/internal/AccessControlInServiceInFunctions.h
 		generated/internal/AccessControlOutServiceOutFunctions.h
-		generated/internal/AugmentRCSessionInvitationConsumerServiceConsumerFunctions.h
-		generated/internal/AugmentRCSessionInvitationControlServiceControlFunctions.h
+		generated/internal/AugmentRCSessionConsumerServiceConsumerFunctions.h
+		generated/internal/AugmentRCSessionControlServiceControlFunctions.h
 		generated/internal/ChatInServiceInFunctions.h
 		generated/internal/ChatOutServiceOutFunctions.h
 		generated/internal/Client/AccessControlInServiceSocketIOClient.cpp
 		generated/internal/Client/AccessControlInServiceSocketIOClient.h
 		generated/internal/Client/AccessControlOutServiceSocketIOClient.cpp
 		generated/internal/Client/AccessControlOutServiceSocketIOClient.h
-		generated/internal/Client/AugmentRCSessionInvitationConsumerServiceSocketIOClient.cpp
-		generated/internal/Client/AugmentRCSessionInvitationConsumerServiceSocketIOClient.h
-		generated/internal/Client/AugmentRCSessionInvitationControlServiceSocketIOClient.cpp
-		generated/internal/Client/AugmentRCSessionInvitationControlServiceSocketIOClient.h
+		generated/internal/Client/AugmentRCSessionConsumerServiceSocketIOClient.cpp
+		generated/internal/Client/AugmentRCSessionConsumerServiceSocketIOClient.h
+		generated/internal/Client/AugmentRCSessionControlServiceSocketIOClient.cpp
+		generated/internal/Client/AugmentRCSessionControlServiceSocketIOClient.h
 		generated/internal/Client/ChatInServiceSocketIOClient.cpp
 		generated/internal/Client/ChatInServiceSocketIOClient.h
 		generated/internal/Client/ChatOutServiceSocketIOClient.cpp
@@ -236,10 +236,10 @@ if(TV_COMM_ENABLE_PLAIN_SOCKET)
 		generated/internal/Server/AccessControlInServiceSocketIOServer.h
 		generated/internal/Server/AccessControlOutServiceSocketIOServer.cpp
 		generated/internal/Server/AccessControlOutServiceSocketIOServer.h
-		generated/internal/Server/AugmentRCSessionInvitationConsumerServiceSocketIOServer.cpp
-		generated/internal/Server/AugmentRCSessionInvitationConsumerServiceSocketIOServer.h
-		generated/internal/Server/AugmentRCSessionInvitationControlServiceSocketIOServer.cpp
-		generated/internal/Server/AugmentRCSessionInvitationControlServiceSocketIOServer.h
+		generated/internal/Server/AugmentRCSessionConsumerServiceSocketIOServer.cpp
+		generated/internal/Server/AugmentRCSessionConsumerServiceSocketIOServer.h
+		generated/internal/Server/AugmentRCSessionControlServiceSocketIOServer.cpp
+		generated/internal/Server/AugmentRCSessionControlServiceSocketIOServer.h
 		generated/internal/Server/ChatInServiceSocketIOServer.cpp
 		generated/internal/Server/ChatInServiceSocketIOServer.h
 		generated/internal/Server/ChatOutServiceSocketIOServer.cpp

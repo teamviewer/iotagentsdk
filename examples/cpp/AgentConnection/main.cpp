@@ -40,7 +40,7 @@ void signalHandler(int signo)
 	}
 }
 
-void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* userdata)
+void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* userdata) noexcept
 {
 	(void)userdata;
 	printf("[IAgentConnection] Status: %s\n", tvagentapi::toCString(status));

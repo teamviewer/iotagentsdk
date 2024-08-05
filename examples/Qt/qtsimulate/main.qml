@@ -280,6 +280,20 @@ Window {
 			onClicked: { tabBar.currentTab = tabId; }
 		}
 
+		Button {
+			id: showAugmentRCSession
+
+			anchors.top: parent.top
+			anchors.left: showChat.right
+
+			text: "Augment RC Session"
+			backgroundColor: tabBar.color
+
+			property int tabId: 4
+			checkable: true
+			onClicked: { tabBar.currentTab = tabId; }
+		}
+
 		Component.onCompleted: {
 			for (var i in tabBar.children) {
 				tabBar.children[i].checked = tabBar.currentTab === tabBar.children[i].tabId;
@@ -951,6 +965,109 @@ Window {
 						}
 					}
 				}
+			}
+		}
+	}
+
+	Rectangle {
+		id: augmentRCSessionArea
+
+		visible: showAugmentRCSession.checked && appModel.isTVCommunicationRunning
+
+		color: "#fafafa"
+
+		anchors.top: splitter.bottom
+		anchors.left: parent.left
+		anchors.bottom: parent.bottom
+		anchors.right: parent.right
+		anchors.margins: 8
+
+		CheckBox {
+			id: listenForAugmentRCSessionCheckbox
+			visible: appModel.isAugmentRCSessionFeatureAvailable
+			anchors.top: parent.top
+			anchors.left: parent.left
+			anchors.margins: 8
+			checkedStatedFromModel: appModel.isListeningForAugmentRCSessionInvite
+			text: "Listen for Augment RC Session Invitation"
+			onClicked: appModel.isListeningForAugmentRCSessionInvite = checked
+		}
+
+		Rectangle {
+			id: augmentRCSessionFeatureUnavailableArea
+
+			visible: !appModel.isAugmentRCSessionFeatureAvailable
+			color: "transparent"
+
+			anchors.top: parent.top
+			anchors.bottom: parent.bottom
+			anchors.left: parent.left
+			anchors.right: parent.right
+
+			Text {
+				id: augmentRCSessionFeatureUnavailableLabel
+				text: "The Augment RC Session feature is not supported by the currently running IoT Agent"
+				font.bold: true
+				color: "#a07910"
+				anchors.top: parent.top
+				anchors.margins: 12
+				anchors.horizontalCenter: parent.horizontalCenter
+			}
+		}
+
+		Rectangle {
+			id: augmentRCSessionInvitationArea
+
+			visible: listenForAugmentRCSessionCheckbox.checked && appModel.isAugmentRCSessionFeatureAvailable
+			color: "transparent"
+
+			anchors.top: listenForAugmentRCSessionCheckbox.bottom
+			anchors.bottom: parent.bottom
+			anchors.left: parent.left
+			anchors.right: parent.right
+
+			Text {
+				id: augmentRCSessionUrlLabel
+				text: "Augment RC Session URL:"
+				font.bold: true
+				color: "#0064c8"
+				anchors.top: parent.top
+				anchors.left: parent.left
+				anchors.margins: 8
+			}
+
+			TextInput {
+				id: augmentRCSessionUrl
+				readOnly: true
+				selectByMouse: true
+				persistentSelection: true
+				property string url
+				text: url.length > 0 ? url :
+					"Waiting for supporter to start AugmentRC session..."
+				font.bold: true
+				anchors.top: parent.top
+				anchors.left: augmentRCSessionUrlLabel.right
+				anchors.right: parent.right
+				anchors.margins: 8
+
+				Connections {
+					target: appModel
+					onAugmentRCSessionInvitationReceived: {
+						augmentRCSessionUrl.url = url
+					}
+				}
+			}
+
+			Image {
+				id: augmentRCSessionQrCode
+				visible: augmentRCSessionUrl.url.length > 0
+				fillMode: Image.PreserveAspectFit
+				smooth: false
+				anchors.top: augmentRCSessionUrl.bottom
+				anchors.bottom: parent.bottom
+				anchors.left: parent.left
+				anchors.right: parent.right
+				source: "image://qrcode/" + encodeURIComponent(augmentRCSessionUrl.url)
 			}
 		}
 	}

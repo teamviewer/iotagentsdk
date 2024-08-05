@@ -28,6 +28,8 @@
 
 #include "internal/ServicesMediator.h"
 
+#include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/VersionNumber.h>
+
 #include <sys/stat.h>
 
 namespace tvagentapi
@@ -36,10 +38,13 @@ namespace tvagentapi
 using TVRemoteScreenSDKCommunication::ServiceType;
 using TVRemoteScreenSDKCommunication::TransportFramework;
 using TVRemoteScreenSDKCommunication::UrlComponents;
+using TVRemoteScreenSDKCommunication::VersionNumber;
+using TVRemoteScreenSDKCommunication::VersionNumberFromString;
+using TVRemoteScreenSDKCommunication::VersionNumberToString;
 
 namespace
 {
-constexpr const char* ClientVersion = "1.0";
+constexpr VersionNumber ClientVersion = {1, 0}; // our SDK version
 
 constexpr uint32_t MaxSizeOfSocketPath = 107; // Socket paths under linux have a limit of around 100 characters. GRPC itself has a hard limit on 107 character.
 constexpr uint32_t UuidSize = 32;
@@ -81,7 +86,8 @@ bool SetupDir(const std::string& serviceFolderPath)
 		ServerLocation(ServiceType::Input),
 		ServerLocation(ServiceType::SessionStatus),
 		ServerLocation(ServiceType::InstantSupportNotification),
-		ServerLocation(ServiceType::ConnectionConfirmationRequest)
+		ServerLocation(ServiceType::ConnectionConfirmationRequest),
+		ServerLocation(ServiceType::AugmentRCSessionConsumer)
 	};
 
 	for (const char* location : locations)
@@ -95,7 +101,7 @@ bool SetupDir(const std::string& serviceFolderPath)
 	return true;
 }
 
-bool FetchUrlComponentsAndFramework(
+bool ParseUrlIntoUrlComponentsAndFramework(
 	const std::string& url,
 	UrlComponents& components,
 	TransportFramework& transportFramework)
@@ -142,7 +148,7 @@ BaseUrlParseResultCode CommunicationChannel::setRemoteScreenSdkBaseUrlChecked(co
 {
 	UrlComponents components{};
 	TransportFramework framework = TransportFramework::UnknownTransport;
-	if (!FetchUrlComponentsAndFramework(url, components, framework))
+	if (!ParseUrlIntoUrlComponentsAndFramework(url, components, framework))
 	{
 		return BaseUrlParseResultCode::SchemaNotValid;
 	}
@@ -175,14 +181,14 @@ BaseUrlParseResultCode CommunicationChannel::setUrls(const std::string& baseServ
 	}
 	UrlComponents components{};
 	TransportFramework framework = TransportFramework::UnknownTransport;
-	if (!FetchUrlComponentsAndFramework(baseServerUrl, components, framework))
+	if (!ParseUrlIntoUrlComponentsAndFramework(baseServerUrl, components, framework))
 	{
 		return BaseUrlParseResultCode::SchemaNotValid;
 	}
 
 	UrlComponents agentApiUrlComponents{};
 	TransportFramework agentFramework = TransportFramework::UnknownTransport;
-	if (!FetchUrlComponentsAndFramework(agentApiUrl, agentApiUrlComponents, agentFramework))
+	if (!ParseUrlIntoUrlComponentsAndFramework(agentApiUrl, agentApiUrlComponents, agentFramework))
 	{
 		return BaseUrlParseResultCode::SchemaNotValid;
 	}
@@ -940,6 +946,49 @@ bool CommunicationChannel::deleteChat()
 	return false;
 }
 
+bool CommunicationChannel::sendAugmentRCSessionStartListening()
+{
+	if (auto safeClient = m_servicesMediator->AcquireClient<ServiceType::AugmentRCSessionControl>())
+	{
+		const TVRemoteScreenSDKCommunication::CallStatus status = safeClient->StartListening(m_communicationId);
+
+		if (!status.IsOk())
+		{
+			const std::string errorMsg =
+				"[CommunicationChannel] sendAugmentRCSessionStartListening failed. Reason: " + status.errorMessage;
+			m_logging->logError(errorMsg);
+			return false;
+		}
+		return true;
+	}
+	m_logging->logError("[CommunicationChannel] AugmentRCSessionControl service client not available.");
+	return false;
+}
+
+bool CommunicationChannel::sendAugmentRCSessionStopListening()
+{
+	if (auto safeClient = m_servicesMediator->AcquireClient<ServiceType::AugmentRCSessionControl>())
+	{
+		const TVRemoteScreenSDKCommunication::CallStatus status = safeClient->StopListening(m_communicationId);
+
+		if (!status.IsOk())
+		{
+			const std::string errorMsg =
+				"[CommunicationChannel] sendAugmentRCSessionStopListening failed. Reason: " + status.errorMessage;
+			m_logging->logError(errorMsg);
+			return false;
+		}
+		return true;
+	}
+	m_logging->logError("[CommunicationChannel] AugmentRCSessionControl service client not available.");
+	return false;
+}
+
+uint64_t CommunicationChannel::getRunningServicesBitmask() const
+{
+	return m_servicesMediator->GetRunningServicesBitmask();
+}
+
 bool CommunicationChannel::establishConnection()
 {
 	using namespace TVRemoteScreenSDKCommunication::RegistrationService;
@@ -951,7 +1000,7 @@ bool CommunicationChannel::establishConnection()
 	}
 
 	const IRegistrationServiceClient::ExchangeVersionResponse exchangeResponse =
-		safeClient->ExchangeVersion(ClientVersion);
+		safeClient->ExchangeVersion(VersionNumberToString(ClientVersion));
 
 	if (exchangeResponse.IsOk() == false)
 	{
@@ -961,20 +1010,22 @@ bool CommunicationChannel::establishConnection()
 		return false;
 	}
 
-	const std::string ServerVersion = exchangeResponse.versionNumber;
-	std::string version = ServerVersion;
-
-	if (std::strtof(ClientVersion, nullptr) < std::strtof(ServerVersion.c_str(), nullptr))
+	VersionNumber serverVersion; // their Agent version
+	const bool versionConversionSuccess = VersionNumberFromString(exchangeResponse.versionNumber.c_str(), serverVersion);
+	if (!versionConversionSuccess)
 	{
-		version = ClientVersion;
+		m_logging->logError("[CommunicationChannel] ExchangeVersionResponse bad version '" + exchangeResponse.versionNumber + "'");
 	}
 
-	IRegistrationServiceClient::DiscoverResponse discoverResponse = safeClient->Discover(version);
+	VersionNumber minVersion = ClientVersion < serverVersion ? ClientVersion : serverVersion;
+	m_logging->logInfo("[CommunicationChannel] minimum version '" + VersionNumberToString(minVersion) + "'");
+
+	IRegistrationServiceClient::DiscoverResponse discoverResponse = safeClient->Discover(VersionNumberToString(minVersion));
 
 	if (!discoverResponse.IsOk())
 	{
 		const std::string errorMsg =
-			"[CommunicationChannel] Version Handshake failed. Reason: " + exchangeResponse.errorMessage;
+			"[CommunicationChannel] Version Handshake failed. Reason: " + discoverResponse.errorMessage;
 		m_logging->logError(errorMsg);
 		return false;
 	}
@@ -1039,6 +1090,8 @@ bool CommunicationChannel::setupClientAndServer()
 		{"Chat-out service"                            , &ThisType::setupChatOutService                            },
 		{"Instant support confirmation request service", &ThisType::setupConnectionConfirmationRequestService      },
 		{"Instant support confirmation response client", &ThisType::setupClient<ST::ConnectionConfirmationResponse>},
+		{"AugmentRCSession consumer service"           , &ThisType::setupAugmentRCSessionConsumerService           },
+		{"AugmentRCSession control client"             , &ThisType::setupClient<ST::AugmentRCSessionControl>       },
 	};
 
 	for (const auto setup: mandatorySetups)
@@ -1351,6 +1404,40 @@ bool CommunicationChannel::setupAccessControlOutService()
 	safeServer.lock.unlock();
 
 	return registerService(ServiceType::AccessControlOut);
+}
+
+bool CommunicationChannel::setupAugmentRCSessionConsumerService()
+{
+	using namespace TVRemoteScreenSDKCommunication::AugmentRCSessionService;
+
+	auto safeServer = m_servicesMediator->CreateAndStartServer<ServiceType::AugmentRCSessionConsumer>();
+
+	if (!safeServer)
+	{
+		return false;
+	}
+
+	std::weak_ptr<CommunicationChannel> weakThis = m_weakThis;
+	auto invitationReceived = [weakThis](
+		const std::string& comId,
+		const std::string url,
+		const IAugmentRCSessionConsumerServiceServer::ReceivedInvitationResponseCallback& response)
+	{
+		const std::shared_ptr<CommunicationChannel> communicationChannel = weakThis.lock();
+		if (communicationChannel && (communicationChannel->m_communicationId == comId))
+		{
+			response(TVRemoteScreenSDKCommunication::CallStatus::Ok);
+			communicationChannel->augmentRCSessionInvitationReceived().notifyAll(url);
+		}
+		else
+		{
+			response(TVRemoteScreenSDKCommunication::CallStatus::Failed);
+		}
+	};
+	safeServer->SetReceivedInvitationCallback(invitationReceived);
+	safeServer.lock.unlock();
+
+	return registerService(ServiceType::AugmentRCSessionConsumer);
 }
 
 bool CommunicationChannel::setupInstantSupportNotificationService()

@@ -129,6 +129,13 @@ TVQtRCPlugin::TVQtRCPlugin(QObject* parent)
 
 	QObject::connect(
 		m_communicationAdapter.get(),
+		&CommunicationAdapter::augmentRCSessionInvitationReceived,
+		this,
+		&TVQtRCPlugin::reactOnAugmentRCSessionInvitationReceived,
+		Qt::QueuedConnection);
+
+	QObject::connect(
+		m_communicationAdapter.get(),
 		&CommunicationAdapter::instantSupportErrorNotification,
 		this,
 		&TVQtRCPlugin::reactOnInstantSupportError,
@@ -419,6 +426,11 @@ void TVQtRCPlugin::reactOnAccessModeChangeNotifier(tvqtsdk::AccessControl featur
 	{
 		Q_EMIT accessModeChanged(feature, access);
 	}
+}
+
+void TVQtRCPlugin::reactOnAugmentRCSessionInvitationReceived(QUrl url)
+{
+	Q_EMIT augmentRCSessionInvitationReceived(url);
 }
 
 void TVQtRCPlugin::reactOnInstantSupportError(tvqtsdk::InstantSupportError errorCode)
@@ -897,6 +909,60 @@ AbstractChat* TVQtRCPlugin::getChat()
 	}
 
 	return m_chat;
+}
+
+bool TVQtRCPlugin::augmentRCSessionStartListening()
+{
+	return m_communicationAdapter->sendAugmentRCSessionStartListening();
+}
+
+bool TVQtRCPlugin::augmentRCSessionStopListening()
+{
+	return m_communicationAdapter->sendAugmentRCSessionStopListening();
+}
+
+QMetaObject::Connection TVQtRCPlugin::registerAugmentRCSessionInvitationReceived(
+	const std::function<void(QUrl)>& slot, const QObject* context)
+{
+	return context == nullptr ?
+	QObject::connect(this, &TVQtRCPlugin::augmentRCSessionInvitationReceived, slot) :
+	QObject::connect(this, &TVQtRCPlugin::augmentRCSessionInvitationReceived, context, slot);
+}
+
+bool TVQtRCPlugin::isFeatureAvailable(Feature feature) const
+{
+	const uint64_t runningServicesBitmask = m_communicationAdapter->getRunningServicesBitmask();
+
+	auto isServiceRunning = [runningServicesBitmask](TVRemoteScreenSDKCommunication::ServiceType type) -> bool
+	{
+		return runningServicesBitmask &
+			(1ULL << static_cast<typename std::underlying_type<TVRemoteScreenSDKCommunication::ServiceType>::type>(type));
+	};
+
+	switch (feature)
+	{
+	case Feature::AccessControl:
+		return isServiceRunning(TVRemoteScreenSDKCommunication::ServiceType::AccessControlIn)
+			&& isServiceRunning(TVRemoteScreenSDKCommunication::ServiceType::AccessControlOut);
+
+	case Feature::InstantSupport:
+		return isServiceRunning(TVRemoteScreenSDKCommunication::ServiceType::InstantSupport)
+			&& isServiceRunning(TVRemoteScreenSDKCommunication::ServiceType::InstantSupportNotification);
+
+	case Feature::TVSessionManagement:
+		return isServiceRunning(TVRemoteScreenSDKCommunication::ServiceType::SessionControl)
+			&& isServiceRunning(TVRemoteScreenSDKCommunication::ServiceType::SessionStatus);
+
+	case Feature::Chat:
+		return isServiceRunning(TVRemoteScreenSDKCommunication::ServiceType::ChatIn)
+			&& isServiceRunning(TVRemoteScreenSDKCommunication::ServiceType::ChatOut);
+
+	case Feature::AugmentRCSession:
+		return isServiceRunning(TVRemoteScreenSDKCommunication::ServiceType::AugmentRCSessionControl)
+			&& isServiceRunning(TVRemoteScreenSDKCommunication::ServiceType::AugmentRCSessionConsumer);
+	}
+
+	return false;
 }
 
 } // namespace tvqtsdk

@@ -29,6 +29,7 @@ namespace tvagentapi
 class IAccessControlModule;
 class IAgentAPI;
 class IAgentConnection;
+class IAugmentRCSessionModule;
 class IChatModule;
 class IInstantSupportModule;
 class ILogging;

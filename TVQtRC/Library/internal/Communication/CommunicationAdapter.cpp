@@ -504,6 +504,16 @@ void CommunicationAdapter::setup()
 			}
 		}));
 
+	m_observerConnections.push_back(m_communicationChannel->augmentRCSessionInvitationReceived().registerCallback(
+		[weakThis](
+			std::string url)
+		{
+			if (const std::shared_ptr<CommunicationAdapter> sharedThis = weakThis.lock())
+			{
+				Q_EMIT sharedThis->augmentRCSessionInvitationReceived(QUrl(QString::fromStdString(url)));
+			}
+		}));
+
 	m_observerConnections.push_back(m_communicationChannel->instantSupportErrorNotification().registerCallback(
 		[weakThis](
 			TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError responseError)
@@ -1062,6 +1072,21 @@ bool CommunicationAdapter::deleteHistory()
 bool CommunicationAdapter::deleteChat()
 {
 	return m_communicationChannel->deleteChat();
+}
+
+bool CommunicationAdapter::sendAugmentRCSessionStartListening()
+{
+	return m_communicationChannel->sendAugmentRCSessionStartListening();
+}
+
+bool CommunicationAdapter::sendAugmentRCSessionStopListening()
+{
+	return m_communicationChannel->sendAugmentRCSessionStopListening();
+}
+
+uint64_t CommunicationAdapter::getRunningServicesBitmask() const
+{
+	return m_communicationChannel->getRunningServicesBitmask();
 }
 
 } // namespace tvqtsdk

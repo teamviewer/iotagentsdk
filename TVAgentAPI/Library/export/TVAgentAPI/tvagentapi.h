@@ -26,6 +26,7 @@
 #include "IAccessControlModule.h"
 #include "IAgentAPI.h"
 #include "IAgentConnection.h"
+#include "IAugmentRCSessionModule.h"
 #include "IInstantSupportModule.h"
 #include "ITVSessionManagementModule.h"
 #include "IChatModule.h"

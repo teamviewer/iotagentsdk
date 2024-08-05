@@ -34,6 +34,8 @@ set(SOURCE
 	PyAccessControlModule.h
 	PyAgentConnection.cpp
 	PyAgentConnection.h
+	PyAugmentRCSessionModule.cpp
+	PyAugmentRCSessionModule.h
 	PyChatModule.cpp
 	PyChatModule.h
 	PyInstantSupportModule.cpp

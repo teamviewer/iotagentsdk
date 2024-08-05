@@ -44,6 +44,8 @@
 
 #include "ui_WidgetsDemoWindow.h"
 
+#include "QRCodeImageProvider.h"
+
 constexpr auto PluginFileName = "libTVQtRC.so";
 constexpr auto ApplicationName = "TVRC-qt-example";
 constexpr auto ApplicationVersion = "1.0";
@@ -251,6 +253,8 @@ int main(int argc, char *argv[])
 		// provide application model with TeamViewer Plugin
 		auto appModel = new AppModel(plugin, engine.get());
 		engine->rootContext()->setContextProperty("appModel", appModel);
+
+		engine->addImageProvider("qrcode", new QRCodeImageProvider);
 
 		// Load QML UI
 		engine->load(QUrl(QStringLiteral("qrc:/main.qml")));

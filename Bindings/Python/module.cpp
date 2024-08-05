@@ -22,6 +22,7 @@
 // SOFTWARE.                                                                      //
 //********************************************************************************//
 #include "PyAccessControlModule.h"
+#include "PyAugmentRCSessionModule.h"
 #include "PyChatModule.h"
 #include "PyTVAgentAPI.h"
 #include "PyAgentConnection.h"
@@ -58,6 +59,7 @@ PyMODINIT_FUNC PyInit_tvagentapi(void)
 		GetPyTypeMeta<PyLogging>(),
 		GetPyTypeMeta<PyAgentConnection>(),
 		GetPyTypeMeta<PyAccessControlModule>(),
+		GetPyTypeMeta<PyAugmentRCSessionModule>(),
 		GetPyTypeMeta<PyChatModule>(),
 		GetPyTypeMeta<PyInstantSupportModule>(),
 		GetPyTypeMeta<PyTVSessionManagementModule>(),

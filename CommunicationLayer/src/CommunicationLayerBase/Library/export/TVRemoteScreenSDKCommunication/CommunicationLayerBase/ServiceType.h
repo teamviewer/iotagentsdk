@@ -47,10 +47,10 @@ enum class ServiceType : int32_t
 	ChatOut = 14,
 	ConnectionConfirmationRequest = 15,
 	ConnectionConfirmationResponse = 16,
-	AugmentRCSessionInvitationControl = 17,
-	AugmentRCSessionInvitationConsumer = 18,
+	AugmentRCSessionControl = 17,
+	AugmentRCSessionConsumer = 18,
 
-	LastServiceType = AugmentRCSessionInvitationConsumer
+	LastServiceType = AugmentRCSessionConsumer
 };
 
 } // namespace TVRemoteScreenSDKCommunication

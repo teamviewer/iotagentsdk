@@ -34,6 +34,7 @@ std::shared_ptr<IModule> CreateModule(IModule::Type moduleType, std::weak_ptr<Ag
 		case IModule::Type::InstantSupport: return CreateModule<IModule::Type::InstantSupport>(std::move(connection));
 		case IModule::Type::TVSessionManagement: return CreateModule<IModule::Type::TVSessionManagement>(std::move(connection));
 		case IModule::Type::Chat: return CreateModule<IModule::Type::Chat>(std::move(connection));
+		case IModule::Type::AugmentRCSession: return CreateModule<IModule::Type::AugmentRCSession>(std::move(connection));
 	}
 	return {};
 }

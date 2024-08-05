@@ -56,9 +56,9 @@ struct SvcTestData<TVRemoteScreenSDKCommunication::gRPCTransport>
 template<>
 struct SvcTestData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
 {
-	static constexpr const char* DefaultImageServiceLocation = ":9003";
-	static constexpr const char* DefaultInputServiceLocation = ":9004";
-	static constexpr const char* Prefix = "127.0.0.1";
+	static constexpr const char* DefaultImageServiceLocation = "127.0.0.1:9003";
+	static constexpr const char* DefaultInputServiceLocation = "127.0.0.1:9004";
+	static constexpr const char* Prefix = "tcp+tv://";
 	static constexpr const char* ImageResultFile = "TCPSocketImageResults.csv";
 	static constexpr const char* InputResultFile = "TCPSocketInputResults.csv";
 };
@@ -233,6 +233,7 @@ void RunTestServer(const CommandLineResult& cmdLineResult)
 
 	if (imageService == nullptr && inputService == nullptr)
 	{
+		std::cerr << "Error: none of the test services started.\n\n";
 		PrintHelp();
 		exit(EXIT_FAILURE);
 	}

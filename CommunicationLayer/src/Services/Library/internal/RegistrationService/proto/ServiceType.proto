@@ -44,4 +44,6 @@ enum ServiceType
 	ChatOut = 14;
 	ConnectionConfirmationRequest = 15;
 	ConnectionConfirmationResponse = 16;
+	AugmentRCSessionControl = 17;
+	AugmentRCSessionConsumer = 18;
 }

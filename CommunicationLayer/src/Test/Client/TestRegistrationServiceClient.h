@@ -138,11 +138,11 @@ int TestRegistrationServiceClient(int /*argc*/, char** /*argv*/)
 					case TVRemoteScreenSDKCommunication::ServiceType::ConnectionConfirmationResponse:
 						std::cout << "ConnectionConfirmationResponse";
 						break;
-					case TVRemoteScreenSDKCommunication::ServiceType::AugmentRCSessionInvitationControl:
-						std::cout << "AugmentRCSessionInvitationControl";
+					case TVRemoteScreenSDKCommunication::ServiceType::AugmentRCSessionControl:
+						std::cout << "AugmentRCSessionControl";
 						break;
-					case TVRemoteScreenSDKCommunication::ServiceType::AugmentRCSessionInvitationConsumer:
-						std::cout << "AugmentRCSessionInvitationConsumer";
+					case TVRemoteScreenSDKCommunication::ServiceType::AugmentRCSessionConsumer:
+						std::cout << "AugmentRCSessionConsumer";
 						break;
 					case TVRemoteScreenSDKCommunication::ServiceType::Unknown:
 						std::cout << "Unknown";

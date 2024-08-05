@@ -129,12 +129,16 @@ public Q_SLOTS:
 	bool loadMessages(uint32_t count, QUuid lastId);
 	bool deleteHistory();
 	bool deleteChat();
+	bool sendAugmentRCSessionStartListening();
+	bool sendAugmentRCSessionStopListening();
+	uint64_t getRunningServicesBitmask() const;
 
 Q_SIGNALS:
 	void accessConfirmationRequested(const tvqtsdk::AccessControl feature, uint32_t timeout);
 	void accessModeChangeNotified(const tvqtsdk::AccessControl feature, const tvqtsdk::Access accessMode);
 	void agentCommunicationEstablished();
 	void agentCommunicationLost();
+	void augmentRCSessionInvitationReceived(const QUrl url);
 	void instantSupportErrorNotification(InstantSupportError errorCode);
 	void instantSupportModifiedNotification(InstantSupportData data);
 	void instantSupportConnectionConfirmationRequested();

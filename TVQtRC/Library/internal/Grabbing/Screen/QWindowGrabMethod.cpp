@@ -32,8 +32,12 @@
 #include <QtCore/QProcessEnvironment>
 
 #include <QtGui/QGuiApplication>
+#include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtQuick/QSGRendererInterface>
+#endif
 #include <QtQuick/QQuickWindow>
 
 #ifdef WIDGETS_EVENT_DRIVEN_GRABBING
@@ -268,6 +272,20 @@ void QWindowGrabMethod::sendIfScreenChanged()
 	}
 }
 
+static bool IsOpenGLImageGrabbable(const QQuickWindow* quickWindow)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	QSGRendererInterface* interface = quickWindow->rendererInterface();
+	return interface->graphicsApi() == QSGRendererInterface::OpenGL;
+#else
+	if (!quickWindow->isSceneGraphInitialized())
+	{
+		return false;
+	}
+	return quickWindow->openglContext() != nullptr;
+#endif
+}
+
 void QWindowGrabMethod::startGrabbing()
 {
 	if (m_window == nullptr)
@@ -334,10 +352,16 @@ void QWindowGrabMethod::startGrabbing()
 #endif // WIDGETS_EVENT_DRIVEN_GRABBING
 #ifdef DIRECT_OPENGL_GRABBING
 	const QQuickWindow* quickWindow = qobject_cast<QQuickWindow*>(m_window);
-	if (!QProcessEnvironment::systemEnvironment().contains(ForceIntervalGrabEnvKey) && quickWindow)
+
+	if (!QProcessEnvironment::systemEnvironment().contains(ForceIntervalGrabEnvKey) && quickWindow && IsOpenGLImageGrabbable(quickWindow))
 	{
 		auto grabScreenAndSetDirty = [quickWindow, this]()
 		{
+			if (QOpenGLContext::currentContext() == nullptr)
+			{
+				return;
+			}
+
 			std::lock_guard<std::mutex> backbufferLock(m_backbufferMutex);
 
 			m_lastGrabResult = {}; // clear old image first to release its memory before allocating anew

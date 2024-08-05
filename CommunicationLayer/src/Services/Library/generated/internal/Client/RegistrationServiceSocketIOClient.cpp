@@ -199,6 +199,12 @@ auto RegistrationServiceSocketIOClient::Discover(const std::string& comId) -> Di
 				case ::tvregistrationservice::ServiceType::ConnectionConfirmationResponse:
 					serviceTypeEnumValue = ServiceType::ConnectionConfirmationResponse;
 					break;
+				case ::tvregistrationservice::ServiceType::AugmentRCSessionControl:
+					serviceTypeEnumValue = ServiceType::AugmentRCSessionControl;
+					break;
+				case ::tvregistrationservice::ServiceType::AugmentRCSessionConsumer:
+					serviceTypeEnumValue = ServiceType::AugmentRCSessionConsumer;
+					break;
 				default:
 
 					break;
@@ -291,6 +297,12 @@ auto RegistrationServiceSocketIOClient::Register(const std::string& comId, Servi
 			break;
 		case ServiceType::ConnectionConfirmationResponse:
 			typeProtoValue = ::tvregistrationservice::ServiceType::ConnectionConfirmationResponse;
+			break;
+		case ServiceType::AugmentRCSessionControl:
+			typeProtoValue = ::tvregistrationservice::ServiceType::AugmentRCSessionControl;
+			break;
+		case ServiceType::AugmentRCSessionConsumer:
+			typeProtoValue = ::tvregistrationservice::ServiceType::AugmentRCSessionConsumer;
 			break;
 		default:
 

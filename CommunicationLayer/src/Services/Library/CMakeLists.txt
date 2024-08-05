@@ -26,8 +26,8 @@ project(Services)
 set(SOURCES_PROTOBUF_SERVICES
 	internal/AccessControlService/proto/AccessControlInService.proto
 	internal/AccessControlService/proto/AccessControlOutService.proto
-	internal/AugmentRCSessionInvitationService/proto/AugmentRCSessionInvitationConsumerService.proto
-	internal/AugmentRCSessionInvitationService/proto/AugmentRCSessionInvitationControlService.proto
+	internal/AugmentRCSessionService/proto/AugmentRCSessionConsumerService.proto
+	internal/AugmentRCSessionService/proto/AugmentRCSessionControlService.proto
 	internal/ChatService/proto/ChatInService.proto
 	internal/ChatService/proto/ChatOutService.proto
 	internal/ConnectionConfirmationService/proto/ConnectionConfirmationRequestService.proto
@@ -53,9 +53,9 @@ set(SOURCES_PROTOBUF_MESSAGES
 	internal/AccessControlService/proto/GetAccessResponse.proto
 	internal/AccessControlService/proto/SetAccessRequest.proto
 	internal/AccessControlService/proto/SetAccessResponse.proto
-	internal/AugmentRCSessionInvitationService/proto/AugmentRCSessionInvitationConsumerMessages.proto
-	internal/AugmentRCSessionInvitationService/proto/AugmentRCSessionInvitationControlMessages.proto
-	internal/AugmentRCSessionInvitationService/proto/AugmentRCSessionInvitation.proto
+	internal/AugmentRCSessionService/proto/AugmentRCSessionConsumerMessages.proto
+	internal/AugmentRCSessionService/proto/AugmentRCSessionControlMessages.proto
+	internal/AugmentRCSessionService/proto/AugmentRCSession.proto
 	internal/ChatService/proto/ChatInMessages.proto
 	internal/ChatService/proto/ChatOutMessages.proto
 	internal/ChatService/proto/Chat.proto
@@ -115,7 +115,7 @@ set(SOURCES_PROTOBUF_MESSAGES
 
 set(SOURCES_STATIC
 	export/TVRemoteScreenSDKCommunication/AccessControlService/AccessControl.h
-	export/TVRemoteScreenSDKCommunication/AugmentRCSessionInvitationService/AugmentRCSessionInvitation.h
+	export/TVRemoteScreenSDKCommunication/AugmentRCSessionService/AugmentRCSession.h
 	export/TVRemoteScreenSDKCommunication/ChatService/Chat.h
 	export/TVRemoteScreenSDKCommunication/ConnectionConfirmationService/ConnectionData.h
 	export/TVRemoteScreenSDKCommunication/ImageService/ColorFormat.h

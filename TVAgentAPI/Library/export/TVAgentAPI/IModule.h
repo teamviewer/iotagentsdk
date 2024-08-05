@@ -38,6 +38,7 @@ public:
 		InstantSupport,
 		TVSessionManagement,
 		Chat,
+		AugmentRCSession,
 	};
 
 	virtual ~IModule() = default;

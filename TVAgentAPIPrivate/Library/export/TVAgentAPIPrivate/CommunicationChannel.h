@@ -156,6 +156,9 @@ public:
 	bool loadMessages(uint32_t count, std::string lastId);
 	bool deleteHistory();
 	bool deleteChat();
+	bool sendAugmentRCSessionStartListening();
+	bool sendAugmentRCSessionStopListening();
+	uint64_t getRunningServicesBitmask() const;
 
 private:
 	struct GrabResult
@@ -175,6 +178,7 @@ private:
 	bool setupClientAndServer();
 
 	bool setupAccessControlOutService();
+	bool setupAugmentRCSessionConsumerService();
 	bool setupConnectivityService();
 	bool setupInputService();
 	bool setupSessionStatusService();
@@ -238,9 +242,13 @@ private:
 
 	Observer<void()>
 			m_agentCommunicationEstablished;
-	
+
 	Observer<void()>
 			m_agentCommunicationLost;
+
+	Observer<void(
+		std::string url)>
+			m_augmentRCSessionInvitationReceived;
 
 	Observer<void(
 		TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError)>
@@ -281,7 +289,7 @@ private:
 		int32_t posX,
 		int32_t posY)>
 			m_simulateMouseMoveRequested;
-	
+
 	Observer<void(
 		TVRemoteScreenSDKCommunication::InputService::MouseButtonState buttonState,
 		int32_t posX,
@@ -338,6 +346,7 @@ public:
 	auto accessModeChangeNotified() -> decltype(m_accessModeChangeNotified)& { return m_accessModeChangeNotified; }
 	auto agentCommunicationEstablished() -> decltype(m_agentCommunicationEstablished)& { return m_agentCommunicationEstablished; }
 	auto agentCommunicationLost() -> decltype(m_agentCommunicationLost)& { return m_agentCommunicationLost; }
+	auto augmentRCSessionInvitationReceived() -> decltype(m_augmentRCSessionInvitationReceived)& { return m_augmentRCSessionInvitationReceived; }
 	auto instantSupportErrorNotification() -> decltype(m_instantSupportErrorNotification)& { return m_instantSupportErrorNotification; }
 	auto instantSupportModifiedNotification() -> decltype(m_instantSupportModifiedNotification)& { return m_instantSupportModifiedNotification; }
 	auto instantSupportConnectionConfirmationRequested() -> decltype(m_instantSupportConnectionConfirmationRequested)& { return m_instantSupportConnectionConfirmationRequested; }

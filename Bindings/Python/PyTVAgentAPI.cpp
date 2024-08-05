@@ -28,6 +28,7 @@
 
 #include "PyAccessControlModule.h"
 #include "PyAgentConnection.h"
+#include "PyAugmentRCSessionModule.h"
 #include "PyInstantSupportModule.h"
 #include "PyLogging.h"
 #include "PythonHelpers.h"

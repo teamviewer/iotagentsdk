@@ -112,10 +112,11 @@ If you plan to use the Qt6 API:
 * `qt6-declarative-dev`
 * `qml6-module-qtquick`
 * `qml6-module-qtquick-window`
-* `qml6-module-qtqml-workerscript`
 
 Depending on what kind of distribution you are using, it could be necessary to install:
+
 * `libgl1-mesa-dev`
+* `qml6-module-qtqml-workerscript`
 
 To build and use the Python bindings:
 

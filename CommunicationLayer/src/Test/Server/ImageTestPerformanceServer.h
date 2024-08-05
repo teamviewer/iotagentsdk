@@ -26,8 +26,10 @@
 #include <TVRemoteScreenSDKCommunication/ImageService/ServiceFactory.h>
 #include <TVRemoteScreenSDKCommunication/ImageService/IImageServiceServer.h>
 
-#include <memory>
 #include <atomic>
+#include <iostream>
+#include <memory>
+#include <string>
 
 namespace TestImageServicePerformance
 {
@@ -59,7 +61,12 @@ std::shared_ptr<TVRemoteScreenSDKCommunication::ImageService::IImageServiceServe
 	};
 	server->SetUpdateImageCallback(receiveFunction);
 
-	server->StartServer(location);
+	if (!server->StartServer(location))
+	{
+		std::cerr << "Error: Failed to start server at location '" << location
+			<< "'. Please check that location URL is correct and contains a scheme\n";
+		return {};
+	}
 
 	return server;
 }

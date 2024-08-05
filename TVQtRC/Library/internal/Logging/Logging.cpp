@@ -32,7 +32,7 @@ namespace
 {
 constexpr const char* LogFileName = "TVQtRC.log";
 constexpr const char* LogPrefixError = "[error] ";
-constexpr const char* LogPrefixInfo  = "[info] ";
+constexpr const char* LogPrefixInfo  = "[info]  ";
 }
 
 void Logging::startLogging(const QString& logFolderPath)

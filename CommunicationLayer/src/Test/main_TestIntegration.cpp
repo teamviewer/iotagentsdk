@@ -25,8 +25,8 @@
 
 #include "Client/TestAccessControlInServiceClient.h"
 #include "Client/TestAccessControlOutServiceClient.h"
-#include "Client/TestAugmentRCSessionInvitationConsumerServiceClient.h"
-#include "Client/TestAugmentRCSessionInvitationControlServiceClient.h"
+#include "Client/TestAugmentRCSessionConsumerServiceClient.h"
+#include "Client/TestAugmentRCSessionControlServiceClient.h"
 #include "Client/TestChatInServiceClient.h"
 #include "Client/TestChatOutServiceClient.h"
 #include "Client/TestConnectionConfirmationServiceClient.h"
@@ -43,8 +43,8 @@
 
 #include "Server/TestAccessControlInServiceServer.h"
 #include "Server/TestAccessControlOutServiceServer.h"
-#include "Server/TestAugmentRCSessionInvitationConsumerServiceServer.h"
-#include "Server/TestAugmentRCSessionInvitationControlServiceServer.h"
+#include "Server/TestAugmentRCSessionConsumerServiceServer.h"
+#include "Server/TestAugmentRCSessionControlServiceServer.h"
 #include "Server/TestChatInServiceServer.h"
 #include "Server/TestChatOutServiceServer.h"
 #include "Server/TestConnectionConfirmationServiceServer.h"
@@ -87,9 +87,9 @@ int TestOnFramework(int argc, char** argv)
 	}
 
 	{
-		const std::shared_ptr<AugmentRCSessionInvitationService::IAugmentRCSessionInvitationConsumerServiceServer> augmentRCSessionInvitationConsumerServiceServer =
-				TestAugmentRCSessionInvitationConsumerService::TestAugmentRCSessionInvitationConsumerServiceServer<Framework>();
-		const int testResult = TestAugmentRCSessionInvitationConsumerService::TestAugmentRCSessionInvitationConsumerServiceClient<Framework>(argc, argv);
+		const std::shared_ptr<AugmentRCSessionService::IAugmentRCSessionConsumerServiceServer> augmentRCSessionConsumerServiceServer =
+			TestAugmentRCSessionConsumerService::TestAugmentRCSessionConsumerServiceServer<Framework>();
+		const int testResult = TestAugmentRCSessionConsumerService::TestAugmentRCSessionConsumerServiceClient<Framework>(argc, argv);
 		if (testResult == EXIT_FAILURE)
 		{
 			return EXIT_FAILURE;
@@ -97,9 +97,9 @@ int TestOnFramework(int argc, char** argv)
 	}
 
 	{
-		const std::shared_ptr<AugmentRCSessionInvitationService::IAugmentRCSessionInvitationControlServiceServer> augmentRCSessionInvitationControlServiceServer =
-				TestAugmentRCSessionInvitationControlService::TestAugmentRCSessionInvitationControlServiceServer<Framework>();
-		const int testResult = TestAugmentRCSessionInvitationControlService::TestAugmentRCSessionInvitationControlServiceClient<Framework>(argc, argv);
+		const std::shared_ptr<AugmentRCSessionService::IAugmentRCSessionControlServiceServer> augmentRCSessionControlServiceServer =
+			TestAugmentRCSessionControlService::TestAugmentRCSessionControlServiceServer<Framework>();
+		const int testResult = TestAugmentRCSessionControlService::TestAugmentRCSessionControlServiceClient<Framework>(argc, argv);
 		if (testResult == EXIT_FAILURE)
 		{
 			return EXIT_FAILURE;

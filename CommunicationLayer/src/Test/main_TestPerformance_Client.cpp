@@ -55,9 +55,9 @@ struct SvcConnData<TVRemoteScreenSDKCommunication::gRPCTransport>
 template<>
 struct SvcConnData<TVRemoteScreenSDKCommunication::TCPSocketTransport>
 {
-	static constexpr const char* DefaultImageServiceLocation = ":9003";
-	static constexpr const char* DefaultInputServiceLocation = ":9004";
-	static constexpr const char* Prefix = "127.0.0.1";
+	static constexpr const char* DefaultImageServiceLocation = "127.0.0.1:9003";
+	static constexpr const char* DefaultInputServiceLocation = "127.0.0.1:9004";
+	static constexpr const char* Prefix = "tcp+tv://";
 };
 
 struct KTPS

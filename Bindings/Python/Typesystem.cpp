@@ -24,10 +24,12 @@
 #include "Typesystem.h"
 
 #include <TVAgentAPI/IAccessControlModule.h>
+#include <TVAgentAPI/IAugmentRCSessionModule.h>
 #include <TVAgentAPI/IChatModule.h>
 
 #include "PyAccessControlModule.h"
 #include "PyAgentConnection.h"
+#include "PyAugmentRCSessionModule.h"
 #include "PyChatModule.h"
 #include "PyInstantSupportModule.h"
 #include "PyLogging.h"
@@ -49,6 +51,13 @@ template<>
 PyTypeMeta GetPyTypeMeta<PyAccessControlModule>()
 {
 	PyTypeMeta meta{GetPyTypeAccessControlModule(), "AccessControlModule"};
+	return meta;
+}
+
+template<>
+PyTypeMeta GetPyTypeMeta<PyAugmentRCSessionModule>()
+{
+	PyTypeMeta meta{GetPyTypeAugmentRCSessionModule(), "AugmentRCSessionModule"};
 	return meta;
 }
 

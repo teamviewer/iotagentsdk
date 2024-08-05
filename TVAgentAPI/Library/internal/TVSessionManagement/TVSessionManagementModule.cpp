@@ -137,7 +137,7 @@ bool TVSessionManagementModule::registerCallbacks()
 	const auto weakThis = m_weakThis;
 	m_tvSessionStartedConnection = communicationChannel->tvSessionStarted().registerCallback(
 		[weakThis, weakDispatcher]
-		(int32_t tvSessionID, int32_t tvSessionsCount)
+		(int32_t tvSessionID, int32_t tvSessionsCount) noexcept
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,
@@ -150,7 +150,7 @@ bool TVSessionManagementModule::registerCallbacks()
 
 	m_tvSessionStoppedConnection = communicationChannel->tvSessionStopped().registerCallback(
 		[weakThis, weakDispatcher]
-		(int32_t tvSessionID, int32_t tvSessionsCount)
+		(int32_t tvSessionID, int32_t tvSessionsCount) noexcept
 		{
 			util::weakDispatcherPost(
 				weakDispatcher,

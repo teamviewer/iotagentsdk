@@ -28,6 +28,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
 #include <QtCore/QTimer>
+#include <QtCore/QUrl>
 
 #include <TVQtRC/AbstractChat.h>
 #include <TVQtRC/ConnectionData.h>
@@ -79,6 +80,9 @@ class AppModel : public QObject
 	Q_PROPERTY(AccessControl accessControl_RemoteView     MEMBER AccessControl_RemoteView      CONSTANT)
 	Q_PROPERTY(AccessControl accessControl_RemoteControl  MEMBER AccessControl_RemoteControl   CONSTANT)
 	Q_PROPERTY(AccessControl accessControl_ScreenRecoring MEMBER AccessControl_ScreenRecording CONSTANT)
+
+	Q_PROPERTY(bool isAugmentRCSessionFeatureAvailable READ isAugmentRCSessionFeatureAvailable NOTIFY tvCommunicationRunningChanged)
+	Q_PROPERTY(bool isListeningForAugmentRCSessionInvite  READ isListeningForAugmentRCSessionInvite WRITE setIsListeningForAugmentRCSessionInvite NOTIFY isListeningForAugmentRCSessionInviteChanged)
 
 public:
 	enum ControlMode
@@ -153,7 +157,6 @@ public:
 	int controlMode() const;
 	Q_SIGNAL void controlModeChanged();
 
-
 	bool isTVCommunicationRunning() const;
 	Q_SIGNAL void tvCommunicationRunningChanged();
 
@@ -215,6 +218,15 @@ public:
 	Q_SLOT void deleteHistory();
 	Q_SLOT void deleteChat();
 
+	// Augment RC session
+	bool isAugmentRCSessionFeatureAvailable() const;
+	bool isListeningForAugmentRCSessionInvite() const;
+	void setIsListeningForAugmentRCSessionInvite(bool isListening);
+	Q_SIGNAL void isListeningForAugmentRCSessionInviteChanged();
+	void resendIsListeningForAugmentRCSessionInvite();
+
+	Q_SIGNAL void augmentRCSessionInvitationReceived(const QUrl url);
+
 private:
 	Q_SLOT void chatCreated(QUuid chatId, QString title, tvqtsdk::ChatType chatType, uint32_t chatTypeId);
 	Q_SLOT void chatsRemoved(QVector<QUuid> chatIds);
@@ -237,6 +249,7 @@ private:
 	QString m_instantSupportName;
 	QString m_instantSupportDescription;
 	bool m_isInstantSupportConfirmationRequested = false;
+	bool m_isListeningForAugmentRCSessionInvite = false;
 	std::function<void(tvqtsdk::ConnectionUserConfirmation confirmation)> m_isInstantSupportConfirmationResponseCallback;
 
 	QUuid m_selectedChatId;

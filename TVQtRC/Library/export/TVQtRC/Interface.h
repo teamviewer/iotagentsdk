@@ -29,6 +29,7 @@
 #include "ChatInfo.h"
 #include "ConnectionData.h"
 #include "ControlMode.h"
+#include "Feature.h"
 #include "InstantSupportData.h"
 #include "InstantSupportError.h"
 
@@ -304,6 +305,33 @@ public:
 	 * @return pointer of the chat module
 	 */
 	virtual AbstractChat* getChat() = 0;
+
+	/**
+	 * @brief augmentRCSessionStartListening announces that the sdk started listening for augment RC session invites
+	 * @return true if this function call is successful, false otherwise
+	 */
+	virtual bool augmentRCSessionStartListening() = 0;
+
+	/**
+	 * @brief augmentRCSessionStopListening announces that the sdk stopped listening for augment RC session invites
+	 * @return true if this function call is successful, false otherwise
+	 */
+	virtual bool augmentRCSessionStopListening() = 0;
+
+	/**
+	 * @brief registerAugmentRCSessionInvitationReceived registers the given slot to handle an incoming RC session invite
+	 * @param slot function to execute for this event
+	 * @param context trackable QObject that indicates if the slot can be called safely
+	 * @return connection object for tracking and managing the resulting signal-slot relationship
+	 */
+	virtual QMetaObject::Connection registerAugmentRCSessionInvitationReceived(const std::function<void(QUrl url)>& slot, const QObject* context = nullptr) = 0;
+
+	/**
+	 * @brief isFeatureAvailable determines whether a feature is available between the SDK and the Agent (see Feature.h)
+	 * @param feature
+	 * @return true if the feature is available within the currently established connection between SDK and Agent
+	 */
+	virtual bool isFeatureAvailable(Feature feature) const = 0;
 };
 
 } // namespace tvqtsdk

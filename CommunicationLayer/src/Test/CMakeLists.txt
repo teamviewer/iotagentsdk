@@ -30,8 +30,8 @@ link_libraries(atomic)
 set(SOURCES_TESTDATA
 	TestData/TestDataAccessControlIn.h
 	TestData/TestDataAccessControlOut.h
-	TestData/TestDataAugmentRCSessionInvitationConsumer.h
-	TestData/TestDataAugmentRCSessionInvitationControl.h
+	TestData/TestDataAugmentRCSessionConsumer.h
+	TestData/TestDataAugmentRCSessionControl.h
 	TestData/TestDataChatIn.h
 	TestData/TestDataChatOut.h
 	TestData/TestDataConnectionConfirmation.h
@@ -53,8 +53,8 @@ endforeach()
 set(SOURCES_CLIENT
 	Client/TestAccessControlInServiceClient.h
 	Client/TestAccessControlOutServiceClient.h
-	Client/TestAugmentRCSessionInvitationConsumerServiceClient.h
-	Client/TestAugmentRCSessionInvitationControlServiceClient.h
+	Client/TestAugmentRCSessionConsumerServiceClient.h
+	Client/TestAugmentRCSessionControlServiceClient.h
 	Client/TestChatInServiceClient.h
 	Client/TestChatOutServiceClient.h
 	Client/TestConnectionConfirmationServiceClient.h
@@ -82,8 +82,8 @@ target_link_libraries(${PROJECT_NAME}_sharedClient
 set(SOURCES_SERVER
 	Server/TestAccessControlInServiceServer.h
 	Server/TestAccessControlOutServiceServer.h
-	Server/TestAugmentRCSessionInvitationConsumerServiceServer.h
-	Server/TestAugmentRCSessionInvitationControlServiceServer.h
+	Server/TestAugmentRCSessionConsumerServiceServer.h
+	Server/TestAugmentRCSessionControlServiceServer.h
 	Server/TestChatInServiceServer.h
 	Server/TestChatOutServiceServer.h
 	Server/TestConnectionConfirmationServiceServer.h
@@ -155,3 +155,10 @@ set(SOURCES_PARSEURLTEST
 add_executable(${PROJECT_NAME}_ParseUrl ${SOURCES_PARSEURLTEST})
 target_link_libraries(${PROJECT_NAME}_ParseUrl PRIVATE CommunicationLayerBase)
 add_test(NAME ${PROJECT_NAME}_ParseUrl COMMAND ${PROJECT_NAME}_ParseUrl)
+
+set(SOURCES_VERSIONNUMBERTEST
+	main_TestVersionNumber.cpp
+)
+add_executable(${PROJECT_NAME}_VersionNumber ${SOURCES_VERSIONNUMBERTEST})
+target_link_libraries(${PROJECT_NAME}_VersionNumber PRIVATE CommunicationLayerBase)
+add_test(NAME ${PROJECT_NAME}_VersionNumber COMMAND ${PROJECT_NAME}_VersionNumber)

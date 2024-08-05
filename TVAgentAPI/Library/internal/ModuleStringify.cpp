@@ -35,6 +35,7 @@ const char* toCString(IModule::Type moduleType)
 		case Type::InstantSupport:      return "InstantSupport";
 		case Type::TVSessionManagement: return "TVSessionManagement";
 		case Type::Chat:                return "Chat";
+		case Type::AugmentRCSession:    return "AugmentRCSession";
 	}
 	return "";
 }

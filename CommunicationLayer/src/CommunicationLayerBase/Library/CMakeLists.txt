@@ -31,6 +31,8 @@ set(SOURCES_EXPORT
 	export/TVRemoteScreenSDKCommunication/CommunicationLayerBase/ServiceType.h
 	export/TVRemoteScreenSDKCommunication/CommunicationLayerBase/ParseUrl.h
 	export/TVRemoteScreenSDKCommunication/CommunicationLayerBase/TransportFramework.h
+	export/TVRemoteScreenSDKCommunication/CommunicationLayerBase/VersionNumber.cpp
+	export/TVRemoteScreenSDKCommunication/CommunicationLayerBase/VersionNumber.h
 )
 
 set(SOURCES_INTERNAL

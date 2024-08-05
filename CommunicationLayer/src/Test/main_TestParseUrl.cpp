@@ -35,7 +35,10 @@ struct TestCase
 	TransportFramework framework;
 };
 
+const std::string DefaultBaseServerUrl = "tcp+tv://127.0.0.1";
 const TestCase TestDataCorrect[] = {
+	{ "unix://"                             , { "unix"    , ""                , 0    , ""                   }, gRPCTransport      },
+	{ "tcp+tv://"                           , { "tcp+tv"  , ""                , 0    , ""                   }, TCPSocketTransport },
 	{ "unix:///tmp"                         , { "unix"    , ""                , 0    , "/tmp"               }, gRPCTransport      },
 	{ "Unix:///tmp"                         , { "unix"    , ""                , 0    , "/tmp"               }, gRPCTransport      },
 	{ "UNIX:///tmp"                         , { "unix"    , ""                , 0    , "/tmp"               }, gRPCTransport      },
@@ -51,6 +54,7 @@ const TestCase TestDataCorrect[] = {
 	{ "ftp://host.example.com:21/path_1/_2" , { "ftp"     , "host.example.com", 21   , "/path_1/_2"         }, UnknownTransport   },
 	{ "tcp://localhost:12345"               , { "tcp"     , "localhost"       , 12345, ""                   }, UnknownTransport   },
 	{ "svn+ssh://localhost:12345"           , { "svn+ssh" , "localhost"       , 12345, ""                   }, UnknownTransport   },
+	{ "tcp+tv://192.168.52.1:999"           , { "tcp+tv"  , "192.168.52.1"    , 999  , ""                   }, TCPSocketTransport },
 	{ "TCP+TV://host:456"                   , { "tcp+tv"  , "host"            , 456  , ""                   }, TCPSocketTransport },
 	{ "tCp+tV://192.168.52.1:999"           , { "tcp+tv"  , "192.168.52.1"    , 999  , ""                   }, TCPSocketTransport },
 	{ "tcp+tv+0://192.168.52.1:999"         , { "tcp+tv+0", "192.168.52.1"    , 999  , ""                   }, UnknownTransport   },
@@ -63,6 +67,7 @@ const std::string TestUrlsMalformed[] = {
 	"",
 	"?",
 	"foo",
+	"192.168.52.1:999",
 	"12",
 	"123://",
 	"123://path",
@@ -71,9 +76,9 @@ const std::string TestUrlsMalformed[] = {
 	"unix:///tmp//foo",
 	"unix:///tmp//foo/",
 	"unix:////tmp",
-//	"unix://",
 	"unix:////",
 	"http://localhost:0",
+	"http://localhost:-13",
 	"http://localhost:00",
 	"http://localhost:01",
 	"http://localhost:80:80",

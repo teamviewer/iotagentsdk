@@ -287,7 +287,7 @@ void printChatRooms(const std::vector<ChatRoom>& chatRooms)
 	}
 }
 
-void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* /*userdata*/)
+void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* /*userdata*/) noexcept
 {
 	s_oss << "[IAgentConnection] Status: " << tvagentapi::toCString(status) << std::endl;
 
@@ -310,7 +310,7 @@ void handleChatCreated(
 	const char* title,
 	tvagentapi::IChatModule::ChatEndpointType chatEndpointType,
 	uint64_t chatEndpointID,
-	void* /*userData*/)
+	void* /*userData*/) noexcept
 {
 	ChatRoom newRoom
 	{
@@ -332,7 +332,7 @@ void handleChatCreated(
 void handleChatsRemoved(
 	const char** chatIDs,
 	size_t chatIDsCount,
-	void* /*userData*/)
+	void* /*userData*/) noexcept
 {
 	s_oss << "[IChatModule] " << chatIDsCount << " chat room(s) removed: " << std::endl;
 
@@ -354,7 +354,7 @@ void handleChatsRemoved(
 
 void handleChatClosed(
 	const char* chatID,
-	void* /*userData*/)
+	void* /*userData*/) noexcept
 {
 	s_oss << "[IChatModule] chat room closed (" << chatID << ")" << std::endl;
 
@@ -368,7 +368,7 @@ void handleChatClosed(
 void handleNewMessages(
 	const tvagentapi::IChatModule::ChatMessage* messages,
 	size_t messagesCount,
-	void* /*userData*/)
+	void* /*userData*/) noexcept
 {
 	const ChatRoom* selected = getSelectedChatRoom();
 
@@ -400,7 +400,7 @@ void handleMessageSendFinished(
 	tvagentapi::IChatModule::SendMessageResult result,
 	const char* messageID,
 	tvagentapi::IChatModule::TimeStamp timeStamp,
-	void* /*userData*/)
+	void* /*userData*/) noexcept
 {
 	switch (result)
 	{
@@ -439,7 +439,7 @@ void handleMessagesLoaded(
 	const tvagentapi::IChatModule::ChatMessage* messages,
 	size_t messagesCount,
 	bool hasMore,
-	void* /*userData*/)
+	void* /*userData*/) noexcept
 {
 	s_oss << "[IChatModule] loaded " << messagesCount << " message(s). "
 		<< (hasMore ? "Can load more." : "Nothing else to load.") << std::endl;
@@ -461,7 +461,7 @@ void handleMessagesLoaded(
 
 void handleHistoryDeleted(
 	const char* chatID,
-	void* /*userData*/)
+	void* /*userData*/) noexcept
 {
 	s_oss << "[IChatModule] history deleted for chat id " << chatID << std::endl;
 

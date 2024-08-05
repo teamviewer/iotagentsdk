@@ -60,8 +60,8 @@ const char* ServicesMediator::ServerLocation<TransportFramework::gRPCTransport>(
 			return "TVQtRC/insSupE/";
 		case ServiceType::ConnectionConfirmationRequest:
 			return "TVQtRC/ConConRe/";
-		case ServiceType::AugmentRCSessionInvitationControl:
-			return "TVQtRC/augSessInvCntrl/";
+		case ServiceType::AugmentRCSessionConsumer:
+			return "TVQtRC/augSessCons/";
 		default:
 			return "";
 	}
@@ -87,7 +87,7 @@ const char* ServicesMediator::ServerLocation<TransportFramework::TCPSocketTransp
 			return "9325";
 		case ServiceType::ConnectionConfirmationRequest:
 			return "9326";
-		case ServiceType::AugmentRCSessionInvitationControl:
+		case ServiceType::AugmentRCSessionConsumer:
 			return "9327";
 		default:
 			return "";
@@ -114,6 +114,11 @@ std::string ServicesMediator::FullServerLocation(ServiceType serviceType) const
 			break;
 	}
 	return fullServerLocation;
+}
+
+uint64_t ServicesMediator::GetRunningServicesBitmask()
+{
+	return GetRunningServiceFlagsRec<Details::ST::LastServiceType>();
 }
 
 } // namespace tvagentapi

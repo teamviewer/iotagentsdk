@@ -30,7 +30,17 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt${QT_MAJOR_VERSION} COMPONENTS Core Widgets Quick REQUIRED)
 
-add_executable(qt_simulate "main.cpp" "AppModel.h" "AppModel.cpp" "qml.qrc" "WidgetsDemoWindow.ui")
+add_executable(qt_simulate
+	"main.cpp"
+	"AppModel.h"
+	"AppModel.cpp"
+	"qml.qrc"
+	"WidgetsDemoWindow.ui"
+	"QRCodeImageProvider.h"
+	"QRCodeImageProvider.cpp"
+	"ThirdParty/qrcodegen.hpp"
+	"ThirdParty/qrcodegen.cpp"
+)
 
 target_link_libraries(qt_simulate Qt${QT_MAJOR_VERSION}::Core Qt${QT_MAJOR_VERSION}::Widgets Qt${QT_MAJOR_VERSION}::Quick)
 

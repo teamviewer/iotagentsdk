@@ -216,6 +216,8 @@ AppModel::AppModel(tvqtsdk::TVQtRCPluginInterface* const plugin, QObject* parent
 					Q_EMIT chatTitleChanged();
 					Q_EMIT chatSelected();
 				}
+
+				resendIsListeningForAugmentRCSessionInvite();
 			}
 			else
 			{
@@ -272,6 +274,12 @@ AppModel::AppModel(tvqtsdk::TVQtRCPluginInterface* const plugin, QObject* parent
 			m_instantSupportErrorCode = toAppInstantSupportError(errorCode);
 			Q_EMIT instantSupportRequestStateChanged();
 		};
+
+		auto augmentRCSessionInvitationReceivedHandler = [this](QUrl url)
+		{
+			Q_EMIT augmentRCSessionInvitationReceived(url);
+		};
+		m_plugin->registerAugmentRCSessionInvitationReceived(augmentRCSessionInvitationReceivedHandler, this);
 
 		m_plugin->registerForInstantSupportErrorNotification(instantSupportErrorNotification, this);
 
@@ -715,4 +723,39 @@ void AppModel::deleteChat()
 	{
 		m_chat->deleteChat();
 	}
+}
+
+void AppModel::setIsListeningForAugmentRCSessionInvite(bool isListening)
+{
+	if (m_isListeningForAugmentRCSessionInvite != isListening)
+	{
+		m_isListeningForAugmentRCSessionInvite = isListening;
+		resendIsListeningForAugmentRCSessionInvite();
+		Q_EMIT isListeningForAugmentRCSessionInviteChanged();
+	}
+}
+
+void AppModel::resendIsListeningForAugmentRCSessionInvite()
+{
+	if (m_plugin)
+	{
+		if (m_isListeningForAugmentRCSessionInvite)
+		{
+			m_plugin->augmentRCSessionStartListening();
+		}
+		else
+		{
+			m_plugin->augmentRCSessionStopListening();
+		}
+	}
+}
+
+bool AppModel::isAugmentRCSessionFeatureAvailable() const
+{
+	return m_plugin->isFeatureAvailable(tvqtsdk::Feature::AugmentRCSession);
+}
+
+bool AppModel::isListeningForAugmentRCSessionInvite() const
+{
+	return m_isListeningForAugmentRCSessionInvite;
 }

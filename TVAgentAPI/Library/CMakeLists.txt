@@ -33,6 +33,7 @@ set(TVAgentApi_INTERFACE
 	export/TVAgentAPI/IAccessControlModule.h
 	export/TVAgentAPI/IAgentAPI.h
 	export/TVAgentAPI/IAgentConnection.h
+	export/TVAgentAPI/IAugmentRCSessionModule.h
 	export/TVAgentAPI/IChatModule.h
 	export/TVAgentAPI/IInstantSupportModule.h
 	export/TVAgentAPI/ILogging.h
@@ -52,6 +53,8 @@ set(TVAgentApi_SOURCES
 	internal/AgentConnection/AgentConnectionProxy.cpp
 	internal/AgentConnection/AgentConnectionProxy.h
 	internal/AgentConnection/AgentConnectionStringify.cpp
+	internal/AugmentRCSession/AugmentRCSessionModule.cpp
+	internal/AugmentRCSession/AugmentRCSessionModule.h
 	internal/AsyncOperation/IDispatcher.h
 	internal/AsyncOperation/LazyDispatcher.cpp
 	internal/AsyncOperation/LazyDispatcher.h

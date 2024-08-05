@@ -36,12 +36,13 @@ endif()
 set(TVQTRC_INTERFACE
 	export/TVQtRC/AbstractChat.h
 	export/TVQtRC/AccessControl.h
+	export/TVQtRC/BaseUrlParseResultCode.h
 	export/TVQtRC/ChatInfo.h
 	export/TVQtRC/ConnectionData.h
 	export/TVQtRC/ControlMode.h
+	export/TVQtRC/Feature.h
 	export/TVQtRC/InstantSupportData.h
 	export/TVQtRC/InstantSupportError.h
-	export/TVQtRC/BaseUrlParseResultCode.h
 	export/TVQtRC/Interface.h
 )
 
@@ -75,6 +76,7 @@ set(TVQTRC_SOURCES
 	internal/InputSimulation/InputSimulator.h
 	internal/InputSimulation/XKBMap.cpp
 	internal/InputSimulation/XKBMap.h
+	internal/InputSimulation/xkbcommon/xkbcommon-keysyms.h
 
 	internal/Logging/ILogging.h
 	internal/Logging/Logging.cpp
@@ -85,8 +87,7 @@ set(TVQTRC_SOURCES
 	internal/Logging/LoggingPrivateAdapter.h
 	
 	internal/TVQtRCPlugin.cpp
-	internal/TVQtRCPlugin.h
-)
+	internal/TVQtRCPlugin.h)
 
 set_property(SOURCE internal/TVQtRCPlugin.cpp APPEND PROPERTY COMPILE_DEFINITIONS "TV_VERSION=\"${TVAgentSDK_VERSION}\"")
 

@@ -29,7 +29,7 @@ namespace tvagentapi
 namespace
 {
 constexpr const char* LogPrefixError = "[error] ";
-constexpr const char* LogPrefixInfo  = "[info] ";
+constexpr const char* LogPrefixInfo  = "[info]  ";
 }
 
 bool FileLogging::startLogging(const std::string& logFilePath)

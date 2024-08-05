@@ -12,12 +12,13 @@ Functionality at a glance:
 * exchange chat messages
 * request Instant Support
 * set and retrieve access permissions to various IoT Agent features
+* receive Assist AR invitations
 
 You can find more details and an API documentation in Interface.h [TVQtRC/Library/export/TVQtRC/Interface.h](../../TVQtRC/Library/export/TVQtRC/Interface.h) contained in the package.
 
 #### Make the public API available for the existing Qt application
 
-Example of how to integrate the installed plugin using CMake (see [Installation for Development](#installation-for-development)):
+Example of how to integrate the installed plugin using CMake:
 
 ```cmake
 cmake_minimum_required(VERSION 3.10)

@@ -55,6 +55,8 @@ IInstantSupportModule::RequestErrorCode getRequestErrorCodeFromCommunication(TVR
 		case TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError::Busy: return RequestErrorCode::Busy;
 		case TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError::InternalError: return RequestErrorCode::InternalError;
 		case TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError::InvalidEmail: return RequestErrorCode::InvalidEmail;
+		case TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError::CloseRequestFailed: return RequestErrorCode::CloseRequestFailed;
+		case TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError::NotFound: return RequestErrorCode::NotFound;
 	}
 	return RequestErrorCode::InternalError;
 }
@@ -134,6 +136,23 @@ bool InstantSupportModule::requestInstantSupport(
 		std::string{description ? description : ""},
 		std::string{sessionCode ? sessionCode : ""},
 		std::string{email ? email : ""});
+}
+
+bool InstantSupportModule::closeInstantSupportCase(
+	const char* accessToken,
+	const char* sessionCode)
+{
+	auto connection = m_connection.lock();
+	if (!connection)
+	{
+		return false;
+	}
+
+	auto communicationChannel = connection->getCommunicationChannel();
+
+	return communicationChannel->closeInstantSupportCase(
+		std::string{accessToken ? accessToken : ""},
+		std::string{sessionCode ? sessionCode : ""});
 }
 
 bool InstantSupportModule::isSupported() const

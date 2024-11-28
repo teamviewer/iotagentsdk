@@ -38,3 +38,13 @@ message RequestInstantSupportRequest
 message RequestInstantSupportResponse
 {
 }
+
+message CloseInstantSupportCaseRequest
+{
+	string accessToken = 1;
+	string sessionCode = 2;
+}
+
+message CloseInstantSupportCaseResponse
+{
+}

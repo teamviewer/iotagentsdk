@@ -432,6 +432,32 @@ bool CommunicationChannel::requestInstantSupport(
 	return true;
 }
 
+bool CommunicationChannel::closeInstantSupportCase(
+	const std::string& accessToken,
+	const std::string& sessionCode)
+{
+	if (auto safeClient = m_servicesMediator->AcquireClient<ServiceType::InstantSupport>())
+	{
+		const TVRemoteScreenSDKCommunication::CallStatus status =
+			safeClient->CloseInstantSupportCase(m_communicationId, accessToken, sessionCode);
+
+		if (!status.IsOk())
+		{
+			const std::string errorMsg =
+				"[CommunicationChannel] Close instant support request failed. Reason: " + status.errorMessage;
+			m_logging->logError(errorMsg);
+			return false;
+		}
+	}
+	else
+	{
+		m_logging->logError("[CommunicationChannel] Instant support client not available.");
+		return false;
+	}
+
+	return true;
+}
+
 bool CommunicationChannel::confirmConnectionRequest(
 	TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionType connectionType,
 	TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionUserConfirmation confirmation)

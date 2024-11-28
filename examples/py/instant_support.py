@@ -30,7 +30,12 @@ import tvagentapi
 assert 'TV_ACCESS_TOKEN' in os.environ, "Specify TV_ACCESS_TOKEN environment variable"
 
 
+session_data = None
+request_data = None
+
+
 def connectionStatusChanged(status, is_module):
+    global request_data
     print(f"[IAgentConnection] Status: {status}")
     if status == tvagentapi.AgentConnection.Status.Connected:
         request_data = {
@@ -46,11 +51,14 @@ def connectionStatusChanged(status, is_module):
 
 
 def instantSupportSessionDataChanged(new_data):
+    global session_data
     if new_data['state'] == tvagentapi.InstantSupportModule.SessionState.Undefined:
         output = "no session data"
     else:
         output = str(new_data)
+        session_data = new_data
     print(f"[IInstantSupportModule] instantSupportSessionDataChanged: {output}")
+    print()
 
 
 def instantSupportRequestError(error_code):
@@ -77,6 +85,18 @@ Pick an option (a/r/T): """)
         print("Instant support request timed out")
 
 
+def instantSupportCloseCaseRequested(is_module, access_token, session_code):
+    c = input("""
+Instant Support requested. Close session with 'c'
+Available options:
+ 'c' - Close session
+Pick the option (c): """)
+    if c in ('c', 'C'):
+        is_module.closeInstantSupportCase({"accessToken": access_token,
+                                           "sessionCode": session_code})
+        print("Close instant support case...")
+
+
 api = tvagentapi.TVAgentAPI()
 connection = api.createAgentConnection()
 if 'TV_BASE_SDK_URL' in os.environ and 'TV_AGENT_API_URL' in os.environ:
@@ -100,6 +120,14 @@ while True:
         connection.processEvents(waitForMoreEvents=True, timeoutMs=100)
     except KeyboardInterrupt:
         break
+
+try:
+    # close instant support case
+    instantSupportCloseCaseRequested(instant_support_module, request_data['accessToken'], session_data['sessionCode'])
+    print("Instant support case closed")
+except:
+    print("Error: instant support case cannot be closed")
+
 
 print("Stopping connection to IoT Agent...")
 

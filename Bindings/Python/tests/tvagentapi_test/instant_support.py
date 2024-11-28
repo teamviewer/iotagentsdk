@@ -30,16 +30,17 @@ from . import with_connect_urls
 @with_connect_urls
 def test_instant_support(request_data=None, expected_session_data=None, expected_error_code=None,
                          incoming_connection_response=None, amend_support_case_data=None,
-                         base_sdk_url=None, agent_api_url=None):
+                         base_sdk_url=None, agent_api_url=None, close_instant_support_case=False):
     """
     Instant Support test helper
 
     Arguments:
-    request_data                  -- if not None -> make request. If 'sessionCode' not provided we don't compare it to expected_session_data['sessionCode']
-    expected_session_data         -- if not None -> expect sessionDataChangedCallback callback
-    expected_error_code           -- if not None -> expect requestErrorCallback callback
-    incoming_connection_response  -- if not None -> call response action when supporter connects
-    amend_support_case_data       -- if not None -> change support case data after it is created
+    request_data                  -- if not None  -> make request. If 'sessionCode' not provided we don't compare it to expected_session_data['sessionCode']
+    expected_session_data         -- if not None  -> expect sessionDataChangedCallback callback
+    expected_error_code           -- if not None  -> expect requestErrorCallback callback
+    incoming_connection_response  -- if not None  -> call response action when supporter connects
+    amend_support_case_data       -- if not None  -> change support case data after it is created
+    close_instant_support_case    -- if not False -> close support case
     """
     import tvagentapi
     from . import get_session, put_session
@@ -83,6 +84,16 @@ def test_instant_support(request_data=None, expected_session_data=None, expected
             return
         response_success = True
 
+    def instant_support_close_case_requested(is_module, r_data, s_data):
+        nonlocal response_success
+        try:
+            is_module.closeInstantSupportCase({"accessToken": r_data['accessToken'],
+                                               "sessionCode": s_data['sessionCode']})
+        except:
+            response_success = False
+            return
+        response_success = True
+
     api = tvagentapi.TVAgentAPI()
     connection = api.createAgentConnection(None)
     if base_sdk_url and agent_api_url:
@@ -93,7 +104,6 @@ def test_instant_support(request_data=None, expected_session_data=None, expected
         sessionDataChangedCallback=instant_support_session_data_changed,
         requestErrorCallback=instant_support_request_error,
         connectionRequestCallback=lambda: instant_support_connection_requested(instant_support_module))
-
     connection.start()
 
     # wait for session_data or error_code changes
@@ -101,6 +111,9 @@ def test_instant_support(request_data=None, expected_session_data=None, expected
     while ((session_data is None and error_code is None) or
            (incoming_connection_response is not None and response_success is None)):
         connection.processEvents(True, 100)
+
+    if close_instant_support_case and "accessToken" in request_data and session_data is not None:
+        instant_support_close_case_requested(instant_support_module, request_data, session_data)
 
     connection.stop()
     connection.processEvents()
@@ -118,6 +131,9 @@ def test_instant_support(request_data=None, expected_session_data=None, expected
 
     if incoming_connection_response is not None and not response_success:
         raise RuntimeError(f"incoming connection response failed")
+
+    if close_instant_support_case is not False and not response_success:
+        raise RuntimeError(f"close instant support request failed")
 
     del connection
 

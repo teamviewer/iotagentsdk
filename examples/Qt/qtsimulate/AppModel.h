@@ -68,6 +68,8 @@ class AppModel : public QObject
 	Q_PROPERTY(int InvalidGroup       MEMBER InvalidGroup CONSTANT)
 	Q_PROPERTY(int Busy               MEMBER Busy CONSTANT)
 	Q_PROPERTY(int InvalidEmail       MEMBER InvalidEmail CONSTANT)
+	Q_PROPERTY(int CloseRequestFailed MEMBER CloseRequestFailed CONSTANT)
+	Q_PROPERTY(int NotFound           MEMBER NotFound CONSTANT)
 
 	Q_PROPERTY(InstantSupportState Open   MEMBER Open CONSTANT)
 	Q_PROPERTY(InstantSupportState Closed MEMBER Closed CONSTANT)
@@ -102,7 +104,9 @@ public:
 		InvalidSessionCode = 5,
 		Busy = 6,
 		Success = 7,
-		InvalidEmail = 8
+		InvalidEmail = 8,
+		CloseRequestFailed = 9,
+		NotFound = 10,
 	};
 
 	enum InstantSupportState
@@ -181,6 +185,9 @@ public:
 		const QString& description,
 		const QString& sessionCode,
 		const QString& email);
+	Q_SLOT void closeInstantSupportCase(
+		const QString& accessToken,
+		const QString& sessionCode);
 
 	bool isInstantSupportConfirmationRequested() const;
 	Q_SLOT void acceptInstantSupportConfirmationRequest();

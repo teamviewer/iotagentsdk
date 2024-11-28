@@ -49,6 +49,8 @@ const char* toCString(IInstantSupportModule::RequestErrorCode errorCode)
 		case RequestErrorCode::Busy:                return "Busy";
 		case RequestErrorCode::InternalError:       return "InternalError";
 		case RequestErrorCode::InvalidEmail:        return "InvalidEmail";
+		case RequestErrorCode::CloseRequestFailed:  return "CloseRequestFailed";
+		case RequestErrorCode::NotFound:            return "NotFound";
 	}
 	return "";
 }

@@ -122,6 +122,74 @@ bool InstantSupportServiceSocketIOServer::StartServer(const std::string& locatio
 		};
 	}
 
+	{
+		auto* requestProcessing = &m_CloseInstantSupportCaseProcessing;
+		functions[Function_CloseInstantSupportCase] = [requestProcessing](const std::string& comIdValue,
+														  std::shared_ptr<std::string> requestRaw,
+														  std::shared_ptr<std::string> responseRaw)
+		{
+			if (!*requestProcessing)
+			{
+				return Status{StatusCode::UNAVAILABLE, TvServiceBase::ErrorMessage_NoProcessingCallback};
+			}
+			::tvinstantsupportservice::CloseInstantSupportCaseRequest request;
+			if (!request.ParseFromString(*requestRaw))
+			{
+				return Status(StatusCode::IO_ERROR, "error parsing request");
+			}
+
+			requestRaw->clear();
+
+			::tvinstantsupportservice::CloseInstantSupportCaseResponse response;
+
+			Status status = [&]()
+			{
+				std::string comId = comIdValue;
+
+				if (comIdValue.empty())
+				{
+					return Status{StatusCode::FAILED_PRECONDITION, TvServiceBase::ErrorMessage_NoComId};
+				}
+
+				Status returnStatus{StatusCode::CANCELLED, TvServiceBase::ErrorMessage_ResponseCallbackNotCalled};
+
+				auto responseProcessing = [&returnStatus](const CallStatus& callStatus)
+				{
+					if (callStatus.IsOk())
+					{
+						returnStatus = Status::OK;
+					}
+					else
+					{
+						returnStatus = Status{StatusCode::ABORTED, callStatus.errorMessage};
+					}
+				};
+
+				auto& m_closeInstantSupportCaseProcessing = *requestProcessing;
+
+				m_closeInstantSupportCaseProcessing(comId,
+					request.accesstoken(),
+
+					request.sessioncode(),
+
+					responseProcessing);
+
+				return returnStatus;
+			}();
+			if (!status.ok())
+			{
+				return status;
+			}
+
+			if (!response.SerializeToString(responseRaw.get()))
+			{
+				return Status(StatusCode::IO_ERROR, "response serialization failed");
+			}
+
+			return status;
+		};
+	}
+
 	m_server.reset(new Server(std::move(functions)));
 
 	return m_server->Start(location);
@@ -150,6 +218,12 @@ void InstantSupportServiceSocketIOServer::SetRequestInstantSupportCallback(
 	const ProcessRequestInstantSupportRequestCallback& requestProcessing)
 {
 	m_RequestInstantSupportProcessing = requestProcessing;
+}
+
+void InstantSupportServiceSocketIOServer::SetCloseInstantSupportCaseCallback(
+	const ProcessCloseInstantSupportCaseRequestCallback& requestProcessing)
+{
+	m_CloseInstantSupportCaseProcessing = requestProcessing;
 }
 
 } // namespace InstantSupportService

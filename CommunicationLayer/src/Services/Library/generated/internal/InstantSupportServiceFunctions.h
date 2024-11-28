@@ -37,6 +37,7 @@ namespace InstantSupportService
 enum Functions : int64_t
 {
 	Function_RequestInstantSupport = 401,
+	Function_CloseInstantSupportCase = 402,
 };
 
 } // namespace InstantSupportService

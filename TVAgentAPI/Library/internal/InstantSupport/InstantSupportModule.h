@@ -48,6 +48,10 @@ public:
 		const char* email,
 		const char* sessionCode) override;
 
+	bool closeInstantSupportCase(
+		const char* accessToken,
+		const char* sessionCode) override;
+
 	bool acceptConnectionRequest() override;
 	bool rejectConnectionRequest() override;
 	bool timeoutConnectionRequest() override;

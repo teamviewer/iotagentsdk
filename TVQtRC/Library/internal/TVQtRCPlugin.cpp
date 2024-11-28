@@ -901,6 +901,15 @@ bool TVQtRCPlugin::requestInstantSupportV2(
 		email.toUtf8().constData());
 }
 
+bool TVQtRCPlugin::closeInstantSupportCase(
+		const QString& accessToken,
+		const QString& sessionCode)
+{
+	return m_communicationAdapter->closeInstantSupportCase(
+		accessToken.toUtf8().constData(),
+		sessionCode.toUtf8().constData());
+}
+
 AbstractChat* TVQtRCPlugin::getChat()
 {
 	if (!m_chat)

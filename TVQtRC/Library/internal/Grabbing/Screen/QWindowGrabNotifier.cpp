@@ -59,12 +59,12 @@ void QWindowGrabNotifier::start()
 
 	auto emitGrabRequestAction = [this]()
 	{
-		grabRequested(QRect(0, 0, m_window->width(), m_window->height()));
+		grabRequested(QRect(0, 0, m_window->width() * m_window->devicePixelRatio(), m_window->height() * m_window->devicePixelRatio()));
 	};
 
 	auto emitImageDefinitionChangedAction = [this]()
 	{
-		imageDefinitionChanged(m_window->title(), m_window->size());
+		imageDefinitionChanged(m_window->title(), m_window->size() * m_window->devicePixelRatio());
 	};
 
 	if (const QQuickWindow* quickWindow = qobject_cast<QQuickWindow*>(m_window))

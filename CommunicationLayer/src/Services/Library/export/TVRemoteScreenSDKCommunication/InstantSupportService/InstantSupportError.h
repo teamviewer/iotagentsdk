@@ -35,7 +35,9 @@ enum class InstantSupportError
 	InvalidGroup = 2,
 	InvalidSessionCode = 3,
 	Busy = 4,
-	InvalidEmail = 5
+	InvalidEmail = 5,
+	CloseRequestFailed = 6,
+	NotFound = 7,
 };
 
 } // namespace InstantSupportService

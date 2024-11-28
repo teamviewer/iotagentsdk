@@ -115,6 +115,12 @@ bool InstantSupportNotificationServiceSocketIOServer::StartServer(const std::str
 					case ::tvinstantsupportservice::ErrorNotificationRequest_ErrorCode_InvalidEmail:
 						errorCodeEnumValue = InstantSupportError::InvalidEmail;
 						break;
+					case ::tvinstantsupportservice::ErrorNotificationRequest_ErrorCode_CloseRequestFailed:
+						errorCodeEnumValue = InstantSupportError::CloseRequestFailed;
+						break;
+					case ::tvinstantsupportservice::ErrorNotificationRequest_ErrorCode_NotFound:
+						errorCodeEnumValue = InstantSupportError::NotFound;
+						break;
 					default:
 
 						break;

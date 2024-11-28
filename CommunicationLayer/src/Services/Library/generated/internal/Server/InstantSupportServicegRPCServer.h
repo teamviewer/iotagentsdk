@@ -61,16 +61,23 @@ public:
 	// public interface impl
 	void SetRequestInstantSupportCallback(const ProcessRequestInstantSupportRequestCallback& requestProcessing) override;
 
+	void SetCloseInstantSupportCaseCallback(const ProcessCloseInstantSupportCaseRequestCallback& requestProcessing) override;
+
 	// grpc service impl
 	::grpc::Status RequestInstantSupport(::grpc::ServerContext* context,
 		const ::tvinstantsupportservice::RequestInstantSupportRequest* request,
 		::tvinstantsupportservice::RequestInstantSupportResponse* response) override;
+
+	::grpc::Status CloseInstantSupportCase(::grpc::ServerContext* context,
+		const ::tvinstantsupportservice::CloseInstantSupportCaseRequest* request,
+		::tvinstantsupportservice::CloseInstantSupportCaseResponse* response) override;
 
 private:
 	std::string m_location;
 	std::unique_ptr<::grpc::Server> m_server;
 
 	ProcessRequestInstantSupportRequestCallback m_requestInstantSupportProcessing;
+	ProcessCloseInstantSupportCaseRequestCallback m_closeInstantSupportCaseProcessing;
 };
 
 } // namespace InstantSupportService

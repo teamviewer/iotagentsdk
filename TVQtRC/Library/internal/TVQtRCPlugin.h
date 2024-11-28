@@ -108,6 +108,10 @@ public:
 		const QString& sessionCode,
 		const QString& email) override;
 
+	bool closeInstantSupportCase(
+		const QString& accessToken,
+		const QString& sessionCode) override;
+
 	AbstractChat* getChat() override;
 
 	bool augmentRCSessionStartListening() override;

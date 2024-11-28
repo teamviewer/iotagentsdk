@@ -282,6 +282,16 @@ public:
 		const QString& sessionCode) = 0;
 
 	/**
+	* @brief closeInstantSupportCase closes a service case
+	* @param accessToken user or company access token for authentication
+	* @param sessionCode the code of the session to be closed.
+	* @return true if this function call is successful, false otherwise
+	*/
+	virtual bool closeInstantSupportCase(
+		const QString& accessToken,
+		const QString& sessionCode) = 0;
+
+	/**
 	 * @brief requestInstantSupportV2 requests a service case
 	 * @param accessToken User or company access token for authentication
 	 * @param group Name of the group the session code will be inserted into.

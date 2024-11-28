@@ -1204,10 +1204,47 @@ Window {
 					font.italic: true
 					height: Math.max(implicitHeight, parent.height)
 				}
+
+				TextInput {
+					id: closeCaseLog
+					text: appModel.instantSupportResponseCode === appModel.InvalidEmail ? "Email address is not valid" : ""
+					focus: true
+					anchors.bottom: closeCaseButton.top
+					anchors.left: Math.calc(parent.left + 5)
+					anchors.margins: -5
+					width: 250
+					clip: true
+					color: "blue"
+					selectByMouse: true
+					layer.enabled: true
+					font.italic: true
+					height: Math.max(implicitHeight, parent.height)
+				}
+
+				Button {
+					id: closeCaseButton
+					enabled: (appModel.instantSupportState === appModel.Open) ? true : false
+					anchors.top: sosInfoSessionCode.bottom
+					anchors.left: parent.left
+					anchors.margins: 8
+					textColor: "white"
+					font.bold: true
+					font.pixelSize: 16
+					backgroundColor: "green"
+					height: 30
+					width: 110
+					text: "Close Case"
+					onClicked: {
+						appModel.closeInstantSupportCase(
+							sosInfoToken.text,
+							appModel.instantSupportSessionCode)
+					}
+				}
+
 				Button {
 					id: sosButton
 					anchors.top: sosInfoSessionCode.bottom
-					anchors.left: parent.left
+					anchors.left: closeCaseButton.right
 					anchors.margins: 8
 					textColor: "white"
 					font.bold: true

@@ -100,7 +100,6 @@ set(SOURCES_GENERATED
 	generated/export/TVRemoteScreenSDKCommunication/ViewGeometryService/ServiceFactory.h
 )
 
-
 if(TV_COMM_ENABLE_GRPC)
 	list(APPEND SOURCES_GENERATED
 		generated/internal/Client/AccessControlInServicegRPCClient.cpp
@@ -177,7 +176,6 @@ if(TV_COMM_ENABLE_GRPC)
 		generated/internal/Server/ViewGeometryServicegRPCServer.h
 	)
 endif()
-
 
 if(TV_COMM_ENABLE_PLAIN_SOCKET)
 	list(APPEND SOURCES_GENERATED

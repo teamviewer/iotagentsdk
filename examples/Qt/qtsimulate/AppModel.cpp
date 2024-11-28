@@ -77,6 +77,8 @@ AppModel::InstantSupportErrorCode toAppInstantSupportError(tvqtsdk::InstantSuppo
 		case tvqtsdk::InstantSupportError::Busy:               return AppModel::Busy;
 		case tvqtsdk::InstantSupportError::InternalError:      return AppModel::InternalError;
 		case tvqtsdk::InstantSupportError::InvalidEmail:       return AppModel::InvalidEmail;
+		case tvqtsdk::InstantSupportError::CloseRequestFailed: return AppModel::CloseRequestFailed;
+		case tvqtsdk::InstantSupportError::NotFound:           return AppModel::NotFound;
 	}
 
 	return AppModel::InternalError;
@@ -487,6 +489,16 @@ void AppModel::requestInstantSupport(
 			m_instantSupportErrorCode = InstantSupportErrorCode::Processing;
 			Q_EMIT instantSupportRequestStateChanged();
 		}
+	}
+}
+
+void AppModel::closeInstantSupportCase(const QString& accessToken, const QString& sessionCode)
+{
+	bool closeSupportRequested = m_plugin->closeInstantSupportCase(accessToken, sessionCode);
+	if (closeSupportRequested)
+	{
+		m_instantSupportErrorCode = InstantSupportErrorCode::Processing;
+		Q_EMIT instantSupportRequestStateChanged();
 	}
 }
 

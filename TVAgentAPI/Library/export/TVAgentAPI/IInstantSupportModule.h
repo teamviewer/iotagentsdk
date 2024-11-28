@@ -76,6 +76,10 @@ public:
 		Busy,
 		/// Email is in wrong format
 		InvalidEmail,
+		/// Close Instant Support Case failed
+		CloseRequestFailed,
+		/// Not found
+		NotFound,
 	};
 
 	using SessionDataChangedCallback = Callback<void(SessionData newData, void* userdata) noexcept>;
@@ -116,6 +120,19 @@ public:
 		const char* group,
 		const char* description,
 		const char* email,
+		const char* sessionCode) = 0;
+
+	/**
+	* @brief closeInstantSupportCase closes an instant support service case.
+	* Set InstantSupportCloseCaseRequestCallback and CloseInstantSupportCaseErrorCallback to handle the result of this request. TODO: (IOT-15053) will this function set any callback?
+	* @param accessToken User or company access token for authentication.
+	* @param sessionCode Session code.
+	* will be checked to be valid.
+	* @return false on request error, true otherwise
+	* all the response errors will be provided via CloseInstantSupportCaseErrorCallback.
+	*/
+	virtual bool closeInstantSupportCase(
+		const char* accessToken,
 		const char* sessionCode) = 0;
 
 	/**

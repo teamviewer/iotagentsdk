@@ -66,6 +66,14 @@ public:
 		const std::string& sessionCode,
 		const std::string& email) override;
 
+	// rpc call CloseInstantSupportCase
+
+	CallStatus CloseInstantSupportCase(
+
+		const std::string& comId,
+		const std::string& accessToken,
+		const std::string& sessionCode) override;
+
 private:
 	std::string m_destination;
 	std::unique_ptr<TransportFW::ChannelInterface> m_channel;

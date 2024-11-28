@@ -238,6 +238,26 @@ PyObject* PyInstantSupportModule_requestInstantSupport(PyInstantSupportModule* s
 			pySessionCode ? PyUnicode_AsUTF8(pySessionCode) : nullptr));
 }
 
+PyObject* PyInstantSupportModule_closeInstantSupportCase(PyInstantSupportModule* self, PyObject* arg)
+{
+	const char* accessTokenName = "accessToken";
+	const char* sessionCodeName = "sessionCode";
+
+	PyObject* pyAccessToken = PyDict_GetItemString(arg, accessTokenName);
+	if (pyAccessToken == nullptr)
+	{
+		PyErr_SetString(PyExc_KeyError, accessTokenName);
+		return nullptr;
+	}
+
+	PyObject* pySessionCode = PyDict_GetItemString(arg, sessionCodeName);
+
+	return NoneOrInternalError(
+		self->m_module->closeInstantSupportCase(
+			PyUnicode_AsUTF8(pyAccessToken),
+			pySessionCode ? PyUnicode_AsUTF8(pySessionCode) : nullptr));
+}
+
 PyObject* PyInstantSupportModule_isSupported(PyInstantSupportModule* self, PyObject* args)
 {
 	(void)args;
@@ -307,6 +327,17 @@ Set SessionDataChangedCallback and RequestInstantSupportErrorCallback to handle 
 :param str sessionCode: Session code (optional). Will be checked for validity; leave empty to create new session code.
 )__");
 
+PyDoc_STRVAR(closeInstantSupportCase,
+R"__(closeInstantSupportCase($self, accessToken, sessionCode)
+--
+
+Requests an instant support service case close. Parameters are passed as keyword arguments.
+Set SessionDataChangedCallback and RequestInstantSupportErrorCallback to handle the result of this request.
+
+:param str accessToken: User or company access token for authentication.
+:param str sessionCode: Session code.
+)__");
+
 PyDoc_STRVAR(acceptConnectionRequest,
 R"__(acceptConnectionRequest($self)
 --
@@ -352,6 +383,13 @@ PyMethodDef PyInstantSupportModule_methods[] =
 		WeakConnectionCall<PyInstantSupportModule, PyInstantSupportModule_requestInstantSupport>,
 		METH_O,
 		DocStrings::requestInstantSupport
+	},
+
+	{
+		"closeInstantSupportCase",
+		WeakConnectionCall<PyInstantSupportModule, PyInstantSupportModule_closeInstantSupportCase>,
+		METH_O,
+		DocStrings::closeInstantSupportCase
 	},
 
 	{
@@ -471,7 +509,9 @@ PyTypeObject* GetPyTypeInstantSupportModule_RequestErrorCode()
 				 {toCString(ErrorCode::InvalidGroup), static_cast<long>(ErrorCode::InvalidGroup)},
 				 {toCString(ErrorCode::InvalidSessionCode), static_cast<long>(ErrorCode::InvalidSessionCode)},
 				 {toCString(ErrorCode::Busy), static_cast<long>(ErrorCode::Busy)},
-				 {toCString(ErrorCode::InvalidEmail), static_cast<long>(ErrorCode::InvalidEmail)}});
+				 {toCString(ErrorCode::InvalidEmail), static_cast<long>(ErrorCode::InvalidEmail)},
+				 {toCString(ErrorCode::CloseRequestFailed), static_cast<long>(ErrorCode::CloseRequestFailed)},
+				 {toCString(ErrorCode::NotFound), static_cast<long>(ErrorCode::NotFound)}});
 
 		return result;
 	}();

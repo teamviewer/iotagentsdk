@@ -115,6 +115,47 @@ auto InstantSupportServiceSocketIOClient::RequestInstantSupport(const std::strin
 	return returnValue;
 }
 
+// rpc call CloseInstantSupportCase
+auto InstantSupportServiceSocketIOClient::CloseInstantSupportCase(const std::string& comId,
+	const std::string& accessToken,
+	const std::string& sessionCode) -> CallStatus
+{
+	CallStatus returnValue{};
+
+	if (m_channel == nullptr)
+	{
+		returnValue.errorMessage = TvServiceBase::ErrorMessage_MissingStartClient;
+		return returnValue;
+	}
+
+	if (comId.empty())
+	{
+		returnValue.errorMessage = TvServiceBase::ErrorMessage_InvalidInputParameter;
+		return returnValue;
+	}
+
+	::tvinstantsupportservice::CloseInstantSupportCaseRequest request{};
+
+	request.set_accesstoken(accessToken);
+
+	request.set_sessioncode(sessionCode);
+
+	::tvinstantsupportservice::CloseInstantSupportCaseResponse response{};
+
+	Transport::SocketIO::Status status = m_channel->Call(comId, Function_CloseInstantSupportCase, request, response);
+
+	if (status.ok())
+	{
+		returnValue = CallStatus{CallState::Ok};
+	}
+	else
+	{
+		returnValue.errorMessage = status.error_message();
+	}
+
+	return returnValue;
+}
+
 } // namespace InstantSupportService
 
 } // namespace TVRemoteScreenSDKCommunication

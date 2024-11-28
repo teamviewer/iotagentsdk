@@ -52,6 +52,11 @@ public:
 		const std::string& description,
 		const std::string& sessionCode,
 		const std::string& email) = 0;
+
+	// rpc call CloseInstantSupportCase
+	virtual CallStatus CloseInstantSupportCase(const std::string& comId,
+		const std::string& accessToken,
+		const std::string& sessionCode) = 0;
 };
 
 } // namespace InstantSupportService

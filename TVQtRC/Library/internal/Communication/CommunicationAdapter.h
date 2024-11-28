@@ -97,6 +97,10 @@ public Q_SLOTS:
 		QString sessionCode,
 		QString email);
 
+	bool closeInstantSupportCase(
+		QString accessToken,
+		QString sessionCode);
+
 	bool confirmConnectionRequest(tvqtsdk::ConnectionType connectionType, tvqtsdk::ConnectionUserConfirmation confirmation);
 
 	void sendStop();

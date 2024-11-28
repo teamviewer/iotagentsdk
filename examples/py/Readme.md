@@ -269,7 +269,16 @@ def connectionStatusChanged(status, is_module):
 
 Once you are in an instant support session, the remote supporter may try to connect to you. This will prompt a call to your `instantSupportConnectionRequested()`, where you can allow or deny the incoming connection.
 
-Note: a current limitation of the API is that an application can only make one Instant Support request.
+👉 Teamviewer also provides a functionality to close an instant support session.
+
+```python
+def instantSupportCloseCaseRequested(is_module, access_token, session_code):
+    is_module.closeInstantSupportCase({"accessToken": access_token,"sessionCode": session_code})
+```
+
+👉 To close an instant support session, you need a valid `accessToken` and the correct `sessionCode`.
+
+Note: A current limitation of the API is that an application can only make one instant support request. Users can make another instant support request after closing the current one.
 
 ## **Module example #4: Chat**
 

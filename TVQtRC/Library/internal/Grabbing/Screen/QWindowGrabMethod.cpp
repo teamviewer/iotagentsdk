@@ -211,7 +211,7 @@ void QWindowGrabMethod::signalImageDefinitionChanged()
 
 	Q_EMIT imageDefinitionChanged(
 		m_window->title(),
-		m_window->size(),
+		m_window->size() * m_window->devicePixelRatio(),
 		m_window->screen()->physicalDotsPerInch(),
 		getColorFormat());
 }
@@ -225,11 +225,8 @@ ScreenGrabResult QWindowGrabMethod::grab()
 
 	QImage image = GrabWindow(m_window);
 
-	// grab whole window
-	const QPoint topLeft(0,0);
-	const QSize windowSize = m_window->size();
-
-	QRect dirtyRect(topLeft, windowSize);
+	// currently no dirty rect information is available -> treat the whole image as changed
+	QRect dirtyRect = image.rect();
 
 	ScreenGrabResult screenGrabResult(std::move(image), std::move(dirtyRect));
 	return screenGrabResult;
@@ -368,7 +365,7 @@ void QWindowGrabMethod::startGrabbing()
 
 			const bool alpha = quickWindow->format().alphaBufferSize() > 0 && quickWindow->color().alpha() < 255;
 			QImage grabImage = qt_gl_read_framebuffer(quickWindow->size() * quickWindow->devicePixelRatio(), alpha, alpha);
-			QRect dirtyRect = QRect(QPoint(0, 0), grabImage.size());
+			QRect dirtyRect = grabImage.rect();
 
 			m_lastGrabResult = ScreenGrabResult(std::move(grabImage), std::move(dirtyRect));
 		};

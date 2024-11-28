@@ -30,4 +30,5 @@ import "InstantSupportMessages.proto";
 service InstantSupportService
 {
 	rpc RequestInstantSupport(RequestInstantSupportRequest) returns (RequestInstantSupportResponse) {}
+	rpc CloseInstantSupportCase(CloseInstantSupportCaseRequest) returns (CloseInstantSupportCaseResponse) {}
 }

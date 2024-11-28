@@ -55,11 +55,14 @@ public:
 	// public interface impl
 	void SetRequestInstantSupportCallback(const ProcessRequestInstantSupportRequestCallback& requestProcessing) override;
 
+	void SetCloseInstantSupportCaseCallback(const ProcessCloseInstantSupportCaseRequestCallback& requestProcessing) override;
+
 private:
 	std::string m_location;
 	std::unique_ptr<Transport::SocketIO::Server> m_server;
 
 	ProcessRequestInstantSupportRequestCallback m_RequestInstantSupportProcessing;
+	ProcessCloseInstantSupportCaseRequestCallback m_CloseInstantSupportCaseProcessing;
 };
 
 } // namespace InstantSupportService

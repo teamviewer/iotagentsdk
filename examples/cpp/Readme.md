@@ -362,7 +362,34 @@ void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* 
 
 Once you are in an instant support session, the remote supporter may try to connect to you. This will prompt a call to your `instantSupportConnectionRequested()`, where you can allow or deny the incoming connection.
 
-Note: a current limitation of the API is that an application can only make one Instant Support request.
+👉 Teamviewer also provides a functionality to close an instant support session.
+
+```C++
+void instantSupportCloseCaseRequested(void* userdata, const char* accessToken, const char* sessionCode) noexcept
+{
+	auto instantSupportModule = static_cast<tvagentapi::IInstantSupportModule*>(userdata);
+
+	printf(
+		"Instant Support requested. Close session with 'c'.\n"
+		"Available options:\n"
+		" 'c' - Close session\n"
+		"Pick the option (c): ");
+
+	switch (getchar())
+	{
+		case 'c':
+		case 'C':
+			instantSupportModule->closeInstantSupportCase(accessToken, sessionCode);
+			printf("Close Instant support case\n");
+			break;
+	}
+}
+```
+
+👉 To close an instant support session, you need a valid `accessToken` and the correct `sessionCode`.
+
+Note: A current limitation of the API is that an application can only make one instant support request. Users can make another instant support request after closing the current one.
+
 
 ## **Module example #4: Chat**
 

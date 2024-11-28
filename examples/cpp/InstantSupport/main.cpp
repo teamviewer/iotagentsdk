@@ -26,6 +26,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <csignal>
+#include <cstring>
+#include <stdexcept>
 #include <getopt.h>
 
 namespace
@@ -42,6 +44,8 @@ struct
 } s_requestData;
 
 bool s_isInterrupted = false;
+const char* accessToken = s_requestData.accessToken;
+char sessionCode[16];
 
 void signalHandler(int signo)
 {
@@ -89,6 +93,7 @@ void instantSupportSessionDataChanged(
 	}
 	else
 	{
+		strcpy(sessionCode, newData.sessionCode);
 		// NOTE: SessionData c-strings are only valid during this callback call
 		// and have to be copied in order to be retained
 		printf(
@@ -129,15 +134,41 @@ void instantSupportConnectionRequested(void* userdata) noexcept
 		case 'A':
 			instantSupportModule->acceptConnectionRequest();
 			printf("Instant support request accepted\n");
+			printf("Press Ctrl+C to exit\n");
+			getchar();
 			break;
 		case 'r':
 		case 'R':
 			instantSupportModule->rejectConnectionRequest();
 			printf("Instant support request rejected\n");
+			printf("Press Ctrl+C to exit\n");
+			getchar();
 			break;
 		default:
 			instantSupportModule->timeoutConnectionRequest();
 			printf("Instant support request timed out\n");
+			printf("Press Ctrl+C to exit\n");
+			getchar();
+			break;
+	}
+}
+
+void instantSupportCloseCaseRequested(void* userdata, const char* accessToken, const char* sessionCode) noexcept
+{
+	auto instantSupportModule = static_cast<tvagentapi::IInstantSupportModule*>(userdata);
+
+	printf(
+		"Instant Support requested. Close session with 'c'.\n"
+		"Available options:\n"
+		" 'c' - Close session\n"
+		"Pick the option (c): ");
+
+	switch (getchar())
+	{
+		case 'c':
+		case 'C':
+			instantSupportModule->closeInstantSupportCase(accessToken, sessionCode);
+			printf("Close Instant support case\n");
 			break;
 	}
 }
@@ -287,6 +318,18 @@ int main(int argc, char* argv[])
 		// all the tvagentapi callbacks will be called on the thread calling processEvents()
 		// we wait for 100ms for more events and process them
 		agentConnection->processEvents(/*waitForMoreEvents = */true, /*timeoutMs = */100);
+	}
+
+	// close instant support case
+	try
+	{
+		instantSupportCloseCaseRequested(instantSupportModule, accessToken, sessionCode);
+		agentConnection->processEvents(/*waitForMoreEvents = */true, /*timeoutMs = */100);
+		printf("Instant support case closed.\n");
+	}
+	catch (const std::exception& e)
+	{
+		printf("Instant support case close FAILED.\n");
 	}
 
 	// stop connection to IoT Agent

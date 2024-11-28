@@ -383,6 +383,10 @@ InstantSupportError getQtSdkInstantSupportError(const TVRemoteScreenSDKCommunica
 			return InstantSupportError::InternalError;
 		case TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError::InvalidEmail:
 			return InstantSupportError::InvalidEmail;
+		case TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError::CloseRequestFailed:
+			return InstantSupportError::CloseRequestFailed;
+		case TVRemoteScreenSDKCommunication::InstantSupportService::InstantSupportError::NotFound:
+			return InstantSupportError::NotFound;
 	}
 
 	return InstantSupportError::InternalError;
@@ -851,6 +855,15 @@ bool CommunicationAdapter::requestInstantSupport(
 		description.toStdString(),
 		sessionCode.toStdString(),
 		email.toStdString());
+}
+
+bool CommunicationAdapter::closeInstantSupportCase(
+	QString accessToken,
+	QString sessionCode)
+{
+	return m_communicationChannel->closeInstantSupportCase(
+		accessToken.toStdString(),
+		sessionCode.toStdString());
 }
 
 bool CommunicationAdapter::confirmConnectionRequest(tvqtsdk::ConnectionType connectionType, tvqtsdk::ConnectionUserConfirmation confirmation)

@@ -60,6 +60,18 @@ public:
 		const std::string& email,
 		const RequestInstantSupportResponseCallback& response)>;
 	virtual void SetRequestInstantSupportCallback(const ProcessRequestInstantSupportRequestCallback& requestProcessing) = 0;
+
+	// rpc call CloseInstantSupportCase
+	using CloseInstantSupportCaseResponseCallback = std::function<void(
+
+		const CallStatus& callStatus)>;
+	using ProcessCloseInstantSupportCaseRequestCallback = std::function<void(
+
+		const std::string& comId,
+		const std::string& accessToken,
+		const std::string& sessionCode,
+		const CloseInstantSupportCaseResponseCallback& response)>;
+	virtual void SetCloseInstantSupportCaseCallback(const ProcessCloseInstantSupportCaseRequestCallback& requestProcessing) = 0;
 };
 
 } // namespace InstantSupportService

@@ -49,6 +49,7 @@ std::shared_ptr<TVRemoteScreenSDKCommunication::InstantSupportService::IInstantS
 		std::cerr << LogPrefix << "Unexpected service type" << std::endl;
 		exit(EXIT_FAILURE);
 	}
+
 	auto requestInstantSupportCallback = [LogPrefix](
 		const std::string& comId,
 		const std::string& accessToken,
@@ -94,6 +95,32 @@ std::shared_ptr<TVRemoteScreenSDKCommunication::InstantSupportService::IInstantS
 		std::cerr << LogPrefix << "Unexpected location" << std::endl;
 		exit(EXIT_FAILURE);
 	}
+
+	auto closeInstantSupportCaseCallback = [LogPrefix] (
+	const std::string& comId,
+	const std::string& accessToken,
+	const std::string& sessionCode,
+	const IInstantSupportServiceServer::CloseInstantSupportCaseResponseCallback& response)
+	{
+		std::cout << LogPrefix << "Received request instant support with: "
+			<< comId << "(comId), "
+			<< accessToken << "(accessToken), "
+			<< sessionCode << "(sessionCode).";
+
+		if (comId == TestData::ComId
+			&& accessToken == TestData::AccessToken
+			&& sessionCode == TestData::SessionCode)
+		{
+			response(CallStatus::Ok);
+		}
+		else
+		{
+			std::cerr << LogPrefix << "Corrupted Data" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+	};
+
+	server->SetCloseInstantSupportCaseCallback(closeInstantSupportCaseCallback);
 
 	return server;
 }

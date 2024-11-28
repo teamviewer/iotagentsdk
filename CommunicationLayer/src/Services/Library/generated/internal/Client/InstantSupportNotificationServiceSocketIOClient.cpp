@@ -105,6 +105,12 @@ auto InstantSupportNotificationServiceSocketIOClient::NotifyInstantSupportError(
 		case InstantSupportError::InvalidEmail:
 			errorCodeProtoValue = ::tvinstantsupportservice::ErrorNotificationRequest_ErrorCode_InvalidEmail;
 			break;
+		case InstantSupportError::CloseRequestFailed:
+			errorCodeProtoValue = ::tvinstantsupportservice::ErrorNotificationRequest_ErrorCode_CloseRequestFailed;
+			break;
+		case InstantSupportError::NotFound:
+			errorCodeProtoValue = ::tvinstantsupportservice::ErrorNotificationRequest_ErrorCode_NotFound;
+			break;
 		default:
 
 			break;

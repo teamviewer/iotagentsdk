@@ -73,6 +73,12 @@ void InstantSupportServicegRPCServer::SetRequestInstantSupportCallback(
 	m_requestInstantSupportProcessing = requestProcessing;
 }
 
+void InstantSupportServicegRPCServer::SetCloseInstantSupportCaseCallback(
+	const ProcessCloseInstantSupportCaseRequestCallback& requestProcessing)
+{
+	m_closeInstantSupportCaseProcessing = requestProcessing;
+}
+
 ::grpc::Status InstantSupportServicegRPCServer::RequestInstantSupport(::grpc::ServerContext* context,
 	const ::tvinstantsupportservice::RequestInstantSupportRequest* requestPtr,
 	::tvinstantsupportservice::RequestInstantSupportResponse* responsePtr)
@@ -128,6 +134,59 @@ void InstantSupportServicegRPCServer::SetRequestInstantSupportCallback(
 		request.sessioncode(),
 
 		request.email(),
+
+		responseProcessing);
+
+	return returnStatus;
+}
+
+::grpc::Status InstantSupportServicegRPCServer::CloseInstantSupportCase(::grpc::ServerContext* context,
+	const ::tvinstantsupportservice::CloseInstantSupportCaseRequest* requestPtr,
+	::tvinstantsupportservice::CloseInstantSupportCaseResponse* responsePtr)
+{
+	if (context == nullptr || requestPtr == nullptr || responsePtr == nullptr)
+	{
+		return ::grpc::Status(::grpc::StatusCode::INTERNAL, std::string{});
+	}
+
+	if (!m_closeInstantSupportCaseProcessing)
+	{
+		return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, TvServiceBase::ErrorMessage_NoProcessingCallback);
+	}
+	auto& request = *requestPtr;
+	(void)request;
+
+	auto& response = *responsePtr;
+	(void)response;
+
+	std::string comId;
+
+	const auto foundComId = context->client_metadata().find(ServiceBase::CommunicationIdToken);
+	if (foundComId == context->client_metadata().end())
+	{
+		return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION, TvServiceBase::ErrorMessage_NoComId);
+	}
+	comId = std::string((foundComId->second).data(), (foundComId->second).length());
+
+	::grpc::Status returnStatus =
+		::grpc::Status(::grpc::StatusCode::CANCELLED, TvServiceBase::ErrorMessage_ResponseCallbackNotCalled);
+
+	auto responseProcessing = [&returnStatus](const CallStatus& callStatus)
+	{
+		if (callStatus.IsOk())
+		{
+			returnStatus = ::grpc::Status::OK;
+		}
+		else
+		{
+			returnStatus = ::grpc::Status(::grpc::StatusCode::ABORTED, callStatus.errorMessage);
+		}
+	};
+
+	m_closeInstantSupportCaseProcessing(comId,
+		request.accesstoken(),
+
+		request.sessioncode(),
 
 		responseProcessing);
 

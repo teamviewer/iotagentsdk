@@ -101,6 +101,10 @@ public:
 		const std::string& sessionCode,
 		const std::string& email);
 
+	bool closeInstantSupportCase(
+		const std::string& accessToken,
+		const std::string& sessionCode);
+
 	bool confirmConnectionRequest(
 		TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionType connectionType,
 		TVRemoteScreenSDKCommunication::ConnectionConfirmationService::ConnectionUserConfirmation confirmation);

@@ -69,6 +69,18 @@ int TestInstantSupportServiceClient(int /*argc*/, char** /*argv*/)
 		return EXIT_FAILURE;
 	}
 
+	response = client->CloseInstantSupportCase(TestData::ComId, TestData::AccessToken, TestData::SessionCode);
+
+	if (response.IsOk())
+	{
+		std::cout << LogPrefix << "CloseInstantSupportCase successful " << std::endl;
+	}
+	else
+	{
+		std::cerr << LogPrefix << "CloseInstantSupportCase Failed" << std::endl;
+		return EXIT_FAILURE;
+	}
+
 	return EXIT_SUCCESS;
 }
 

@@ -36,6 +36,8 @@ enum class InstantSupportError
 	InvalidSessionCode = 3,
 	Busy = 4,
 	InvalidEmail = 5,
+	CloseRequestFailed = 6,
+	NotFound = 7
 };
 
 } // namespace tvqtsdk

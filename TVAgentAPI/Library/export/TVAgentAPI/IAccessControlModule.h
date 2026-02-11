@@ -60,6 +60,13 @@ public:
 		Denied = 2,
 	};
 
+	enum class ControlMode : int32_t
+	{
+		Disabled = 0,
+		ViewOnly = 1,
+		FullControl = 2,
+	};
+
 	using AccessChangedCallback = Callback<void(Feature feature, Access access, void* userdata) noexcept>;
 	using AccessConfirmationRequestCallback = Callback<void(Feature feature, void* userdata) noexcept>;
 
@@ -106,6 +113,8 @@ public:
 	 * @return false on internal error, true otherwise.
 	 */
 	virtual bool rejectAccessRequest(Feature feature) = 0;
+
+	virtual bool setControlMode(ControlMode controlMode) = 0;
 };
 
 } // namespace tvagentapi

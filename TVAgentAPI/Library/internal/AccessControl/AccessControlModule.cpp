@@ -45,8 +45,10 @@ std::shared_ptr<IModule> CreateModule<IModule::Type::AccessControl>(
 
 using Feature = IAccessControlModule::Feature;
 using Access = IAccessControlModule::Access;
+using ControlMode = IAccessControlModule::ControlMode;
 using CommunicationFeature = TVRemoteScreenSDKCommunication::AccessControlService::AccessControl;
 using CommunicationAccess = TVRemoteScreenSDKCommunication::AccessControlService::Access;
+using CommunicationControlMode = TVRemoteScreenSDKCommunication::SessionControlService::ControlMode;
 
 namespace
 {
@@ -123,6 +125,18 @@ bool accessToCommunication(Access access, CommunicationAccess& outAccess)
 			return true;
 	}
 	return false;
+}
+
+CommunicationControlMode controlModeToCommunication (ControlMode mode)
+{
+	switch (mode)
+	{
+		case ControlMode::Disabled: return CommunicationControlMode::Disable;
+		case ControlMode::ViewOnly: return CommunicationControlMode::ScreenSharing;
+		case ControlMode::FullControl: return CommunicationControlMode::FullControl;
+	}
+
+	return CommunicationControlMode::Unknown;
 }
 
 bool sendAccessConfirmationReply(Feature feature, bool isAllowed, const std::weak_ptr<AgentConnection>& weakConnection)
@@ -275,6 +289,19 @@ bool AccessControlModule::acceptAccessRequest(Feature feature)
 bool AccessControlModule::rejectAccessRequest(Feature feature)
 {
 	return sendAccessConfirmationReply(feature, false, m_connection);
+}
+
+bool AccessControlModule::setControlMode(ControlMode controlMode)
+{
+	auto connection = m_connection.lock();
+	if (!connection)
+	{
+		return false;
+	}
+
+	auto communicationChannel = connection->getCommunicationChannel();
+	communicationChannel->sendControlMode(controlModeToCommunication(controlMode));
+	return true;
 }
 
 } // namespace tvagentapi

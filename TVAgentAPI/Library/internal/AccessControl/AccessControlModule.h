@@ -46,6 +46,8 @@ public:
 	bool acceptAccessRequest(Feature feature) override;
 	bool rejectAccessRequest(Feature feature) override;
 
+	bool setControlMode(ControlMode controlMode) override;
+
 	// IModule
 	bool isSupported() const override;
 

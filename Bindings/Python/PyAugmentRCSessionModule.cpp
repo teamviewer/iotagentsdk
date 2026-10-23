@@ -131,7 +131,7 @@ R"__(setCallbacks($self, /,
 	AugmentRCSessionInvitationReceived=None)
 --
 
-Sets callbacks to handle various events like chat room and message updates.
+Sets callbacks to handle various events like Augment RC Session invitations.
 
 :param AugmentRCSessionInvitationReceivedCallback: called when an invitation to an Augment RC Session is received
 :type AugmentRCSessionInvitationReceivedCallback: callback(str url)

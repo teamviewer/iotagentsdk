@@ -53,7 +53,7 @@ public:
 
 	static constexpr RequestID InvalidRequestID = 0;
 
-	/// ChatEndpointType describes to what a chat (room) is targetet to.
+	/// ChatEndpointType describes to what a chat (room) is targeted to.
 	enum class ChatEndpointType : int32_t
 	{
 		/// Chat from/to machines:
@@ -64,7 +64,7 @@ public:
 		InstantSupportSession = 1
 	};
 
-	/// ChatState describes variaous states of a chat.
+	/// ChatState describes various states of a chat.
 	enum class ChatState : int32_t
 	{
 		Open = 0,
@@ -174,7 +174,7 @@ public:
 			void* userData)>;
 	/**
 	 * @brief obtainChats requests the list of active chats. Should be called initially as soon as the communication
-	 * with the TeamViewer IoT Agent bas been established.
+	 * with the TeamViewer IoT Agent has been established.
 	 * @param enumerator given callback to handle each obtained chat.
 	 * @return true if this function call is successful, false otherwise
 	 */
@@ -191,7 +191,7 @@ public:
 
 	/**
 	 * @brief loadMessages requests to load messages from history for the currently selected chat
-	 * @param ChatID identifier of the chat messages should be loaded from
+	 * @param chatID identifier of the chat messages should be loaded from
 	 * @param messageCount maximum number of messages to load
 	 * @param messageBefore load messages older than (but not including) message with given message ID
 	 * @return true if this function call is successful, false otherwise

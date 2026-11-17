@@ -156,7 +156,7 @@ public:
 	bool sendObtainChatsRequest(
 		std::vector<TVRemoteScreenSDKCommunication::ChatService::ChatInfo>& chats);
 	bool sendSelectChatResult(std::string chatId);
-	bool sendMessage(uint32_t localId, std::string content);
+	bool sendChatMessage(uint32_t localId, std::string content);
 	bool loadMessages(uint32_t count, std::string lastId);
 	bool deleteHistory();
 	bool deleteChat();

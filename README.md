@@ -122,6 +122,10 @@ To build and use the Python bindings:
 
 * `libpython3-dev`
 
+To build and use the qtticketmachine example: 
+
+* `qml6-module-qt5compat-graphicaleffects`
+
 ### **Deployment**
 
 Depending on your build configuration, you may need to install the following libraries on the target system (tested on Debian 10):
@@ -185,6 +189,19 @@ Configure for a Qt6 environment:
 
 ```bash
 cmake -DQT_MAJOR_VERSION=6 <path-to-source>/
+```
+
+The grab method for `QQuickWindow` can be set to either `DirectOpenGL` or `EventBasedQQuickWindow`. In Qt5 the default is `DirectOpenGL`, while in Qt6 the default is `EventBasedQQuickWindow`. The `DirectOpenGL` method provides faster performance but in Qt6 it causes the remote screen to remain one frame behind the actual rendering. The `EventBasedQQuickWindow` method is slightly slower but ensures accurate synchronization with the rendering pipeline.
+
+```bash
+cmake -DQT_QUICKWINDOW_GRAB_METHOD=DirectOpenGL <path-to-source>/
+cmake -DQT_QUICKWINDOW_GRAB_METHOD=EventBasedQQuickWindow <path-to-source>/
+```
+
+Widgets event‑driven grabbing is disabled by default. For widget‑based applications, this option should be enabled to ensure proper event synchronization and consistent frame capture. When enabled, if a `QWindow` is a `QWidgetWindow`, the grabbing is performed using `QWidget::grab()`. This allows widget applications to integrate event‑driven grabbing seamlessly, and it can be used together with `QQuickWindow` if required.
+
+```bash
+cmake -DWIDGETS_EVENT_DRIVEN_GRABBING=ON <path-to-source>/
 ```
 
 Enable building the Python bindings:
@@ -292,9 +309,9 @@ With a lower setting the CPU-load might be a lot less but the remote control per
 
 ## Creating Access Tokens for Instant Support
 
-In order to request Instant Support, your application will need an access token (such as `"12345678-LgxKf0bybuAESdNIelrY"`) which uniquely identifies the remote supporter (Note: not a TeamViewer ID). A supporter will create such tokens under their account and communicate them to you.
+In order to request Instant Support, your application must provide either a valid session code (e.g., "s123-456-789") or an access token. If you choose to use an access token, a new session will be created for your request. Alternatively, if you opt for a session code, it will reactivate the existing session associated with that code. You can obtain the session code in two ways: either by automatically generating it during the instant support request by embedding the access token (e.g., "12345678-LgxKf0bybuAESdNIelrY"), which uniquely identifies the remote supporter (Note: this is not a TeamViewer ID) to your app, or by having the supporter create it manually on their end. The supporter will create such tokens and session code under their account and communicate them to you.
 
-As a supporter:
+As a supporter to create an access token:
 
 * Navigate to https://login.teamviewer.com/
 * Log in to your account
@@ -305,6 +322,14 @@ As a supporter:
 * Open the "Session management" dropdown and check all boxes
 * Click "Create"
 * Open the newly created script token, copy the string value, and communicate it to your users or embed it into your application.
+
+As a supporter to create a session code:
+
+* Navigate to https://web.teamviewer.com
+* Log in to your account
+* In the side panel, navigate to Remote Support and click "New session" under "Provide support"
+* Select the "Create for later" option from the dropdown menu next to "Start" button
+* Copy the newly created session code (ex: 123 456 789) and communicate it to the user in front of the machine.
 
 ## Links & References
 

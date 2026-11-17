@@ -71,8 +71,8 @@ public:
 		Closed = 1
 	};
 
-	/// SendMessageResult describes the various results of a request to send a chat message.
-	enum class SendMessageResult : int32_t
+	/// SendChatMessageResult describes the various results of a request to send a chat message.
+	enum class SendChatMessageResult : int32_t
 	{
 		Succeeded = 0,
 		Failed = 1,
@@ -118,10 +118,10 @@ public:
 			size_t messagesCount,
 			void* userData) noexcept>;
 
-	using SendMessageFinishedCallback =
+	using SendChatMessageFinishedCallback =
 		Callback<void(
 			RequestID requestID,
-			SendMessageResult result,
+			SendChatMessageResult result,
 			const char* messageID,
 			TimeStamp timeStamp,
 			void* userData) noexcept>;
@@ -145,7 +145,7 @@ public:
 		ChatClosedCallback chatClosed;
 
 		ReceivedMessagesCallback receivedMessages;
-		SendMessageFinishedCallback sendMessageFinished;
+		SendChatMessageFinishedCallback sendChatMessageFinished;
 
 		MessagesLoadedCallback messagesLoaded;
 
@@ -181,13 +181,13 @@ public:
 	virtual bool obtainChats(ObtainChatsEnumerator enumerator) = 0;
 
 	/**
-	 * @brief sendMessage requests to send the given content as a message to the given chat.
-	 * The returned request ID is referred to in the sendMessageFinished callback.
+	 * @brief sendChatMessage requests to send the given content as a message to the given chat.
+	 * The returned request ID is referred to in the sendChatMessageFinished callback.
 	 * @param chatID identifier of the chat the message should be sent to
 	 * @param content represents the message text to be sent
 	 * @return valid request ID on success, InvalidRequestID otherwise
 	 */
-	virtual RequestID sendMessage(const char* chatID, const char* content) = 0;
+	virtual RequestID sendChatMessage(const char* chatID, const char* content) = 0;
 
 	/**
 	 * @brief loadMessages requests to load messages from history for the currently selected chat

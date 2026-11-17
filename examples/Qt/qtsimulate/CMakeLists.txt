@@ -23,12 +23,17 @@
 #********************************************************************************#
 project(example_Qt)
 
+option(TV_QT_EXAMPLE_QTWIDGETS "Include QtWidgets in Qt example" ON)
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt${QT_MAJOR_VERSION} COMPONENTS Core Widgets Quick REQUIRED)
+find_package(Qt${QT_MAJOR_VERSION} COMPONENTS Core Quick REQUIRED)
+if(TV_QT_EXAMPLE_QTWIDGETS)
+	find_package(Qt${QT_MAJOR_VERSION} COMPONENTS Widgets REQUIRED)
+endif()
 
 add_executable(qt_simulate
 	"main.cpp"
@@ -42,14 +47,19 @@ add_executable(qt_simulate
 	"ThirdParty/qrcodegen.cpp"
 )
 
-target_link_libraries(qt_simulate Qt${QT_MAJOR_VERSION}::Core Qt${QT_MAJOR_VERSION}::Widgets Qt${QT_MAJOR_VERSION}::Quick)
+target_link_libraries(qt_simulate PRIVATE Qt${QT_MAJOR_VERSION}::Core Qt${QT_MAJOR_VERSION}::Quick)
+if(TV_QT_EXAMPLE_QTWIDGETS)
+	target_compile_definitions(qt_simulate PRIVATE TV_QT_EXAMPLE_QTWIDGETS)
+	target_link_libraries(qt_simulate PRIVATE Qt${QT_MAJOR_VERSION}::Widgets)
+endif()
 
 if(BUILD_SHARED_LIBS)
-	target_link_libraries(qt_simulate TVQtRC.interface)
+	target_link_libraries(qt_simulate PRIVATE TVQtRC.interface)
 	add_dependencies(qt_simulate TVQtRC)
 	add_custom_command(TARGET qt_simulate POST_BUILD
 		COMMAND [ -L $<TARGET_FILE_NAME:TVQtRC> ] || ln -s $<TARGET_FILE:TVQtRC> $<TARGET_FILE_NAME:TVQtRC>
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 else()
-	target_link_libraries(qt_simulate TVQtRC)
+	find_package(absl REQUIRED)
+	target_link_libraries(qt_simulate PRIVATE TVQtRC absl::log)
 endif()

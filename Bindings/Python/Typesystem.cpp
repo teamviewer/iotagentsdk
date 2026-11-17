@@ -132,9 +132,9 @@ PyTypeMeta GetPyTypeMeta<tvagentapi::IChatModule::ChatState>()
 }
 
 template<>
-PyTypeMeta GetPyTypeMeta<tvagentapi::IChatModule::SendMessageResult>()
+PyTypeMeta GetPyTypeMeta<tvagentapi::IChatModule::SendChatMessageResult>()
 {
-	PyTypeMeta meta{GetPyTypeChatModule_SendMessageResult(), "SendMessageResult"};
+	PyTypeMeta meta{GetPyTypeChatModule_SendChatMessageResult(), "SendChatMessageResult"};
 	return meta;
 }
 

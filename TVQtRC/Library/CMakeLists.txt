@@ -26,11 +26,17 @@ project(TVQtRC)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt${QT_MAJOR_VERSION} ${QT${QT_MAJOR_VERSION}_VERSION} COMPONENTS Core Gui Quick Widgets REQUIRED)
+find_package(Qt${QT_MAJOR_VERSION} ${QT${QT_MAJOR_VERSION}_VERSION} COMPONENTS Core Gui Quick REQUIRED)
 option(WIDGETS_EVENT_DRIVEN_GRABBING "Enable event-driven grabbing to reduce CPU consumption. \
 	Works only with the Qt widget-based windows, requires the private QtWidgets headers" OFF)
 if(WIDGETS_EVENT_DRIVEN_GRABBING)
 	find_package(Qt${QT_MAJOR_VERSION} ${QT${QT_MAJOR_VERSION}_VERSION} COMPONENTS Widgets REQUIRED)
+endif()
+if(QT_MAJOR_VERSION STREQUAL 6)
+	# In Qt6, screen data must be retrieved using QQuickWindow::grabWindow() by default
+	set(DEFAULT_QT_QUICKWINDOW_GRAB_METHOD "EventBasedQQuickWindow")
+else()
+	set(DEFAULT_QT_QUICKWINDOW_GRAB_METHOD "DirectOpenGL")
 endif()
 
 set(TVQTRC_INTERFACE
@@ -102,7 +108,9 @@ add_library(${PROJECT_NAME} ${TVQTRC_INTERFACE} ${TVQTRC_SOURCES})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}.interface)
 target_link_libraries(${PROJECT_NAME} PUBLIC Qt${QT_MAJOR_VERSION}::Core Qt${QT_MAJOR_VERSION}::Gui Qt${QT_MAJOR_VERSION}::Quick)
 target_link_libraries(${PROJECT_NAME} PRIVATE TVAgentAPIPrivate)
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Wshadow)
+if (UNIX)
+	target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Wshadow)
+endif (UNIX)
 
 if(BUILD_SHARED_LIBS)
 	target_sources(${PROJECT_NAME}.interface INTERFACE
@@ -122,6 +130,19 @@ if(WIDGETS_EVENT_DRIVEN_GRABBING)
 	message(STATUS "Configuring ${PROJECT_NAME} for QtWidgets event-driven grabbing")
 	target_link_libraries(${PROJECT_NAME} PUBLIC Qt${QT_MAJOR_VERSION}::Widgets Qt${QT_MAJOR_VERSION}::WidgetsPrivate)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE WIDGETS_EVENT_DRIVEN_GRABBING)
+endif()
+
+set(QT_QUICKWINDOW_GRAB_METHOD ${DEFAULT_QT_QUICKWINDOW_GRAB_METHOD} CACHE STRING "Select grabbing method")
+set_property(CACHE QT_QUICKWINDOW_GRAB_METHOD PROPERTY STRINGS "DirectOpenGL" "EventBasedQQuickWindow")
+
+if(QT_QUICKWINDOW_GRAB_METHOD STREQUAL "DirectOpenGL")
+	message(STATUS "Configuring ${PROJECT_NAME} for direct OpenGL grabbing")
+	target_compile_definitions(${PROJECT_NAME} PRIVATE DIRECT_OPENGL_GRABBING)
+elseif(QT_QUICKWINDOW_GRAB_METHOD STREQUAL "EventBasedQQuickWindow")
+	message(STATUS "Configuring ${PROJECT_NAME} for event-based QQuickWindow grabbing")
+	target_compile_definitions(${PROJECT_NAME} PRIVATE EVENT_BASED_QQUICKWINDOW_GRABBING)
+else()
+	message(FATAL_ERROR "Invalid QT_QUICKWINDOW_GRAB_METHOD='${QT_QUICKWINDOW_GRAB_METHOD}'. Valid options are: DirectOpenGL, EventBasedQQuickWindow")
 endif()
 
 target_link_libraries(${PROJECT_NAME}

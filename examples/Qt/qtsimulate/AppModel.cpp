@@ -585,7 +585,7 @@ void AppModel::sendChatMessage(QString content)
 	{
 		Q_EMIT newChatMessageAdded(content, QDateTime::currentDateTime().toString(Qt::TextDate), "Me");
 
-		if (m_chat->sendMessage(m_lastLocalMessageId, content))
+		if (m_chat->sendChatMessage(m_lastLocalMessageId, content))
 		{
 			++m_lastLocalMessageId;
 		}

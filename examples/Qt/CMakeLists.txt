@@ -22,3 +22,6 @@
 # SOFTWARE.                                                                      #
 #********************************************************************************#
 add_subdirectory(qtsimulate)
+if (QT_MAJOR_VERSION STREQUAL 6)
+	add_subdirectory(qtticketmachine)
+endif()

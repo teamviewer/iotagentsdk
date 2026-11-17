@@ -67,17 +67,17 @@ public:
 		const SelectChatResponseCallback& response)>;
 	virtual void SetSelectChatCallback(const ProcessSelectChatRequestCallback& requestProcessing) = 0;
 
-	// rpc call SendMessage
-	using SendMessageResponseCallback = std::function<void(
+	// rpc call SendChatMessage
+	using SendChatMessageResponseCallback = std::function<void(
 
 		const CallStatus& callStatus)>;
-	using ProcessSendMessageRequestCallback = std::function<void(
+	using ProcessSendChatMessageRequestCallback = std::function<void(
 
 		const std::string& comId,
 		uint32_t localId,
 		const std::string& content,
-		const SendMessageResponseCallback& response)>;
-	virtual void SetSendMessageCallback(const ProcessSendMessageRequestCallback& requestProcessing) = 0;
+		const SendChatMessageResponseCallback& response)>;
+	virtual void SetSendChatMessageCallback(const ProcessSendChatMessageRequestCallback& requestProcessing) = 0;
 
 	// rpc call LoadMessages
 	using LoadMessagesResponseCallback = std::function<void(

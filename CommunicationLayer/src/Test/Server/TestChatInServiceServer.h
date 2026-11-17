@@ -101,13 +101,13 @@ std::shared_ptr<TVRemoteScreenSDKCommunication::ChatService::IChatInServiceServe
 	};
 	server->SetSelectChatCallback(processSelectChatRequestCallback);
 
-	const auto processSendMessageRequestCallback = [LogPrefix](
+	const auto processSendChatMessageRequestCallback = [LogPrefix](
 		const std::string& comId,
 		uint32_t localId,
 		std::string content,
-		const IChatInServiceServer::SendMessageResponseCallback& response)
+		const IChatInServiceServer::SendChatMessageResponseCallback& response)
 	{
-		std::cout << LogPrefix << "Received SendMessage request with: "
+		std::cout << LogPrefix << "Received SendChatMessage request with: "
 			<< comId << "(comId), "
 			<< localId << "(localId), "
 			<< content << "(content)"
@@ -123,13 +123,13 @@ std::shared_ptr<TVRemoteScreenSDKCommunication::ChatService::IChatInServiceServe
 			exit(EXIT_FAILURE);
 		}
 	};
-	server->SetSendMessageCallback(processSendMessageRequestCallback);
+	server->SetSendChatMessageCallback(processSendChatMessageRequestCallback);
 
 	const auto processLoadMessagesRequestCallback = [LogPrefix](
 		const std::string& comId,
 		uint32_t count,
 		std::string messageId,
-		const IChatInServiceServer::SendMessageResponseCallback& response)
+		const IChatInServiceServer::SendChatMessageResponseCallback& response)
 	{
 		std::cout << LogPrefix << "Received LoadMessages request with: "
 			<< comId << "(comId), "
@@ -151,7 +151,7 @@ std::shared_ptr<TVRemoteScreenSDKCommunication::ChatService::IChatInServiceServe
 
 	const auto processDeleteHistoryRequestCallback = [LogPrefix](
 		const std::string& comId,
-		const IChatInServiceServer::SendMessageResponseCallback& response)
+		const IChatInServiceServer::SendChatMessageResponseCallback& response)
 	{
 		std::cout << LogPrefix << "Received DeleteHistory request with: "
 			<< comId << "(comId)"
@@ -171,7 +171,7 @@ std::shared_ptr<TVRemoteScreenSDKCommunication::ChatService::IChatInServiceServe
 
 	const auto processDeleteChatRequestCallback = [LogPrefix](
 		const std::string& comId,
-		const IChatInServiceServer::SendMessageResponseCallback& response)
+		const IChatInServiceServer::SendChatMessageResponseCallback& response)
 	{
 		std::cout << LogPrefix << "Received DeleteChat request with: "
 			<< comId << "(comId)"

@@ -59,24 +59,24 @@ PyObject* PyChatModule_setCallbacks(
 	char chatsRemovedCallbackArgName[] = "chatsRemovedCallback";
 	char chatClosedCallbackArgName[] = "chatClosedCallback";
 	char receivedMessagesCallbackArgName[] = "receivedMessagesCallback";
-	char sendMessageFinishedCallbackArgName[] = "sendMessageFinishedCallback";
+	char sendChatMessageFinishedCallbackArgName[] = "sendChatMessageFinishedCallback";
 	char messagesLoadedCallbackArgName[] = "messagesLoadedCallback";
 	char historyDeletedCallbackArgName[] = "historyDeletedCallback";
 
-	PyObject* chatCreatedCallback         = Py_None;
-	PyObject* chatsRemovedCallback        = Py_None;
-	PyObject* chatClosedCallback          = Py_None;
-	PyObject* receivedMessagesCallback    = Py_None;
-	PyObject* sendMessageFinishedCallback = Py_None;
-	PyObject* messagesLoadedCallback      = Py_None;
-	PyObject* historyDeletedCallback      = Py_None;
+	PyObject* chatCreatedCallback             = Py_None;
+	PyObject* chatsRemovedCallback            = Py_None;
+	PyObject* chatClosedCallback              = Py_None;
+	PyObject* receivedMessagesCallback        = Py_None;
+	PyObject* sendChatMessageFinishedCallback = Py_None;
+	PyObject* messagesLoadedCallback          = Py_None;
+	PyObject* historyDeletedCallback          = Py_None;
 
 	char* kwargList[] = {
 		chatCreatedCallbackArgName,
 		chatsRemovedCallbackArgName,
 		chatClosedCallbackArgName,
 		receivedMessagesCallbackArgName,
-		sendMessageFinishedCallbackArgName,
+		sendChatMessageFinishedCallbackArgName,
 		messagesLoadedCallbackArgName,
 		historyDeletedCallbackArgName,
 		{}};
@@ -89,20 +89,20 @@ PyObject* PyChatModule_setCallbacks(
 		&chatsRemovedCallback,
 		&chatClosedCallback,
 		&receivedMessagesCallback,
-		&sendMessageFinishedCallback,
+		&sendChatMessageFinishedCallback,
 		&messagesLoadedCallback,
 		&historyDeletedCallback))
 	{
 		return nullptr;
 	}
 
-	chatCreatedCallback         = chatCreatedCallback         == Py_None ? nullptr : chatCreatedCallback;
-	chatsRemovedCallback        = chatsRemovedCallback        == Py_None ? nullptr : chatsRemovedCallback;
-	chatClosedCallback          = chatClosedCallback          == Py_None ? nullptr : chatClosedCallback;
-	receivedMessagesCallback    = receivedMessagesCallback    == Py_None ? nullptr : receivedMessagesCallback;
-	sendMessageFinishedCallback = sendMessageFinishedCallback == Py_None ? nullptr : sendMessageFinishedCallback;
-	messagesLoadedCallback      = messagesLoadedCallback      == Py_None ? nullptr : messagesLoadedCallback;
-	historyDeletedCallback      = historyDeletedCallback      == Py_None ? nullptr : historyDeletedCallback;
+	chatCreatedCallback             = chatCreatedCallback             == Py_None ? nullptr : chatCreatedCallback;
+	chatsRemovedCallback            = chatsRemovedCallback            == Py_None ? nullptr : chatsRemovedCallback;
+	chatClosedCallback              = chatClosedCallback              == Py_None ? nullptr : chatClosedCallback;
+	receivedMessagesCallback        = receivedMessagesCallback        == Py_None ? nullptr : receivedMessagesCallback;
+	sendChatMessageFinishedCallback = sendChatMessageFinishedCallback == Py_None ? nullptr : sendChatMessageFinishedCallback;
+	messagesLoadedCallback          = messagesLoadedCallback          == Py_None ? nullptr : messagesLoadedCallback;
+	historyDeletedCallback     	    = historyDeletedCallback          == Py_None ? nullptr : historyDeletedCallback;
 
 	if (chatCreatedCallback && !PyCallable_Check(chatCreatedCallback))
 	{
@@ -128,9 +128,9 @@ PyObject* PyChatModule_setCallbacks(
 		return nullptr;
 	}
 
-	if (sendMessageFinishedCallback && !PyCallable_Check(sendMessageFinishedCallback))
+	if (sendChatMessageFinishedCallback && !PyCallable_Check(sendChatMessageFinishedCallback))
 	{
-		PyErr_Format(PyExc_TypeError, "%R is not callable", sendMessageFinishedCallback);
+		PyErr_Format(PyExc_TypeError, "%R is not callable", sendChatMessageFinishedCallback);
 		return nullptr;
 	}
 
@@ -162,9 +162,9 @@ PyObject* PyChatModule_setCallbacks(
 	Py_XDECREF(self->m_pyReceivedMessagesCallback);
 	self->m_pyReceivedMessagesCallback = receivedMessagesCallback;
 
-	Py_XINCREF(sendMessageFinishedCallback);
-	Py_XDECREF(self->m_pySendMessageFinishedCallback);
-	self->m_pySendMessageFinishedCallback = sendMessageFinishedCallback;
+	Py_XINCREF(sendChatMessageFinishedCallback);
+	Py_XDECREF(self->m_pySendChatMessageFinishedCallback);
+	self->m_pySendChatMessageFinishedCallback = sendChatMessageFinishedCallback;
 
 	Py_XINCREF(messagesLoadedCallback);
 	Py_XDECREF(self->m_pyMessagesLoadedCallback);
@@ -254,25 +254,25 @@ PyObject* PyChatModule_setCallbacks(
 		Py_DECREF(messagesList);
 	};
 
-	auto sendMessageFinished = [](
+	auto sendChatMessageFinished = [](
 		tvagentapi::IChatModule::RequestID requestID,
-		tvagentapi::IChatModule::SendMessageResult sendMessageResult,
+		tvagentapi::IChatModule::SendChatMessageResult sendChatMessageResult,
 		const char* messageID,
 		tvagentapi::IChatModule::TimeStamp timeStamp,
 		void* userdata)
 	{
-		auto pySendMessageFinishedCallback = static_cast<PyObject*>(userdata);
+		auto pySendChatMessageFinishedCallback = static_cast<PyObject*>(userdata);
 
-		PyObject* sendMessageResultEnumVal = PyEnumValue(
-			GetPyTypeChatModule_SendMessageResult(),
-			tvagentapi::toCString(sendMessageResult));
+		PyObject* sendChatMessageResultEnumVal = PyEnumValue(
+			GetPyTypeChatModule_SendChatMessageResult(),
+			tvagentapi::toCString(sendChatMessageResult));
 
-		PyObject* args = Py_BuildValue("(IOsk)", requestID, sendMessageResultEnumVal, messageID, timeStamp);
+		PyObject* args = Py_BuildValue("(IOsk)", requestID, sendChatMessageResultEnumVal, messageID, timeStamp);
 
-		PyObject* result = PyObject_CallObject(pySendMessageFinishedCallback, args);
+		PyObject* result = PyObject_CallObject(pySendChatMessageFinishedCallback, args);
 		Py_DECREF(args);
 		Py_XDECREF(result);
-		Py_XDECREF(sendMessageResultEnumVal);
+		Py_XDECREF(sendChatMessageResultEnumVal);
 	};
 
 	auto messagesLoaded = [](
@@ -336,10 +336,10 @@ PyObject* PyChatModule_setCallbacks(
 		receivedMessagesCb = {receivedMessages, self->m_pyReceivedMessagesCallback};
 	}
 
-	tvagentapi::IChatModule::SendMessageFinishedCallback sendMessageFinishedCb{};
-	if (self->m_pySendMessageFinishedCallback)
+	tvagentapi::IChatModule::SendChatMessageFinishedCallback sendChatMessageFinishedCb{};
+	if (self->m_pySendChatMessageFinishedCallback)
 	{
-		sendMessageFinishedCb = {sendMessageFinished, self->m_pySendMessageFinishedCallback};
+		sendChatMessageFinishedCb = {sendChatMessageFinished, self->m_pySendChatMessageFinishedCallback};
 	}
 
 	tvagentapi::IChatModule::MessagesLoadedCallback messagesLoadedCb{};
@@ -359,7 +359,7 @@ PyObject* PyChatModule_setCallbacks(
 		chatsRemovedCb,
 		chatClosedCb,
 		receivedMessagesCb,
-		sendMessageFinishedCb,
+		sendChatMessageFinishedCb,
 		messagesLoadedCb,
 		historyDeletedCb
 	});
@@ -418,7 +418,7 @@ PyObject* PyChatModule_obtainChats(PyChatModule* self, PyObject* args)
 	return pyList;
 }
 
-PyObject* PyChatModule_sendMessage(PyChatModule* self, PyObject* args)
+PyObject* PyChatModule_sendChatMessage(PyChatModule* self, PyObject* args)
 {
 	const char* chatID = nullptr;
 	const char* content = nullptr;
@@ -427,7 +427,7 @@ PyObject* PyChatModule_sendMessage(PyChatModule* self, PyObject* args)
 		return nullptr;
 	}
 
-	const tvagentapi::IChatModule::RequestID requestID = self->m_module->sendMessage(
+	const tvagentapi::IChatModule::RequestID requestID = self->m_module->sendChatMessage(
 		chatID,
 		content);
 
@@ -512,7 +512,7 @@ R"__(setCallbacks($self, /,
 	chatsRemovedCallback=None,
 	chatClosedCallback=None,
 	receivedMessagesCallback=None,
-	sendMessageFinishedCallback=None,
+	sendChatMessageFinishedCallback=None,
 	messagesLoadedCallback=None,
 	historyDeletedCallback=None)
 --
@@ -527,8 +527,8 @@ Sets callbacks to handle various events like chat room and message updates.
 :type chatClosedCallback: callback(str chatID)
 :param receivedMessagesCallback: called when messages have been received. The given list consists of dictionaries - one for each message - with the keys 'chatID', 'message', 'content', 'timeStamp', 'sender'.
 :type receivedMessagesCallback: callback(list messageList)
-:param sendMessageFinishedCallback: called when the result for a send request from sendMessage() is available
-:type sendMessageFinishedCallback: callback(int requestID, tvagentapi.ChatModule.SendMessageResult sendMessageResult, str messageID, int timeStamp)
+:param sendChatMessageFinishedCallback: called when the result for a send request from sendChatMessage() is available
+:type sendChatMessageFinishedCallback: callback(int requestID, tvagentapi.ChatModule.SendChatMessageResult sendChatMessageResult, str messageID, int timeStamp)
 :param messagesLoadedCallback: called as response of a loadMessages() call. The given list of messages consists of dictionaries - one for each message - with the keys 'chatID', 'message', 'content', 'timeStamp', 'sender'.
 :type messagesLoadedCallback: callback(list messagesList, bool hasMore)
 :param historyDeletedCallback: called when the history of a chat room has been deleted
@@ -544,12 +544,12 @@ Requests the list of active chats.
 :return list of dictionaries containing data for "chatID", "title", "chatEndpointType", "chatEndpointID", "chatState".
 )__");
 
-PyDoc_STRVAR(sendMessage,
-R"__(sendMessage($self, chatID, content)
+PyDoc_STRVAR(sendChatMessage,
+R"__(sendChatMessage($self, chatID, content)
 --
 
 Requests to send the given content as a message to the given chat.
-The returned request ID can be used to match a call of sendMessageFinishedCallback (see setCallbacks).
+The returned request ID can be used to match a call of sendChatMessageFinishedCallback (see setCallbacks).
 
 :param str chatID: identifier of the chat the message should be sent to.
 :param str content: the message to be sent.
@@ -609,10 +609,10 @@ PyMethodDef PyChatModule_methods[] =
 		DocStrings::obtainChats
 	},
 	{
-		"sendMessage",
-		WeakConnectionCall<PyChatModule, PyChatModule_sendMessage>,
+		"sendChatMessage",
+		WeakConnectionCall<PyChatModule, PyChatModule_sendChatMessage>,
 		METH_VARARGS,
-		DocStrings::sendMessage
+		DocStrings::sendChatMessage
 	},
 	{
 		"loadMessages",
@@ -656,7 +656,7 @@ PyChatModule::~PyChatModule()
 	Py_XDECREF(m_pyChatsRemovedCallback);
 	Py_XDECREF(m_pyChatClosedCallback);
 	Py_XDECREF(m_pyReceivedMessagesCallback);
-	Py_XDECREF(m_pySendMessageFinishedCallback);
+	Py_XDECREF(m_pySendChatMessageFinishedCallback);
 	Py_XDECREF(m_pyMessagesLoadedCallback);
 	Py_XDECREF(m_pyHistoryDeletedCallback);
 }
@@ -690,8 +690,8 @@ PyTypeObject* GetPyTypeChatModule()
 			reinterpret_cast<PyObject*>(GetPyTypeChatModule_ChatState()));
 		PyDict_SetItemString(
 			result.tp_dict,
-			"SendMessageResult",
-			reinterpret_cast<PyObject*>(GetPyTypeChatModule_SendMessageResult()));
+			"SendChatMessageResult",
+			reinterpret_cast<PyObject*>(GetPyTypeChatModule_SendChatMessageResult()));
 
 		if (PyType_Ready(&result) < 0)
 		{
@@ -739,22 +739,22 @@ PyTypeObject* GetPyTypeChatModule_ChatState()
 	return pyTypeChatModule_ChatState;
 }
 
-PyTypeObject* GetPyTypeChatModule_SendMessageResult()
+PyTypeObject* GetPyTypeChatModule_SendChatMessageResult()
 {
-	static PyTypeObject* pyTypeChatModule_SendMessageResult = []() -> PyTypeObject*
+	static PyTypeObject* pyTypeChatModule_SendChatMessageResult = []() -> PyTypeObject*
 	{
-		using SendMessageResult = tvagentapi::IChatModule::SendMessageResult;
+		using SendChatMessageResult = tvagentapi::IChatModule::SendChatMessageResult;
 		using tvagentapi::toCString;
 
 		PyTypeObject* result =
 			CreateEnumType(
-				"tvagentapi.ChatModule.SendMessageResult",
-				{{toCString(SendMessageResult::Succeeded), static_cast<long>(SendMessageResult::Succeeded)},
-				 {toCString(SendMessageResult::Failed), static_cast<long>(SendMessageResult::Failed)}});
+				"tvagentapi.ChatModule.SendChatMessageResult",
+				{{toCString(SendChatMessageResult::Succeeded), static_cast<long>(SendChatMessageResult::Succeeded)},
+				 {toCString(SendChatMessageResult::Failed), static_cast<long>(SendChatMessageResult::Failed)}});
 
 		return result;
 	}();
-	return pyTypeChatModule_SendMessageResult;
+	return pyTypeChatModule_SendChatMessageResult;
 }
 
 } // namespace tvagentapipy

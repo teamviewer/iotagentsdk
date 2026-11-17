@@ -49,9 +49,9 @@
 #endif
 #endif
 
+#ifdef DIRECT_OPENGL_GRABBING
 extern Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize& size, bool alpha_format, bool include_alpha);
-
-#define DIRECT_OPENGL_GRABBING
+#endif // DIRECT_OPENGL_GRABBING
 
 #ifdef WIDGETS_EVENT_DRIVEN_GRABBING
 namespace
@@ -118,10 +118,12 @@ QImage GrabWindow(QWindow* window)
 	// requested on platforms explicitly other than EGLFS.
 
 	auto quickWindow = qobject_cast<QQuickWindow*>(window);
-	const bool qtQuickGrabWindowWanted =
+	bool qtQuickGrabWindowWanted = true;
+#ifndef EVENT_BASED_QQUICKWINDOW_GRABBING
+	qtQuickGrabWindowWanted =
 		QProcessEnvironment::systemEnvironment().contains(FavourQtQuickGrabEnvKey) ||
 		QGuiApplication::platformName() == EglfsPlatformName;
-
+#endif // EVENT_BASED_QQUICKWINDOW_GRABBING
 	if (quickWindow && qtQuickGrabWindowWanted)
 	{
 		return quickWindow->grabWindow();
@@ -212,7 +214,7 @@ void QWindowGrabMethod::signalImageDefinitionChanged()
 	Q_EMIT imageDefinitionChanged(
 		m_window->title(),
 		m_window->size() * m_window->devicePixelRatio(),
-		m_window->screen()->physicalDotsPerInch(),
+		m_window->screen()->logicalDotsPerInch(),
 		getColorFormat());
 }
 
@@ -241,20 +243,18 @@ void QWindowGrabMethod::reactOnScreenUpdate()
 	}
 }
 
-#ifdef WIDGETS_EVENT_DRIVEN_GRABBING
+#if defined(WIDGETS_EVENT_DRIVEN_GRABBING) || defined(EVENT_BASED_QQUICKWINDOW_GRABBING)
 void QWindowGrabMethod::conditionalReactOnScreenUpdate()
 {
-	if (!m_repainting.load())
+	bool expected = true;
+	if (m_repainting.compare_exchange_strong(expected, false))
 	{
-		return;
+		reactOnScreenUpdate();
 	}
-
-	reactOnScreenUpdate();
-
-	m_repainting.store(false);
 }
-#endif // WIDGETS_EVENT_DRIVEN_GRABBING
+#endif // WIDGETS_EVENT_DRIVEN_GRABBING || EVENT_BASED_QQUICKWINDOW_GRABBING
 
+#ifdef DIRECT_OPENGL_GRABBING
 void QWindowGrabMethod::sendIfScreenChanged()
 {
 	ScreenGrabResult screenGrabResult;
@@ -282,6 +282,7 @@ static bool IsOpenGLImageGrabbable(const QQuickWindow* quickWindow)
 	return quickWindow->openglContext() != nullptr;
 #endif
 }
+#endif // DIRECT_OPENGL_GRABBING 
 
 void QWindowGrabMethod::startGrabbing()
 {
@@ -347,9 +348,10 @@ void QWindowGrabMethod::startGrabbing()
 		timerProc = &QWindowGrabMethod::conditionalReactOnScreenUpdate;
 	}
 #endif // WIDGETS_EVENT_DRIVEN_GRABBING
+#if defined(DIRECT_OPENGL_GRABBING) || defined(EVENT_BASED_QQUICKWINDOW_GRABBING)
+	QQuickWindow* quickWindow = qobject_cast<QQuickWindow*>(m_window);
+#endif // WIDGETS_EVENT_DRIVEN_GRABBING || EVENT_BASED_QQUICKWINDOW_GRABBING
 #ifdef DIRECT_OPENGL_GRABBING
-	const QQuickWindow* quickWindow = qobject_cast<QQuickWindow*>(m_window);
-
 	if (!QProcessEnvironment::systemEnvironment().contains(ForceIntervalGrabEnvKey) && quickWindow && IsOpenGLImageGrabbable(quickWindow))
 	{
 		auto grabScreenAndSetDirty = [quickWindow, this]()
@@ -377,7 +379,23 @@ void QWindowGrabMethod::startGrabbing()
 
 		timerProc = &QWindowGrabMethod::sendIfScreenChanged;
 	}
-#endif // DIRECT_OPENGL_GRABBING
+#elif defined(EVENT_BASED_QQUICKWINDOW_GRABBING)
+		auto grabScreen = [this]()
+		{
+			// In Qt6, the remote screen appears one frame behind the actual display.
+			// To eliminate this lag, QQuickWindow::grabWindow() is used instead of reading 
+			// the image directly from the framebuffer through Qt’s private API.
+			m_repainting.store(true);
+		};
+
+		// Previously connected to QQuickWindow::afterRendering, which could trigger multiple times per frame,
+		// causing redundant grab calls even when the screen content didn't change.
+		// Switched to QQuickWindow::frameSwapped to ensure the grabing is executed only once per rendered frame.
+		// See: https://doc.qt.io/qt-6/qquickwindow.html#frameSwapped
+		m_grabWindowConnection = QObject::connect(quickWindow, &QQuickWindow::frameSwapped, this, grabScreen, Qt::DirectConnection);
+		timerProc = &QWindowGrabMethod::conditionalReactOnScreenUpdate;
+#endif
+
 	m_timerConnection = QObject::connect(m_timer, &QTimer::timeout, this, timerProc);
 
 	const uint32_t picturesPerSecond = []()

@@ -24,6 +24,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstdlib>
 
 namespace TVRemoteScreenSDKCommunication
 {

@@ -57,7 +57,7 @@ public:
 
 	void SetSelectChatCallback(const ProcessSelectChatRequestCallback& requestProcessing) override;
 
-	void SetSendMessageCallback(const ProcessSendMessageRequestCallback& requestProcessing) override;
+	void SetSendChatMessageCallback(const ProcessSendChatMessageRequestCallback& requestProcessing) override;
 
 	void SetLoadMessagesCallback(const ProcessLoadMessagesRequestCallback& requestProcessing) override;
 
@@ -71,7 +71,7 @@ private:
 
 	ProcessObtainChatsRequestCallback m_ObtainChatsProcessing;
 	ProcessSelectChatRequestCallback m_SelectChatProcessing;
-	ProcessSendMessageRequestCallback m_SendMessageProcessing;
+	ProcessSendChatMessageRequestCallback m_SendChatMessageProcessing;
 	ProcessLoadMessagesRequestCallback m_LoadMessagesProcessing;
 	ProcessDeleteHistoryRequestCallback m_DeleteHistoryProcessing;
 	ProcessDeleteChatRequestCallback m_DeleteChatProcessing;

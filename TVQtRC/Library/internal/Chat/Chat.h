@@ -42,7 +42,7 @@ public:
 
 	bool selectChat(QUuid chatId) override;
 
-	bool sendMessage(uint32_t localId, QString content) override;
+	bool sendChatMessage(uint32_t localId, QString content) override;
 
 	bool loadMessages(uint32_t messageCount, QUuid lastMessageId) override;
 

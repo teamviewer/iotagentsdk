@@ -54,16 +54,20 @@ public:
 
 private:
 	Q_SLOT void reactOnScreenUpdate();
+#ifdef DIRECT_OPENGL_GRABBING
 	Q_SLOT void sendIfScreenChanged();
+#endif // DIRECT_OPENGL_GRABBING
 
 	void signalImageDefinitionChanged();
 
-#ifdef WIDGETS_EVENT_DRIVEN_GRABBING
+#if defined(WIDGETS_EVENT_DRIVEN_GRABBING) || defined(EVENT_BASED_QQUICKWINDOW_GRABBING)
 	Q_SLOT void conditionalReactOnScreenUpdate();
 
-	QPointer<QObject> m_listener;
 	std::atomic_bool m_repainting{true};
-#endif
+#endif // WIDGETS_EVENT_DRIVEN_GRABBING || EVENT_BASED_QQUICKWINDOW_GRABBING
+#ifdef WIDGETS_EVENT_DRIVEN_GRABBING
+	QPointer<QObject> m_listener;
+#endif // WIDGETS_EVENT_DRIVEN_GRABBING
 
 	QMetaObject::Connection m_grabWindowConnection;
 	QMetaObject::Connection m_timerConnection;
@@ -71,8 +75,10 @@ private:
 	const QPointer<QTimer> m_timer = nullptr;
 	QImage::Format m_grabColorFormat = QImage::Format::Format_Invalid;
 
+#ifdef DIRECT_OPENGL_GRABBING
 	ScreenGrabResult m_lastGrabResult;
 	std::mutex m_backbufferMutex;
+#endif // DIRECT_OPENGL_GRABBING
 };
 
 } // namespace tvqtsdk

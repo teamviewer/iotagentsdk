@@ -31,9 +31,13 @@
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlContext>
 
+#ifdef TV_QT_EXAMPLE_QTWIDGETS
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QWidget>
+#else
+#include <QtGui/QGuiApplication>
+#endif
 
 #include <QtQuick/QQuickWindow>
 
@@ -56,7 +60,7 @@ constexpr auto EglfsPlatformName = "eglfs";
 Q_IMPORT_PLUGIN(TVQtRCPlugin);
 #endif
 
-
+#if defined(TV_QT_EXAMPLE_QTWIDGETS)
 class WidgetDemoWindow : public QWidget
 {
 public:
@@ -117,6 +121,7 @@ private:
 	Ui::WidgetsDemoWindow m_ui;
 	QTimer m_timer;
 };
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -124,7 +129,11 @@ int main(int argc, char *argv[])
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
 
+#if defined(TV_QT_EXAMPLE_QTWIDGETS)
 	QApplication app{argc, argv};
+#else
+	QGuiApplication app{argc, argv};
+#endif
 
 	QCoreApplication::setApplicationName(ApplicationName);
 	QCoreApplication::setApplicationVersion(ApplicationVersion);

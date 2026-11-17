@@ -77,9 +77,9 @@ void ChatInServicegRPCServer::SetSelectChatCallback(const ProcessSelectChatReque
 	m_selectChatProcessing = requestProcessing;
 }
 
-void ChatInServicegRPCServer::SetSendMessageCallback(const ProcessSendMessageRequestCallback& requestProcessing)
+void ChatInServicegRPCServer::SetSendChatMessageCallback(const ProcessSendChatMessageRequestCallback& requestProcessing)
 {
-	m_sendMessageProcessing = requestProcessing;
+	m_sendChatMessageProcessing = requestProcessing;
 }
 
 void ChatInServicegRPCServer::SetLoadMessagesCallback(const ProcessLoadMessagesRequestCallback& requestProcessing)
@@ -246,16 +246,16 @@ void ChatInServicegRPCServer::SetDeleteChatCallback(const ProcessDeleteChatReque
 	return returnStatus;
 }
 
-::grpc::Status ChatInServicegRPCServer::SendMessage(::grpc::ServerContext* context,
-	const ::tvchatservice::SendMessageRequest* requestPtr,
-	::tvchatservice::SendMessageResponse* responsePtr)
+::grpc::Status ChatInServicegRPCServer::SendChatMessage(::grpc::ServerContext* context,
+	const ::tvchatservice::SendChatMessageRequest* requestPtr,
+	::tvchatservice::SendChatMessageResponse* responsePtr)
 {
 	if (context == nullptr || requestPtr == nullptr || responsePtr == nullptr)
 	{
 		return ::grpc::Status(::grpc::StatusCode::INTERNAL, std::string{});
 	}
 
-	if (!m_sendMessageProcessing)
+	if (!m_sendChatMessageProcessing)
 	{
 		return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, TvServiceBase::ErrorMessage_NoProcessingCallback);
 	}
@@ -289,7 +289,7 @@ void ChatInServicegRPCServer::SetDeleteChatCallback(const ProcessDeleteChatReque
 		}
 	};
 
-	m_sendMessageProcessing(comId,
+	m_sendChatMessageProcessing(comId,
 		request.localid(),
 
 		request.content(),

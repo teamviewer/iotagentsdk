@@ -49,8 +49,8 @@ if(TV_COMM_ENABLE_PLAIN_SOCKET)
 	add_definitions(-DTV_COMM_ENABLE_PLAIN_SOCKET)
 endif()
 
-if(NOT (DEFINED ${TV_PACKAGE_NAME}_VERSION))
-	set(${TV_PACKAGE_NAME}_VERSION 1.0)
+if((NOT (DEFINED ${TV_PACKAGE_NAME}_VERSION)) OR (NOT (${TV_PACKAGE_NAME}_VERSION MATCHES "\\d+\\.\\d+\\.\\d+$")))
+	set(${TV_PACKAGE_NAME}_VERSION 1.0.0)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake/modules")
@@ -76,7 +76,9 @@ macro(install_tvsdk)
 	)
 endmacro()
 
-add_compile_options(-Wall -Wextra -Wpedantic -Wshadow)
+if (UNIX)
+	add_compile_options(-Wall -Wextra -Wpedantic -Wshadow)
+endif (UNIX)
 
 add_subdirectory(CommunicationLayerBase)
 add_subdirectory(ServiceBase)
@@ -94,6 +96,7 @@ write_basic_package_version_file(
 	"${CMAKE_CURRENT_BINARY_DIR}/${TV_PACKAGE_NAME}/${TV_PACKAGE_NAME}ConfigVersion.cmake"
 	VERSION ${${TV_PACKAGE_NAME}_VERSION}
 	COMPATIBILITY AnyNewerVersion
+	ARCH_INDEPENDENT
 )
 
 configure_file(CMake/Config.cmake.in

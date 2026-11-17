@@ -48,13 +48,13 @@ const char* toCString(IChatModule::ChatState state)
 	return "";
 }
 
-const char* toCString(IChatModule::SendMessageResult result)
+const char* toCString(IChatModule::SendChatMessageResult result)
 {
-	using SendMessageResult = IChatModule::SendMessageResult;
+	using SendChatMessageResult = IChatModule::SendChatMessageResult;
 	switch (result)
 	{
-		case SendMessageResult::Succeeded:  return "Succeeded";
-		case SendMessageResult::Failed:     return "Failed";
+		case SendChatMessageResult::Succeeded:  return "Succeeded";
+		case SendChatMessageResult::Failed:     return "Failed";
 	}
 	return "";
 }

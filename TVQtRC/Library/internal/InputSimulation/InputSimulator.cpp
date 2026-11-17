@@ -73,6 +73,15 @@ void ConvertButtonEventToQtValues(MouseButton button, bool pressed, Qt::MouseBut
 	}
 }
 
+QPointF MapToGlobal(const QWindow *window, const QPointF &point)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	return window->mapToGlobal(point);
+#else
+	return window->mapToGlobal(point.toPoint());
+#endif
+}
+
 } // namespace
 
 InputSimulator::InputSimulator(
@@ -143,13 +152,13 @@ void InputSimulator::simulateKey(const std::shared_ptr<SimulateKeyCommand>& comm
 
 void InputSimulator::simulateMouse(const std::shared_ptr<SimulateMouseCommand>& command)
 {
-	QPoint point{command->x(), command->y()};
+	QPointF point{qreal(command->x()), qreal(command->y())};
 
 	QPointer<QWindow> targetWindow = m_applicationWindow;
 	if (!targetWindow)
 	{
 		targetWindow = m_lastPressedWindow ?
-			m_lastPressedWindow.data() : QGuiApplication::topLevelAt(point);
+			m_lastPressedWindow.data() : QGuiApplication::topLevelAt(point.toPoint());
 		if (targetWindow)
 		{
 			point -= targetWindow->position();
@@ -159,6 +168,8 @@ void InputSimulator::simulateMouse(const std::shared_ptr<SimulateMouseCommand>& 
 			return;
 		}
 	}
+
+	point /= targetWindow->devicePixelRatio();
 
 	const MouseButton button = command->button();
 
@@ -199,7 +210,7 @@ void InputSimulator::simulateMouse(const std::shared_ptr<SimulateMouseCommand>& 
 
 }
 
-void InputSimulator::simulateMousePress(QWindow* window, const QPoint& point, MouseButton button)
+void InputSimulator::simulateMousePress(QWindow* window, const QPointF& point, MouseButton button)
 {
 	Q_ASSERT(window);
 
@@ -211,7 +222,7 @@ void InputSimulator::simulateMousePress(QWindow* window, const QPoint& point, Mo
 			QEvent::MouseButtonPress,
 			point,
 			point,
-			window->mapToGlobal(point),
+			MapToGlobal(window, point),
 			changedButton,
 			m_pressedMouseButtons,
 			m_convertedModifiers
@@ -219,7 +230,7 @@ void InputSimulator::simulateMousePress(QWindow* window, const QPoint& point, Mo
 	QCoreApplication::postEvent(window, ev);
 }
 
-void InputSimulator::simulateMouseRelease(QWindow* window, const QPoint& point, MouseButton button)
+void InputSimulator::simulateMouseRelease(QWindow* window, const QPointF& point, MouseButton button)
 {
 	Q_ASSERT(window);
 
@@ -252,7 +263,7 @@ void InputSimulator::simulateMouseRelease(QWindow* window, const QPoint& point, 
 					QEvent::MouseButtonDblClick,
 					point,
 					point,
-					window->mapToGlobal(point),
+					MapToGlobal(window, point),
 					changedButton,
 					m_pressedMouseButtons,
 					m_convertedModifiers
@@ -269,7 +280,7 @@ void InputSimulator::simulateMouseRelease(QWindow* window, const QPoint& point, 
 			QEvent::MouseButtonRelease,
 			point,
 			point,
-			window->mapToGlobal(point),
+			MapToGlobal(window, point),
 			changedButton,
 			m_pressedMouseButtons,
 			m_convertedModifiers
@@ -278,7 +289,7 @@ void InputSimulator::simulateMouseRelease(QWindow* window, const QPoint& point, 
 	QCoreApplication::postEvent(window, ev);
 }
 
-void InputSimulator::simulateMouseMove(QWindow* window, const QPoint& point)
+void InputSimulator::simulateMouseMove(QWindow* window, const QPointF& point)
 {
 	Q_ASSERT(window);
 
@@ -294,15 +305,15 @@ void InputSimulator::simulateMouseMove(QWindow* window, const QPoint& point)
 	QCoreApplication::postEvent(window, ev);
 }
 
-void InputSimulator::simulateMouseWheelRequested(QWindow* window, const QPoint& point, int angle)
+void InputSimulator::simulateMouseWheelRequested(QWindow* window, const QPointF& point, int angle)
 {
 	Q_ASSERT(window);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
 	auto ev = new QWheelEvent
 		{
 			point,
-			window->position() + point, // global position
-			{}, // no pixel delta
+			MapToGlobal(window, point), // global position
+			{},				  // no pixel delta
 			QPoint(0, angle), // vertical scroll
 			Qt::MouseButton::NoButton,
 			m_convertedModifiers,
@@ -312,7 +323,7 @@ void InputSimulator::simulateMouseWheelRequested(QWindow* window, const QPoint& 
 #else
 	auto ev = new QWheelEvent
 		{
-			point,
+			point.toPoint(),
 			angle,
 			Qt::MouseButton::NoButton,
 			m_convertedModifiers

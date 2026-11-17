@@ -71,16 +71,16 @@ def sub_test_chat_send_receive_messages(connection, expected_message_pairs, expe
             assert received_content == expected_content, "unexpected message received: \"%s\", expected \"%s\"" % (received_content, expected_content)
 
             if reply_content:
-                request_id = chat.sendMessage(received_chat_id, reply_content);
+                request_id = chat.sendChatMessage(received_chat_id, reply_content);
                 messages_to_send.append(request_id)
 
     def handle_send_message_finished(request_id, send_result, messaged_id, time_stamp):
         messages_to_send.remove(request_id)
-        assert send_result == tvagentapi.ChatModule.SendMessageResult.Succeeded, "chat message was not send successfully %s" % send_result
+        assert send_result == tvagentapi.ChatModule.SendChatMessageResult.Succeeded, "chat message was not send successfully %s" % send_result
 
     chat.setCallbacks(
         receivedMessagesCallback=handle_received_messages,
-        sendMessageFinishedCallback=handle_send_message_finished)
+        sendChatMessageFinishedCallback=handle_send_message_finished)
 
     while message_pairs_to_process or messages_to_send:
         connection.processEvents(True, 100)
@@ -237,7 +237,7 @@ def sub_test_chat_delete_chat(connection, number_of_rooms_to_delete):
 
 def sub_test_chat_error_send_message(connection):
     """
-    Chat test helper for checking wrong usage of sendMessage
+    Chat test helper for checking wrong usage of sendChatMessage
 
     Arguments:
     connection  -- agent connection to use
@@ -254,7 +254,7 @@ def sub_test_chat_error_send_message(connection):
     expected_chat_id = chat_rooms[0]['chatID'];
 
     try:
-        request_id = chat.sendMessage("__INVALID_ID__", "TestMessage")
+        request_id = chat.sendChatMessage("__INVALID_ID__", "TestMessage")
         assert False, "Tried to send to an invalid chat id. We should never get here."
     except RuntimeError as err:
         pass

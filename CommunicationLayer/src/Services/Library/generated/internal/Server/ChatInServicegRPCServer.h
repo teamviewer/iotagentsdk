@@ -63,7 +63,7 @@ public:
 
 	void SetSelectChatCallback(const ProcessSelectChatRequestCallback& requestProcessing) override;
 
-	void SetSendMessageCallback(const ProcessSendMessageRequestCallback& requestProcessing) override;
+	void SetSendChatMessageCallback(const ProcessSendChatMessageRequestCallback& requestProcessing) override;
 
 	void SetLoadMessagesCallback(const ProcessLoadMessagesRequestCallback& requestProcessing) override;
 
@@ -80,9 +80,9 @@ public:
 		const ::tvchatservice::SelectChatRequest* request,
 		::tvchatservice::SelectChatResponse* response) override;
 
-	::grpc::Status SendMessage(::grpc::ServerContext* context,
-		const ::tvchatservice::SendMessageRequest* request,
-		::tvchatservice::SendMessageResponse* response) override;
+	::grpc::Status SendChatMessage(::grpc::ServerContext* context,
+		const ::tvchatservice::SendChatMessageRequest* request,
+		::tvchatservice::SendChatMessageResponse* response) override;
 
 	::grpc::Status LoadMessages(::grpc::ServerContext* context,
 		const ::tvchatservice::LoadMessagesRequest* request,
@@ -102,7 +102,7 @@ private:
 
 	ProcessObtainChatsRequestCallback m_obtainChatsProcessing;
 	ProcessSelectChatRequestCallback m_selectChatProcessing;
-	ProcessSendMessageRequestCallback m_sendMessageProcessing;
+	ProcessSendChatMessageRequestCallback m_sendChatMessageProcessing;
 	ProcessLoadMessagesRequestCallback m_loadMessagesProcessing;
 	ProcessDeleteHistoryRequestCallback m_deleteHistoryProcessing;
 	ProcessDeleteChatRequestCallback m_deleteChatProcessing;

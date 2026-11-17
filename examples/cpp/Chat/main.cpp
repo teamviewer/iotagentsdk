@@ -50,7 +50,7 @@ enum class ChatCommandType
 	DeleteChat,
 	DeleteHistory,
 	LoadChats,
-	SendMessage,
+	SendChatMessage,
 	Unknown
 };
 
@@ -64,7 +64,7 @@ const std::array<std::string, 8> commandStrings = {
 	"/deleteChat",
 	"/deleteHistory",
 	// strings starting with '/' are treated like Unknown commands
-	// every other string is treatead like SendMessage command
+	// every other string is treatead like SendChatMessage command
 };
 
 const char* help = R"(
@@ -100,7 +100,7 @@ struct ChatCommand
 	{}
 
 	ChatCommandType type = ChatCommandType::Unknown;
-	// ChatCommandType::SendMessage has message string inside of payload field
+	// ChatCommandType::SendChatMessage has message string inside of payload field
 	// All the other types have ChatID string
 	std::string payload;
 };
@@ -397,17 +397,17 @@ void handleNewMessages(
 
 void handleMessageSendFinished(
 	tvagentapi::IChatModule::RequestID requestID,
-	tvagentapi::IChatModule::SendMessageResult result,
+	tvagentapi::IChatModule::SendChatMessageResult result,
 	const char* messageID,
 	tvagentapi::IChatModule::TimeStamp timeStamp,
 	void* /*userData*/) noexcept
 {
 	switch (result)
 	{
-		case tvagentapi::IChatModule::SendMessageResult::Succeeded:
+		case tvagentapi::IChatModule::SendChatMessageResult::Succeeded:
 			s_oss << "[IChatModule] Message sent (requestID: '" << requestID << "', messageID: '" << messageID << "', timeStamp: " << timeStamp << ")" << std::endl;
 			break;
-		case tvagentapi::IChatModule::SendMessageResult::Failed:
+		case tvagentapi::IChatModule::SendChatMessageResult::Failed:
 			s_oss << "[IChatModule] Error: Failed to send message (requestID: " << requestID << ")" << std::endl;
 			break;
 	}
@@ -424,7 +424,7 @@ void handleMessageSendFinished(
 
 				// on failure, mark as failed to be delivered so user can retry later (this example app doesn't handle retry logic)
 				message.sendRequestID = tvagentapi::IChatModule::InvalidRequestID;
-				message.isSendFailed = result == tvagentapi::IChatModule::SendMessageResult::Failed;
+				message.isSendFailed = result == tvagentapi::IChatModule::SendChatMessageResult::Failed;
 
 				chatRoom.sortMessagesByTimestamp();
 
@@ -497,7 +497,7 @@ ChatCommand parseCommand(const std::string& input)
 		return {ChatCommandType::Unknown, {}};
 	}
 
-	return {ChatCommandType::SendMessage, input};
+	return {ChatCommandType::SendChatMessage, input};
 }
 
 } // namespace
@@ -727,11 +727,11 @@ int main()
 						s_oss << "Failed to delete history. No chats available." << std::endl;
 					}
 					break;
-				case ChatCommandType::SendMessage:
+				case ChatCommandType::SendChatMessage:
 					if (selected)
 					{
 						tvagentapi::IChatModule::RequestID requestID =
-							chatModule->sendMessage(selected->chatID.c_str(), command.payload.c_str());
+							chatModule->sendChatMessage(selected->chatID.c_str(), command.payload.c_str());
 						if (requestID != tvagentapi::IChatModule::InvalidRequestID)
 						{
 							// add placeholder message to chat

@@ -107,7 +107,11 @@ void Server::HandleConnections()
 		timeval timeout{};
 		timeout.tv_sec = SendReceiveTimeout;
 
+#if defined(_WIN32) || defined(WINCE)
+		if (::setsockopt(endpoint, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char*>(&timeout), sizeof(timeout)) != 0)
+#else
 		if (::setsockopt(endpoint, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) != 0)
+#endif
 		{
 			std::cerr << "Server::HandleConnections: setsockopt() failed " << GetLastSocketError() << std::endl;
 			continue;

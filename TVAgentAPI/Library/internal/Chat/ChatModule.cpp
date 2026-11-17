@@ -130,7 +130,7 @@ bool ChatModule::obtainChats(ObtainChatsEnumerator enumerator)
 	return true;
 }
 
-IChatModule::RequestID ChatModule::sendMessage(const char* chatID, const char* content)
+IChatModule::RequestID ChatModule::sendChatMessage(const char* chatID, const char* content)
 {
 	if (!chatID || !content)
 	{
@@ -157,7 +157,7 @@ IChatModule::RequestID ChatModule::sendMessage(const char* chatID, const char* c
 
 	const RequestID requestID = m_nextRequestID;
 
-	if (!communicationChannel->sendMessage(requestID, content))
+	if (!communicationChannel->sendChatMessage(requestID, content))
 	{
 		return InvalidRequestID;
 	}
@@ -376,7 +376,7 @@ bool ChatModule::registerCallbacks()
 		};
 	m_connections.push_back(communicationChannel->receivedMessages().registerCallback(receivedMessagesAction));
 
-	auto sendMessageSuccessAction =
+	auto sendChatMessageSuccessAction =
 		[weakThis, weakDispatcher](
 			uint32_t localId,
 			std::string messageId,
@@ -388,17 +388,17 @@ bool ChatModule::registerCallbacks()
 				[localId, messageId, timeStamp](const std::shared_ptr<ChatModule>& self)
 				{
 					util::safeCall(
-						self->m_callbacks.sendMessageFinished,
+						self->m_callbacks.sendChatMessageFinished,
 						localId,
-						SendMessageResult::Succeeded,
+						SendChatMessageResult::Succeeded,
 						messageId.c_str(),
 						timeStamp
 					);
 				});
 		};
-	m_connections.push_back(communicationChannel->messageSent().registerCallback(sendMessageSuccessAction));
+	m_connections.push_back(communicationChannel->messageSent().registerCallback(sendChatMessageSuccessAction));
 
-	auto sendMessageFailureAction =
+	auto sendChatMessageFailureAction =
 		[weakThis, weakDispatcher](
 			uint32_t localId)
 		{
@@ -408,15 +408,15 @@ bool ChatModule::registerCallbacks()
 				[localId](const std::shared_ptr<ChatModule>& self)
 				{
 					util::safeCall(
-						self->m_callbacks.sendMessageFinished,
+						self->m_callbacks.sendChatMessageFinished,
 						localId,
-						SendMessageResult::Failed,
+						SendChatMessageResult::Failed,
 						"",
 						0
 					);
 				});
 		};
-	m_connections.push_back(communicationChannel->messageNotSent().registerCallback(sendMessageFailureAction));
+	m_connections.push_back(communicationChannel->messageNotSent().registerCallback(sendChatMessageFailureAction));
 
 	auto messagesLoadedAction =
 		[weakThis, weakDispatcher](

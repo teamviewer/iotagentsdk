@@ -31,6 +31,7 @@
 #else // _WINCE
 #pragma comment(lib, "Ws2_32.lib")
 #endif // _WINCE
+#include <ws2tcpip.h>
 #else // _WIN32 || _WINCE
 #include <netdb.h>
 #include <unistd.h>

@@ -3,6 +3,8 @@ License for QR Code generator library (C++)
 applies to:
   examples/Qt/qtsimulate/ThirdParty/qrcodegen.hpp
   examples/Qt/qtsimulate/ThirdParty/qrcodegen.cpp
+  examples/Qt/qtticketmachine/ThirdParty/qrcodegen.hpp
+  examples/Qt/qtticketmachine/ThirdParty/qrcodegen.cpp
 --------------------------------------------------------------------------------
 QR Code generator library (C++)
 

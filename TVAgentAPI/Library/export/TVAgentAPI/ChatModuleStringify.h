@@ -35,6 +35,6 @@ const char* toCString(IChatModule::ChatEndpointType type);
 const char* toCString(IChatModule::ChatState state);
 
 /// Get Null-terminated static C-String from enum
-const char* toCString(IChatModule::SendMessageResult result);
+const char* toCString(IChatModule::SendChatMessageResult result);
 
 } // namespace tvagentapi

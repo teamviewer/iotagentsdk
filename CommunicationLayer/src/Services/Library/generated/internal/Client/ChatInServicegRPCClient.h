@@ -64,8 +64,8 @@ public:
 		const std::string& comId,
 		const std::string& chatId) override;
 
-	// rpc call SendMessage
-	CallStatus SendMessage(
+	// rpc call SendChatMessage
+	CallStatus SendChatMessage(
 
 		const std::string& comId,
 		uint32_t localId,

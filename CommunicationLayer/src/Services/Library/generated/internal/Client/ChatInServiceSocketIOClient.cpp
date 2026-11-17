@@ -188,8 +188,8 @@ auto ChatInServiceSocketIOClient::SelectChat(const std::string& comId, const std
 	return returnValue;
 }
 
-// rpc call SendMessage
-auto ChatInServiceSocketIOClient::SendMessage(const std::string& comId, uint32_t localId, const std::string& content) -> CallStatus
+// rpc call SendChatMessage
+auto ChatInServiceSocketIOClient::SendChatMessage(const std::string& comId, uint32_t localId, const std::string& content) -> CallStatus
 {
 	CallStatus returnValue{};
 
@@ -205,15 +205,15 @@ auto ChatInServiceSocketIOClient::SendMessage(const std::string& comId, uint32_t
 		return returnValue;
 	}
 
-	::tvchatservice::SendMessageRequest request{};
+	::tvchatservice::SendChatMessageRequest request{};
 
 	request.set_localid(localId);
 
 	request.set_content(content);
 
-	::tvchatservice::SendMessageResponse response{};
+	::tvchatservice::SendChatMessageResponse response{};
 
-	Transport::SocketIO::Status status = m_channel->Call(comId, Function_SendMessage, request, response);
+	Transport::SocketIO::Status status = m_channel->Call(comId, Function_SendChatMessage, request, response);
 
 	if (status.ok())
 	{

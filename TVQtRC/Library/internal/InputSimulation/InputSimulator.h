@@ -61,10 +61,10 @@ private:
 
 	void simulateKeyboardRelease(uint32_t xkbSymbol, uint32_t unicodeCharacter, uint32_t xkbModifiers);
 	void simulateKeyboardPress(uint32_t xkbSymbol, uint32_t unicodeCharacter, uint32_t xkbModifiers);
-	void simulateMouseWheelRequested(QWindow* window, const QPoint& point, int angle);
-	void simulateMouseMove(QWindow* window,const QPoint& point);
-	void simulateMouseRelease(QWindow* window, const QPoint& point, MouseButton button);
-	void simulateMousePress(QWindow* window, const QPoint& point, MouseButton button);
+	void simulateMouseWheelRequested(QWindow* window, const QPointF& point, int angle);
+	void simulateMouseMove(QWindow* window,const QPointF& point);
+	void simulateMouseRelease(QWindow* window, const QPointF& point, MouseButton button);
+	void simulateMousePress(QWindow* window, const QPointF& point, MouseButton button);
 
 	const std::weak_ptr<CommunicationAdapter> m_communicationAdapter;
 	const QPointer<QWindow> m_applicationWindow;

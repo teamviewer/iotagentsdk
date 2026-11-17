@@ -56,12 +56,12 @@ public:
 	virtual bool selectChat(QUuid chatId) = 0;
 
 	/**
-	 * @brief sendMessage sends message to the partner
+	 * @brief sendChatMessage sends message to the partner
 	 * @param localId locally generated Id for the message
 	 * @param content message text to be sent to the partner
 	 * @return true if this function call is successfull, false otherwise
 	 */
-	virtual bool sendMessage(uint32_t localId, QString content) = 0;
+	virtual bool sendChatMessage(uint32_t localId, QString content) = 0;
 
 	/**
 	 * @brief LoadMessages send request to load messages from history

@@ -87,14 +87,14 @@ int TestChatInServiceClient(int /*argc*/, char** /*argv*/)
 		return EXIT_FAILURE;
 	}
 
-	TVRemoteScreenSDKCommunication::CallStatus sendMessageResponse = client->SendMessage(TestData::ComId, TestData::LocalId, TestData::Content);
-	if (sendMessageResponse.IsOk())
+	TVRemoteScreenSDKCommunication::CallStatus sendChatMessageResponse = client->SendChatMessage(TestData::ComId, TestData::LocalId, TestData::Content);
+	if (sendChatMessageResponse.IsOk())
 	{
-		std::cout << LogPrefix << "sendMessageResponse successful" << std::endl;
+		std::cout << LogPrefix << "sendChatMessageResponse successful" << std::endl;
 	}
 	else
 	{
-		std::cerr << LogPrefix << "sendMessageResponse Error: " << sendMessageResponse.errorMessage << std::endl;
+		std::cerr << LogPrefix << "sendChatMessageResponse Error: " << sendChatMessageResponse.errorMessage << std::endl;
 		return EXIT_FAILURE;
 	}
 

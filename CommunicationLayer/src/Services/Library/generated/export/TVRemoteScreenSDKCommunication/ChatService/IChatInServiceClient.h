@@ -59,8 +59,8 @@ public:
 	// rpc call SelectChat
 	virtual CallStatus SelectChat(const std::string& comId, const std::string& chatId) = 0;
 
-	// rpc call SendMessage
-	virtual CallStatus SendMessage(const std::string& comId, uint32_t localId, const std::string& content) = 0;
+	// rpc call SendChatMessage
+	virtual CallStatus SendChatMessage(const std::string& comId, uint32_t localId, const std::string& content) = 0;
 
 	// rpc call LoadMessages
 	virtual CallStatus LoadMessages(const std::string& comId, uint32_t count, const std::string& lastId) = 0;

@@ -38,7 +38,7 @@ enum Functions : int64_t
 {
 	Function_ObtainChats = 201,
 	Function_SelectChat = 202,
-	Function_SendMessage = 203,
+	Function_SendChatMessage = 203,
 	Function_LoadMessages = 204,
 	Function_DeleteHistory = 205,
 	Function_DeleteChat = 206,

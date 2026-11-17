@@ -31,7 +31,7 @@ service ChatInService
 {
 	rpc ObtainChats(ObtainChatsRequest) returns (ObtainChatsResponse) {}
 	rpc SelectChat(SelectChatRequest) returns (SelectChatResponse) {}
-	rpc SendMessage(SendMessageRequest) returns (SendMessageResponse) {}
+	rpc SendChatMessage(SendChatMessageRequest) returns (SendChatMessageResponse) {}
 	rpc LoadMessages(LoadMessagesRequest) returns (LoadMessagesResponse) {}
 	rpc DeleteHistory(DeleteHistoryRequest) returns (DeleteHistoryResponse) {}
 	rpc DeleteChat(DeleteChatRequest) returns (DeleteChatResponse) {}

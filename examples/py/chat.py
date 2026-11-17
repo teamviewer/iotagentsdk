@@ -297,7 +297,7 @@ chat.setCallbacks(
     chatsRemovedCallback=chats_removed,
     chatClosedCallback=chat_closed,
     receivedMessagesCallback=received_messages,
-    sendMessageFinishedCallback=send_message_finished,
+    sendChatMessageFinishedCallback=send_message_finished,
     messagesLoadedCallback=messages_loaded,
     historyDeletedCallback=history_deleted)
 
@@ -389,7 +389,7 @@ try:
                     print("Failed to delete history. No chats available.")
             elif command_type == COMMAND_TYPE_SEND_MESSAGE:
                 if selected:
-                    request_id = chat.sendMessage(selected.id, payload)
+                    request_id = chat.sendChatMessage(selected.id, payload)
 
                     # add placeholder message to selected chat room
                     time_stamp = time.time_ns() // 1_000_000

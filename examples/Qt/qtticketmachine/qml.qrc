@@ -1,0 +1,26 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main_ticket_machine.qml</file>
+        <file>TicketSelectionView.qml</file>
+        <file>PaymentProcessingView.qml</file>
+        <file>Settings.qml</file>
+        <file>controls/NavigationBar.qml</file>
+        <file>controls/NavigationBarButton.qml</file>
+        <file>controls/qmldir</file>
+        <file>components/qmldir</file>
+        <file>components/AccessControlPanel.qml</file>
+        <file>images/ticket_icon.png</file>
+        <file>images/wrench.svg</file>
+        <file>images/trash.svg</file>
+        <file>images/card_payment.gif</file>
+        <file>images/back_arrow.svg</file>
+        <file>images/check.png</file>
+        <file>images/chat.svg</file>
+        <file>images/x_outline.png</file>
+        <file>images/x.svg</file>
+        <file>images/x_square.svg</file>
+        <file>images/check_and_x.png</file>
+        <file>components/SosPopUp.qml</file>
+        <file>components/WelcomePopUp.qml</file>
+    </qresource>
+</RCC>

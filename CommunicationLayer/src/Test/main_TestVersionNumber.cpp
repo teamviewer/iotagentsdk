@@ -107,15 +107,6 @@ struct ComparisonTestCase
 	bool expectedComparisonResults[ComparisonTypeCount];
 };
 
-using ComparisonOperator = bool(*)(const VersionNumber& lhs, const VersionNumber& rhs);
-constexpr ComparisonOperator ComparisonOperaors[ComparisonTypeCount] = {
-	&std::operator==,
-	&std::operator>,
-	&std::operator>=,
-	&std::operator<,
-	&std::operator<=,
-};
-
 constexpr ComparisonTestCase ComparisonTestCases[] = {
 	//                                                    EQ GT GE LT LE
 	{{},                        {},                       {1, 0, 1, 0, 1}},
@@ -182,7 +173,7 @@ int main()
 		}
 	}
 
-	std::cout << "\n--- Test: comarison operators ---\n";
+	std::cout << "\n--- Test: comparison operators ---\n";
 
 	for (const ComparisonTestCase& testCase : ComparisonTestCases)
 	{
@@ -190,9 +181,31 @@ int main()
 
 		for (int i = 0; i < ComparisonTypeCount; ++i)
 		{
-			const ComparisonOperator op = ComparisonOperaors[i];
-			const bool result = op(testCase.lhs, testCase.rhs);
 			const bool expectedResult = testCase.expectedComparisonResults[i];
+
+			ComparisonType comparisonType = ComparisonType(i);
+			bool result = !expectedResult;
+			switch (comparisonType)
+			{
+			case ComparisonType::EQ:
+				result = testCase.lhs == testCase.rhs;
+				break;
+			case ComparisonType::GT:
+				result = testCase.lhs > testCase.rhs;
+				break;
+			case ComparisonType::GE:
+				result = testCase.lhs >= testCase.rhs;
+				break;
+			case ComparisonType::LT:
+				result = testCase.lhs < testCase.rhs;
+				break;
+			case ComparisonType::LE:
+				result = testCase.lhs <= testCase.rhs;
+				break;
+			case ComparisonType::ComparisonTypeCount:
+				break;
+			}
+
 			std::cout << testCase.lhs << " " << ComparisonOperatorStrings[i] << " " << testCase.rhs << " resulting: " << result << ", expected: " << expectedResult << " -> ";
 
 			if (result == expectedResult)

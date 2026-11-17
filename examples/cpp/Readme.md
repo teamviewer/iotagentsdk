@@ -356,9 +356,9 @@ void connectionStatusChanged(tvagentapi::IAgentConnection::Status status, void* 
 - `accessToken` : an alphanumeric string (such as `"12345678-LgxKf0bybuAESdNIelrY"`) uniquely identifying the remote supporter (**not** a TeamViewer ID). You will typically already have this on hand for your application to use. Supporters can refer to **Creating Access Tokens for Instant Support** in [the main README file](../../README.md).
 - `sessionCode` : a session identifier (such as `"s01-234-567"`) used to join or rejoin an existing instant support session. This is a long-running ID your supporter uses to keep track of your case, until they manually close it. You can think of it as a "service case number". Can be `""` on your first request.
 
-👉 To request a new instant support session, you only need a valid `accessToken`. You will be called back in `instantSupportSessionDataChanged()` with the new `sessionCode`.
+👉 To request an instant support session, you must have either a valid `sessionCode` or an `accessToken`. The `instantSupportSessionDataChanged()` will always be triggered, regardless of whether the request includes an `accessToken`. However, if you use an `accessToken` to initiate the request, you will receive a callback in `instantSupportSessionDataChanged()` that includes the new `sessionCode`.
 
-👉 To join an existing session (either created by you or the remote supporter), you need a valid `accessToken` and the correct `sessionCode`.
+👉 To join an existing session (either created by you or the remote supporter), you need the correct `sessionCode` (such as `"s123-456-789"`).
 
 Once you are in an instant support session, the remote supporter may try to connect to you. This will prompt a call to your `instantSupportConnectionRequested()`, where you can allow or deny the incoming connection.
 
@@ -386,7 +386,7 @@ void instantSupportCloseCaseRequested(void* userdata, const char* accessToken, c
 }
 ```
 
-👉 To close an instant support session, you need a valid `accessToken` and the correct `sessionCode`.
+👉 To close an instant support session, you must provide the correct `sessionCode`. If a service case is closed with an empty `accessToken`, it will remain in the system but the embedded agent will no longer react on connection attempts for this service case. In contrast, closing it with the correct `accessToken` will fully resolve the service case.
 
 Note: A current limitation of the API is that an application can only make one instant support request. Users can make another instant support request after closing the current one.
 
@@ -441,7 +441,7 @@ chatModule->setCallbacks({
     {handleChatsRemoved, nullptr},
     {handleChatClosed, nullptr},
     {handleNewMessages, nullptr},          // ReceivedMessagesCallback
-    {handleMessageSendFinished, nullptr},  // SendMessageFinishedCallback
+    {handleMessageSendFinished, nullptr},  // SendChatMessageFinishedCallback
     {handleMessagesLoaded, nullptr},
     {handleHistoryDeleted, nullptr}
 });
@@ -451,10 +451,10 @@ The most relevant is `ReceivedMessagesCallback`: incoming messages are delivered
 
 ```C++
 tvagentapi::IChatModule::RequestID requestID =
-    chatModule->sendMessage(chatID.c_str(), message.c_str());
+    chatModule->sendChatMessage(chatID.c_str(), message.c_str());
 ```
 
-`sendMessage()` returns an immediate numerical ID for your message; if the message is sent successfully, you will be called back asynchronously in `SendMessageFinishedCallback` with the same numerical ID, as well as a permanent string UUID for the message.
+`sendChatMessage()` returns an immediate numerical ID for your message; if the message is sent successfully, you will be called back asynchronously in `SendChatMessageFinishedCallback` with the same numerical ID, as well as a permanent string UUID for the message.
 
 👉 Each individual message (both sent and received) is identified by a string UUID.
 

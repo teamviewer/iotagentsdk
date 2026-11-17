@@ -45,13 +45,13 @@ message SelectChatResponse
 {
 }
 
-message SendMessageRequest
+message SendChatMessageRequest
 {
 	uint32 localId = 1;
 	string content = 2;
 }
 
-message SendMessageResponse
+message SendChatMessageResponse
 {
 }
 

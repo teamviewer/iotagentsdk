@@ -1066,9 +1066,9 @@ bool CommunicationAdapter::sendSelectChatResult(QUuid chatId)
 	return m_communicationChannel->sendSelectChatResult(selectedChatId);
 }
 
-bool CommunicationAdapter::sendMessage(uint32_t localId, QString content)
+bool CommunicationAdapter::sendChatMessage(uint32_t localId, QString content)
 {
-	return m_communicationChannel->sendMessage(localId, content.toStdString());
+	return m_communicationChannel->sendChatMessage(localId, content.toStdString());
 }
 
 bool CommunicationAdapter::loadMessages(uint32_t count, QUuid lastId)

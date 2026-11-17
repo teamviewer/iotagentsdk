@@ -41,7 +41,7 @@ public:
 
 	void setCallbacks(const Callbacks& callbacks) override;
 	bool obtainChats(ObtainChatsEnumerator enumerator) override;
-	RequestID sendMessage(const char* chatID, const char* content) override;
+	RequestID sendChatMessage(const char* chatID, const char* content) override;
 	bool loadMessages(const char* chatID, size_t messageCount, const char* messageBefore = nullptr) override;
 	bool deleteHistory(const char* chatID) override;
 	bool deleteChat(const char* chatID) override;

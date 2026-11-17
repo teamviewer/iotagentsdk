@@ -26,7 +26,7 @@ struct PyChatModule final
 	PyObject* m_pyChatsRemovedCallback = nullptr;
 	PyObject* m_pyChatClosedCallback = nullptr;
 	PyObject* m_pyReceivedMessagesCallback = nullptr;
-	PyObject* m_pySendMessageFinishedCallback = nullptr;
+	PyObject* m_pySendChatMessageFinishedCallback = nullptr;
 	PyObject* m_pyMessagesLoadedCallback = nullptr;
 	PyObject* m_pyHistoryDeletedCallback = nullptr;
 };
@@ -34,6 +34,6 @@ struct PyChatModule final
 PyTypeObject* GetPyTypeChatModule();
 PyTypeObject* GetPyTypeChatModule_ChatEndpointType();
 PyTypeObject* GetPyTypeChatModule_ChatState();
-PyTypeObject* GetPyTypeChatModule_SendMessageResult();
+PyTypeObject* GetPyTypeChatModule_SendChatMessageResult();
 
 } // namespace tvagentapipy

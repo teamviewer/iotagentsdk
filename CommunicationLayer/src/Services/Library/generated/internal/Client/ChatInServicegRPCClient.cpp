@@ -196,8 +196,8 @@ auto ChatInServicegRPCClient::SelectChat(const std::string& comId, const std::st
 	return returnValue;
 }
 
-// rpc call SendMessage
-auto ChatInServicegRPCClient::SendMessage(const std::string& comId, uint32_t localId, const std::string& content) -> CallStatus
+// rpc call SendChatMessage
+auto ChatInServicegRPCClient::SendChatMessage(const std::string& comId, uint32_t localId, const std::string& content) -> CallStatus
 {
 	CallStatus returnValue{};
 
@@ -217,15 +217,15 @@ auto ChatInServicegRPCClient::SendMessage(const std::string& comId, uint32_t loc
 
 	context.AddMetadata(ServiceBase::CommunicationIdToken, comId);
 
-	::tvchatservice::SendMessageRequest request{};
+	::tvchatservice::SendChatMessageRequest request{};
 
 	request.set_localid(localId);
 
 	request.set_content(content);
 
-	::tvchatservice::SendMessageResponse response{};
+	::tvchatservice::SendChatMessageResponse response{};
 
-	::grpc::Status status = m_stub->SendMessage(&context, request, &response);
+	::grpc::Status status = m_stub->SendChatMessage(&context, request, &response);
 
 	if (status.ok())
 	{

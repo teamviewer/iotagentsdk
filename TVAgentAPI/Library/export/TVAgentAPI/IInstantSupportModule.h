@@ -128,6 +128,8 @@ public:
 	* @param accessToken User or company access token for authentication.
 	* @param sessionCode Session code.
 	* will be checked to be valid.
+	* If a service case is closed with an empty accessToken, the service case will persist
+	* but will no longer be handled by the agent.
 	* @return false on request error, true otherwise
 	* all the response errors will be provided via CloseInstantSupportCaseErrorCallback.
 	*/

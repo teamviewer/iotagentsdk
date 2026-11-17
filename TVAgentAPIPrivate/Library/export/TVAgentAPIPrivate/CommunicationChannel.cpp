@@ -28,6 +28,8 @@
 
 #include "internal/ServicesMediator.h"
 
+#include <filesystem>
+
 #include <TVRemoteScreenSDKCommunication/CommunicationLayerBase/VersionNumber.h>
 
 #include <sys/stat.h>
@@ -62,17 +64,24 @@ const std::string DefaultAgentRegistrationServiceUrl = DefaultBaseServerUrl + ':
 
 bool CreateDirsForPath(const std::string& path)
 {
+#ifdef TV_COMM_ENABLE_GRPC
 	size_t pos = path.find_first_not_of('/', 0);
 	while (pos != std::string::npos)
 	{
 		pos = path.find('/', pos);
 		pos = path.find_first_not_of('/', pos);
 		std::string subPath = path.substr(0, pos);
+#if defined(_WIN32) || defined(_WINCE)
+		std::error_code ec;
+		if (!std::filesystem::create_directory(subPath, ec))
+#else
 		if (::mkdir(subPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0 && errno != EEXIST)
+#endif
 		{
 			return false;
 		}
 	}
+#endif
 	return true;
 }
 
@@ -887,12 +896,12 @@ bool CommunicationChannel::sendSelectChatResult(std::string chatId)
 	return false;
 }
 
-bool CommunicationChannel::sendMessage(uint32_t localId, std::string content)
+bool CommunicationChannel::sendChatMessage(uint32_t localId, std::string content)
 {
 	if (auto safeClient = m_servicesMediator->AcquireClient<ServiceType::ChatIn>())
 	{
 		const TVRemoteScreenSDKCommunication::CallStatus status =
-			safeClient->SendMessage(m_communicationId, localId, content);
+			safeClient->SendChatMessage(m_communicationId, localId, content);
 
 		if (!status.IsOk())
 		{

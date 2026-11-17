@@ -846,7 +846,7 @@ Window {
 				border.color: "#e4e4e4"
 				anchors.top: parent.top
 				anchors.left: parent.left
-				anchors.right: sendMessageButton.left
+				anchors.right: sendChatMessageButton.left
 				anchors.rightMargin: 4
 				anchors.topMargin: 2
 				anchors.bottomMargin: 8
@@ -884,7 +884,7 @@ Window {
 			}
 
 			Button {
-				id: sendMessageButton
+				id: sendChatMessageButton
 				enabled: newMessageArea.enabled && newMessageText.text.length !== 0
 				anchors.right: parent.right
 				anchors.top: parent.top
@@ -911,7 +911,8 @@ Window {
 
 		Connections {
 			target: appModel
-			onTvCommunicationRunningChanged: {
+
+			function onTvCommunicationRunningChanged() {
 				if (!appModel.isTVCommunicationRunning) {
 					contacts.clear()
 					chatMessagesContent.clear()
@@ -919,13 +920,13 @@ Window {
 					chatTitle.text = appModel.chatTitle
 				}
 			}
-			onNewContactAdded: {
+			function onNewContactAdded(chatInfo) {
 				contacts.append(chatInfo)
 				if (contactList.currentIndex == -1) {
 					contactList.currentIndex++
 				}
 			}
-			onChatRemoved: {
+			function onChatRemoved(chatId) {
 				for (var i = 0; i < contacts.count; ++i) {
 					if (contacts.get(i).chatId === chatId) {
 						if (i === contactList.currentIndex) {
@@ -939,13 +940,13 @@ Window {
 					}
 				}
 			}
-			onNewChatMessageAdded: {
+			function onNewChatMessageAdded(message, timestamp, sender) {
 				chatMessagesContent.append('\n' + sender + ": " + timestamp + '\n' + message)
 			}
-			onLoadedMessagesAdded: {
+			function onLoadedMessagesAdded(message, timestamp, sender) {
 				chatMessagesContent.insert(0, '\n\n' + sender + ": " + timestamp + '\n' + message)
 			}
-			onChatClosed: {
+			function onChatClosed(chatId) {
 				for (var i = 0; i < contacts.count; ++i) {
 					if (contacts.get(i).chatId === chatId) {
 						contacts.get(i).chatState = 1
@@ -957,7 +958,7 @@ Window {
 					}
 				}
 			}
-			onHistoryDeleted: {
+			function onHistoryDeleted(chatId) {
 				for (var i = 0; i < contacts.count; ++i) {
 					if (contacts.get(i).chatId === chatId) {
 						if (i === contactList.currentIndex) {
@@ -1052,7 +1053,7 @@ Window {
 
 				Connections {
 					target: appModel
-					onAugmentRCSessionInvitationReceived: {
+					function onAugmentRCSessionInvitationReceived(url) {
 						augmentRCSessionUrl.url = url
 					}
 				}
@@ -1219,6 +1220,7 @@ Window {
 					layer.enabled: true
 					font.italic: true
 					height: Math.max(implicitHeight, parent.height)
+					readOnly : true
 				}
 
 				Button {

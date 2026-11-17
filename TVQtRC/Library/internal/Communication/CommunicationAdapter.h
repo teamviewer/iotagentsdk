@@ -129,7 +129,7 @@ public Q_SLOTS:
 
 	bool sendObtainChatsRequest(QVector<ChatInfo>& chats);
 	bool sendSelectChatResult(QUuid chatId);
-	bool sendMessage(uint32_t localId, QString content);
+	bool sendChatMessage(uint32_t localId, QString content);
 	bool loadMessages(uint32_t count, QUuid lastId);
 	bool deleteHistory();
 	bool deleteChat();

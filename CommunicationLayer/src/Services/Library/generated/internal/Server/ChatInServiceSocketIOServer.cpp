@@ -228,8 +228,8 @@ bool ChatInServiceSocketIOServer::StartServer(const std::string& location)
 	}
 
 	{
-		auto* requestProcessing = &m_SendMessageProcessing;
-		functions[Function_SendMessage] = [requestProcessing](const std::string& comIdValue,
+		auto* requestProcessing = &m_SendChatMessageProcessing;
+		functions[Function_SendChatMessage] = [requestProcessing](const std::string& comIdValue,
 											  std::shared_ptr<std::string> requestRaw,
 											  std::shared_ptr<std::string> responseRaw)
 		{
@@ -237,7 +237,7 @@ bool ChatInServiceSocketIOServer::StartServer(const std::string& location)
 			{
 				return Status{StatusCode::UNAVAILABLE, TvServiceBase::ErrorMessage_NoProcessingCallback};
 			}
-			::tvchatservice::SendMessageRequest request;
+			::tvchatservice::SendChatMessageRequest request;
 			if (!request.ParseFromString(*requestRaw))
 			{
 				return Status(StatusCode::IO_ERROR, "error parsing request");
@@ -245,7 +245,7 @@ bool ChatInServiceSocketIOServer::StartServer(const std::string& location)
 
 			requestRaw->clear();
 
-			::tvchatservice::SendMessageResponse response;
+			::tvchatservice::SendChatMessageResponse response;
 
 			Status status = [&]()
 			{
@@ -270,9 +270,9 @@ bool ChatInServiceSocketIOServer::StartServer(const std::string& location)
 					}
 				};
 
-				auto& m_sendMessageProcessing = *requestProcessing;
+				auto& m_sendChatMessageProcessing = *requestProcessing;
 
-				m_sendMessageProcessing(comId,
+				m_sendChatMessageProcessing(comId,
 					request.localid(),
 
 					request.content(),
@@ -523,9 +523,9 @@ void ChatInServiceSocketIOServer::SetSelectChatCallback(const ProcessSelectChatR
 	m_SelectChatProcessing = requestProcessing;
 }
 
-void ChatInServiceSocketIOServer::SetSendMessageCallback(const ProcessSendMessageRequestCallback& requestProcessing)
+void ChatInServiceSocketIOServer::SetSendChatMessageCallback(const ProcessSendChatMessageRequestCallback& requestProcessing)
 {
-	m_SendMessageProcessing = requestProcessing;
+	m_SendChatMessageProcessing = requestProcessing;
 }
 
 void ChatInServiceSocketIOServer::SetLoadMessagesCallback(const ProcessLoadMessagesRequestCallback& requestProcessing)

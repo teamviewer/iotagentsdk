@@ -39,12 +39,12 @@ Item {
 
 	Connections {
 		target: model
-		onAccessControlConfirmationRequested: {
+		function onAccessControlConfirmationRequested(accessControl, timeOutMilliseconds) {
 			if (accessControl === accessControlType) {
 				accessConfirmationArea.requestConfirmation(timeOutMilliseconds)
 			}
 		}
-		onAccessModeChanged: {
+		function onAccessModeChanged(accessControl) {
 			if (accessControl === accessControlType) {
 				_accessMode = model.getAccessMode(accessControl);
 			}

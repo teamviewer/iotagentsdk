@@ -246,8 +246,13 @@ Status ChannelInterface::Connect()
 		timeval timeout{};
 		timeout.tv_sec = SendReceiveTimeout;
 
+#if defined(_WIN32) || defined(_WINCE)
+		if (::setsockopt(m_clientSocket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&timeout), sizeof(timeout)) != 0 ||
+			::setsockopt(m_clientSocket, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<const char*>(&timeout), sizeof(timeout)) != 0)
+#else
 		if (::setsockopt(m_clientSocket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) != 0 ||
 			::setsockopt(m_clientSocket, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) != 0)
+#endif
 		{
 			const int lastError = GetLastSocketError();
 			CloseSocket(m_clientSocket);
